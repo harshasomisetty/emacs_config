@@ -1,0 +1,12 @@
+.org-id-locations
+bookmarks
+auto-save-list/*
+backup/*
+elpa/*
+image-dired/*
+old.txt
+org-clock-save.el
+org-roam.db
+recentf
+straight/*
+transient/*
