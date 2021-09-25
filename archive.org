@@ -1,0 +1,298 @@
+* all
+
+* DONE magit
+CLOSED: [2021-09-19 Sun 06:20]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:34
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:20]
+:END:
+
+* DONE magit
+CLOSED: [2021-09-19 Sun 06:20]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:20]
+:END:
+
+* DONE Tramp
+CLOSED: [2021-09-19 Sun 06:19]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:19]
+:END:
+
+* DONE align template
+CLOSED: [2021-09-19 Sun 06:19]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:19]
+:END:
+
+* DONE auto eval code
+CLOSED: [2021-09-19 Sun 06:19]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:19]
+:END:
+
+* DONE DOE homework [4/4]
+CLOSED: [2021-09-17 Fri 21:17] DEADLINE: <2021-09-24 Fri>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: DOE
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-17 Fri 21:17]
+:END:
+** DONE fix question 1 can't determine distribution
+CLOSED: [2021-09-15 Wed 14:04]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-15 Wed 14:04]
+:END:
+** DONE Fix question 2 b part 1 expectation calculation
+CLOSED: [2021-09-15 Wed 14:50]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-15 Wed 14:50]
+:END:
+** DONE Fix question 5c variance calculation rippppp
+CLOSED: [2021-09-15 Wed 15:37]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-15 Wed 15:37]
+:END:
+** DONE finish rest of question 5
+CLOSED: [2021-09-17 Fri 21:16]
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2021-09-17 Fri 21:16]
+:END:
+
+
+* DONE math stats finsih hw
+CLOSED: [2021-09-16 Thu 21:51] DEADLINE: <2021-09-17 Fri>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:36
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Math Stat
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2021-09-16 Thu 21:51]
+:END:
+
+* DONE Network Layer
+CLOSED: [2021-09-14 Tue 14:00]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:37
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Networking/grind out networking basis from networking crash course
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2021-09-14 Tue 14:00]
+:END:
+
+* DONE Reply to HRT dude
+CLOSED: [2021-09-14 Tue 12:13]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:37
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Personal
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-14 Tue 12:13]
+:END:
+
+
+
+* DONE GTD workflow [2/2]
+CLOSED: [2021-09-19 Sun 06:37]
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-19 Sun 06:37
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Org
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:37]
+:END:
+** DONE recording todos [[https://daryl.wakatara.com/a-better-gtd-and-crm-flow-for-emacs-org-mode/][better gtd and crm]]
+CLOSED: [2021-09-19 Sun 06:37]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:37]
+:END:
+** DONE Archive todos
+CLOSED: [2021-09-19 Sun 06:37]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-19 Sun 06:37]
+:END:
+
+* DONE fix formatting and font sizes, etc
+CLOSED: [2021-09-14 Tue 23:21] DEADLINE: <2021-09-14 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-20 Mon 22:22
+:ARCHIVE_FILE: ~/org/inbox.org
+:ARCHIVE_OLPATH: Inbox
+:ARCHIVE_CATEGORY: inbox
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-14 Tue 23:21]
+:END:
+
+
+* DONE Figure out file strucutre, and exporting
+CLOSED: [2021-09-16 Thu 21:51] DEADLINE: <2021-09-14 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-20 Mon 22:22
+:ARCHIVE_FILE: ~/org/inbox.org
+:ARCHIVE_OLPATH: Inbox
+:ARCHIVE_CATEGORY: inbox
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-16 Thu 21:51]
+:END:
+
+
+
+
+
+
+
+
+
+
+* DONE DOE read reserach paper
+CLOSED: [2021-09-20 Mon 22:22] DEADLINE: <2021-09-20 Mon>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-20 Mon 22:22
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: DOE
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-20 Mon 22:22]
+:END:
+
+
+* DONE Quiz
+CLOSED: [2021-09-20 Mon 22:23] SCHEDULED: <2021-09-20 Mon>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-20 Mon 22:23
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Math Stat
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2021-09-20 Mon 22:23]
+:END:
+
+
+* DONE Math videos fuck you moulik
+CLOSED: [2021-09-21 Tue 20:04] SCHEDULED: <2021-09-21 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-21 Tue 20:05
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Math Stat
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "NEXT"       [2021-09-21 Tue 20:04]
+:END:
+
+
+* DONE Hand in 
+CLOSED: [2021-09-21 Tue 22:38] DEADLINE: <2021-09-24 Fri>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-21 Tue 22:38
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: DOE
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-21 Tue 22:38]
+:END:
+
+
+* DONE Hand in 
+CLOSED: [2021-09-21 Tue 22:38] DEADLINE: <2021-09-24 Fri>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-21 Tue 22:38
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: DOE
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-21 Tue 22:38]
+:END:
+
+
+* DONE cancel quizlet 
+CLOSED: [2021-09-21 Tue 15:31] DEADLINE: <2021-09-21 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-21 Tue 22:42
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Personal
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-21 Tue 15:31]
+:END:
+
+
+* DONE cancel quizlet 
+CLOSED: [2021-09-21 Tue 15:31] DEADLINE: <2021-09-21 Tue>
+:PROPERTIES:
+:ARCHIVE_TIME: 2021-09-21 Tue 22:43
+:ARCHIVE_FILE: ~/org/gtd.org
+:ARCHIVE_OLPATH: Personal
+:ARCHIVE_CATEGORY: gtd
+:ARCHIVE_TODO: DONE
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2021-09-21 Tue 15:31]
+:END:
+

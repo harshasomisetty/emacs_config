@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: homework
+# key: <h
+# --
+#+TITLE: ${1:title}
+#+AUTHOR: Harsha Somisetty
+#+DATE: `(format-time-string "%B %d, %Y")`
+* $0

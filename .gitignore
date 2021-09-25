@@ -10,3 +10,6 @@ org-roam.db
 recentf
 straight/*
 transient/*
+games/*
+elpy/*
+tramp
