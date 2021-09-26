@@ -87,6 +87,11 @@ apps are not started from a shell."
     (global-company-mode t)
   )
 
+(use-package ace-window)
+(global-set-key (kbd "M-o") 'ace-window)
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+(setq aw-scope 'frame)
+
 ; reduce visual clutter
  (menu-bar-mode -1)
  (tool-bar-mode -1)
@@ -109,8 +114,8 @@ apps are not started from a shell."
 ; (setq left-margin-width 2)
  (setq right-margin-width 2)
 
- (use-package disable-mouse)
- (global-disable-mouse-mode)
+; (use-package disable-mouse)
+ ; (global-disable-mouse-mode)
 
 (use-package spaceline-config
 :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
@@ -159,6 +164,15 @@ apps are not started from a shell."
   (not (member lang '("C" "R" "python" "emacs-lisp"))))
 
 (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+
+(define-key c-mode-map (kbd "C-c m") #'compile)
+  (defun execute-c-program ()
+   (split-window-right)
+   (other-window)
+   (shell)
+  )
+
+(define-key c-mode-map (kbd "C-c r") 'execute-c-program)
 
 (use-package ess-site
   :straight ess
@@ -396,10 +410,7 @@ apps are not started from a shell."
    (setq TeX-parse-self t))
  (require 'texmathp)
 (use-package cdlatex)
-(add-hook 'latex-mode-hook 'turn-on-cdlatex)
-(cdlatex-mode)
-(global-set-key (kbd "<tab>") #'cdlatex-tab)
-(global-set-key (kbd "TAB") #'cdlatex-tab)
+(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 
 (setq org-agenda-files '(
     "~/org/inbox.org"

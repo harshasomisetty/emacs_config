@@ -1,3 +1,4 @@
+
 #+STARTUP: content
 * General
 ** Metadata
@@ -60,7 +61,7 @@
 ** Editing
 
 #+BEGIN_SRC emacs-lisp
-    
+  
     (require 'org-tempo)
        ;; Move cursor to end of current line
        ;; Insert new line below current line
@@ -69,7 +70,7 @@
                           (interactive)
                           (end-of-line)
                           (newline-and-indent)))
-    
+  
        ;; Move cursor to previous line
        ;; Go to end of the line
        ;; Insert new line below current line (So it actually insert new line above with indentation)
@@ -80,21 +81,22 @@
                               (end-of-line)
                               (newline-and-indent)
                               ))
-    
+  
+  (require 'subr-x)
   
   (use-package org-download)
   (add-hook 'dired-mode-hook 'org-download-enable)
-   
+  
       (use-package avy)
       (global-set-key (kbd "M-g w") 'avy-goto-word-1)
-    
+  
       (use-package yasnippet
         :config
         (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
        (yas-global-mode 1)
       )
-    
-    
+  
+  
      (use-package company
       :ensure t
       :config
@@ -102,11 +104,16 @@
       (setq company-minimum-prefix-length 2)
       (global-company-mode t)
     )
-    
+  
+  (use-package ace-window)
+  (global-set-key (kbd "M-o") 'ace-window)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-scope 'frame)
+  
 #+END_SRC
 
 #+RESULTS:
-: t
+: frame
 
 ** Display
 
@@ -135,8 +142,8 @@
   ; (setq left-margin-width 2)
    (setq right-margin-width 2)
   
-   (use-package disable-mouse)
-   (global-disable-mouse-mode)
+  ; (use-package disable-mouse)
+   ; (global-disable-mouse-mode)
   
   (use-package spaceline-config
   :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
@@ -154,8 +161,8 @@
   ; customized startup screen
 
   (setq inhibit-startup-screen t)
-  ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  ; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
   (setq initial-buffer-choice "~/org/school/os/hw1/sigHandler.c")
     ; (split-window-right)
@@ -202,6 +209,25 @@
     (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
 #+end_src
+*** C
+#+begin_src emacs-lisp
+    (define-key c-mode-map (kbd "C-c m") #'compile)
+  
+    (defun execute-c-program ()
+      (interactive)
+      (defvar foo)
+      (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+      (shell)
+      (kill-new foo)
+      (org-yank)
+    )
+  
+  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+  
+#+end_src
+
+#+RESULTS:
+: execute-c-program
 
 *** ESS and R
 #+begin_src emacs-lisp :results output silent
@@ -469,10 +495,7 @@
     (setq TeX-parse-self t))
   (require 'texmathp)
  (use-package cdlatex)
- (add-hook 'latex-mode-hook 'turn-on-cdlatex)
- (cdlatex-mode)
- (global-set-key (kbd "<tab>") #'cdlatex-tab)
- (global-set-key (kbd "TAB") #'cdlatex-tab)
+ (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 
 
 #+END_SRC
