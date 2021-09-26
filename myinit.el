@@ -65,6 +65,7 @@ apps are not started from a shell."
                             (newline-and-indent)
                             ))
 
+(require 'subr-x)
 
 (use-package org-download)
 (add-hook 'dired-mode-hook 'org-download-enable)
@@ -129,8 +130,8 @@ apps are not started from a shell."
 ; customized startup screen
 
 (setq inhibit-startup-screen t)
-; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq initial-buffer-choice "~/org/school/os/hw1/sigHandler.c")
   ; (split-window-right)
@@ -166,13 +167,18 @@ apps are not started from a shell."
 (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
 (define-key c-mode-map (kbd "C-c m") #'compile)
-  (defun execute-c-program ()
-   (split-window-right)
-   (other-window)
-   (shell)
-  )
 
-(define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+    (defun execute-c-program ()
+      (interactive)
+      (save-buffer)
+      (defvar foo)
+      (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+      (shell)
+      (kill-new foo)
+      (org-yank)
+    )
+
+  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
 
 (use-package ess-site
   :straight ess

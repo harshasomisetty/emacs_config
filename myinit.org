@@ -211,18 +211,19 @@
 #+end_src
 *** C
 #+begin_src emacs-lisp
-    (define-key c-mode-map (kbd "C-c m") #'compile)
+  (define-key c-mode-map (kbd "C-c m") #'compile)
   
-    (defun execute-c-program ()
-      (interactive)
-      (defvar foo)
-      (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-      (shell)
-      (kill-new foo)
-      (org-yank)
-    )
+      (defun execute-c-program ()
+        (interactive)
+        (save-buffer)
+        (defvar foo)
+        (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+        (shell)
+        (kill-new foo)
+        (org-yank)
+      )
   
-  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+    (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
   
 #+end_src
 
