@@ -37,6 +37,34 @@ apps are not started from a shell."
   )
 (global-set-key (kbd "C-x C-g") 'deft-find-file)
 
+(setq user-init-file "~/.emacs.d/myinit.org")
+
+(defun find-user-init-file ()
+"Edit the `user-init-file', in another window."
+(interactive)
+(find-file user-init-file))
+
+(global-set-key (kbd "C-c i") #'find-user-init-file)
+
+
+(defun learning ()
+  (interactive)
+  (find-file "~/org/learning.org")
+ )
+(global-set-key (kbd "C-c l") #'learning)
+
+; customized startup screen
+
+ (setq inhibit-startup-screen t)
+; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+ (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+   ; (setq initial-buffer-choice "~/org/school/os/hw1/sigHandler.c")
+   ; (split-window-right)
+   ; (find-file "~/org/literature/DOE.org")
+   ; (switch-to-buffer-other-window "DOE.org")
+   ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+
 ; window settings
 (window-divider-mode)
 (when (boundp 'window-divider-mode)
@@ -127,18 +155,6 @@ apps are not started from a shell."
 (spaceline-emacs-theme)
 (spaceline-helm-mode 1))
 
-; customized startup screen
-
-(setq inhibit-startup-screen t)
-(setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-; (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-(setq initial-buffer-choice "~/org/school/os/hw1/sigHandler.c")
-  ; (split-window-right)
-  ; (find-file "~/org/literature/DOE.org")
-  ; (switch-to-buffer-other-window "DOE.org")
-  ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
-
 (setq remote-file-name-inhibit-cache nil)
 (setq vc-ignore-dir-regexp
       (format "%s\\|%s"
@@ -148,6 +164,16 @@ apps are not started from a shell."
 (setq tramp-verbose 6)
 (put 'temporary-file-directory 'standard-value
      (list temporary-file-directory))
+
+(defun ilab-ssh ()
+  (interactive)
+  (find-file "/ssh:hs884@ilab1.cs.rutgers.edu:")
+ )
+(global-set-key (kbd "C-c l") #'ilab-ssh)
+(add-hook
+   'c-mode-hook
+   (lambda () (when (file-remote-p default-directory) (company-mode -1))))
+(setq-default shell-file-name "/bin/bash")
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -179,6 +205,7 @@ apps are not started from a shell."
     )
 
   (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+ (define-key c-mode-map (kbd "C-c g") #'gdb)
 
 (use-package ess-site
   :straight ess
@@ -446,51 +473,77 @@ apps are not started from a shell."
 (setq org-archive-location "~/.emacs.d/archive.org::")
 
 (require 'org-clock)
-(setq org-clock-persist 'history)
-(org-clock-persistence-insinuate)
-
-(add-to-list 'org-modules 'org-habit)
-(require 'org-habit)
-(setq org-habit-following-days 2)
-(setq org-habit-preceding-days 7)
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+  
+  (add-to-list 'org-modules 'org-habit)
+  (require 'org-habit)
+  (setq org-habit-following-days 2)
+  (setq org-habit-preceding-days 7)
+  (defun org-habit-streak-count ()
+  (point-min)
+  (while (not (eobp))
+    (when (get-text-property (point) 'org-habit-p)
+      (let ((count (count-matches
+                    (char-to-string org-habit-completed-glyph)
+                    (line-beginning-position) (line-end-position))))
+        (end-of-line)
+        (insert (number-to-string count))))
+      (forward-line 1)))
+(add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
 (use-package org-journal
-  :bind (("C-c j" . org-journal-mode)
+    :bind (("C-c j" . org-journal-mode)
 
-  )
-  :custom
-  (org-journal-dir "~/org/journal/")
-  (org-journal-file-format "%Y%m%d")
-  (org-journal-date-format "%e %b %Y (%A)")
-  (org-journal-time-format "")
-  (setq org-journal-find-file 'find-file)
-  )
+    )
+    :custom
+    (org-journal-dir "~/org/journal/")
+    (org-journal-file-format "%Y%m%d")
+    (org-journal-date-format "%e %b %Y (%A)")
+    (org-journal-time-format "")
+    (setq org-journal-find-file 'find-file)
+    )
 
-(defun org-journal-find-location ()
-;; Open today's journal, but specify a non-nil prefix argument in order to
-;; inhibit inserting the heading; org-capture will insert the heading.
-(org-journal-new-entry t)
-(unless (eq org-journal-file-type 'daily)
-  (org-narrow-to-subtree))
-(goto-char (point-max)))
+  (defun org-journal-find-location ()
+  ;; Open today's journal, but specify a non-nil prefix argument in order to
+  ;; inhibit inserting the heading; org-capture will insert the heading.
+  (org-journal-new-entry t)
+  (unless (eq org-journal-file-type 'daily)
+    (org-narrow-to-subtree))
+  (goto-char (point-max)))
 
-(defun org-journal-save-entry-and-exit()
-  "Simple convenience function.
-    Saves the buffer of the current day's entry and kills the window
-    Similar to org-capture like behavior"
-  (interactive)
-  (save-buffer)
-  (kill-buffer-and-window))
+  (defun org-journal-save-entry-and-exit()
+    "Simple convenience function.
+      Saves the buffer of the current day's entry and kills the window
+      Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
 
-(add-hook 'org-journal-mode-hook
-          (lambda ()
-            (define-key org-journal-mode-map
-              (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+  (add-hook 'org-journal-mode-hook
+            (lambda ()
+              (define-key org-journal-mode-map
+                (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+
+  (defun insert-created-date (&rest ignore)
+    (insert (format-time-string
+           (concat
+                   "Goals\n\n"
+                   "** Accomplishments\n\n"
+                   "** Moments\n"
+                   )))
+  ; in org-capture, this folds the entry; when inserting a heading, this moves point back to the heading line
+  (org-back-to-heading))
+  ; when inserting a heading, this moves point to the end of the line
+  ;;(move-end-of-line ()))
+
+(add-hook 'org-journal-after-entry-create-hook
+          #'insert-created-date)
 
 (setq org-capture-templates
       `(
       ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-      ("j" "Journal entry" plain (function org-journal-find-location) "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?" :jump-to-captured t :immediate-finish t)
+      ("j" "Journal entry" plain (function org-journal-find-location) " %(format-time-string org-journal-time-format)\n%i %?" :jump-to-captured t :immediate-finish t)
       )
 )
 
@@ -543,4 +596,5 @@ apps are not started from a shell."
 
 (use-package magit)
 
-
+(use-package smudge
+)

@@ -13,3 +13,4 @@ transient/*
 games/*
 elpy/*
 tramp
+.secrets.el
