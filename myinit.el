@@ -11,9 +11,9 @@ This is particularly useful under Mac OS X and macOS, where GUI
 apps are not started from a shell."
   (interactive)
   (let ((path-from-shell (replace-regexp-in-string
-			  "[ \t\n]*$" "" (shell-command-to-string
-					  "$SHELL --login -c 'echo $PATH'"
-						    ))))
+                          "[ \t\n]*$" "" (shell-command-to-string
+                                          "$SHELL --login -c 'echo $PATH'"
+                                                    ))))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
@@ -38,6 +38,7 @@ apps are not started from a shell."
 (global-set-key (kbd "C-x C-g") 'deft-find-file)
 
 (setq user-init-file "~/.emacs.d/myinit.org")
+(setq default-directory "~/org")
 
 (defun find-user-init-file ()
 "Edit the `user-init-file', in another window."
