@@ -65,61 +65,55 @@ apps are not started from a shell."
    ; (switch-to-buffer-other-window "DOE.org")
    ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
-; window settings
-(window-divider-mode)
-(when (boundp 'window-divider-mode)
-  (setq window-divider-default-places t
-        window-divider-default-bottom-width 1
-        window-divider-default-right-width 1)
-  (window-divider-mode +1))
+(use-package avy)
+(global-set-key (kbd "M-g w") 'avy-goto-word-1)
 
-(require 'org-tempo)
-     ;; Move cursor to end of current line
-     ;; Insert new line below current line
-     ;; it will also indent newline
-     (global-set-key (kbd "<C-return>") (lambda ()
-                        (interactive)
-                        (end-of-line)
-                        (newline-and-indent)))
-
-     ;; Move cursor to previous line
-     ;; Go to end of the line
-     ;; Insert new line below current line (So it actually insert new line above with indentation)
-     ;; it will also indent newline
-     (global-set-key (kbd "<C-S-return>") (lambda ()
-                            (interactive)
-                            (previous-line)
-                            (end-of-line)
-                            (newline-and-indent)
-                            ))
-
-(require 'subr-x)
-
-(use-package org-download)
-(add-hook 'dired-mode-hook 'org-download-enable)
-
-    (use-package avy)
-    (global-set-key (kbd "M-g w") 'avy-goto-word-1)
-
-    (use-package yasnippet
-      :config
-      (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-     (yas-global-mode 1)
-    )
-
-
-   (use-package company
-    :ensure t
-    :config
-    (setq company-idle-delay 0)
-    (setq company-minimum-prefix-length 2)
-    (global-company-mode t)
-  )
 
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 (setq aw-scope 'frame)
+
+; clean whitespaces
+  ; (add-hook 'before-save-hook 'whitespace-cleanup)
+   (require 'org-tempo)
+      ;; Move cursor to end of current line
+      ;; Insert new line below current line
+      ;; it will also indent newline
+      (global-set-key (kbd "<C-return>") (lambda ()
+                         (interactive)
+                         (end-of-line)
+                         (newline-and-indent)))
+
+      ;; Move cursor to previous line
+      ;; Go to end of the line
+      ;; Insert new line below current line (So it actually insert new line above with indentation)
+      ;; it will also indent newline
+      (global-set-key (kbd "<C-S-return>") (lambda ()
+                             (interactive)
+                             (previous-line)
+                             (end-of-line)
+                             (newline-and-indent)
+                             ))
+
+
+
+;needed for yas
+   (require 'subr-x)
+       (use-package yasnippet
+       :config
+       (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+      (yas-global-mode 1)
+     )
+
+
+    (use-package company
+     :ensure t
+     :config
+     (setq company-idle-delay 0)
+     (setq company-minimum-prefix-length 2)
+     (global-company-mode t)
+   )
 
 ; reduce visual clutter
  (menu-bar-mode -1)
@@ -132,9 +126,6 @@ apps are not started from a shell."
  (setq display-line-numbers 'relative)
  (setq line-number-mode t)
 
- ; clean whitespaces
- ; (add-hook 'before-save-hook 'whitespace-cleanup)
-
  ; theme
  (load-theme 'doom-acario-dark t)
 
@@ -142,6 +133,16 @@ apps are not started from a shell."
  (setq header-line-format " ")
 ; (setq left-margin-width 2)
  (setq right-margin-width 2)
+
+
+; window settings
+(window-divider-mode)
+(when (boundp 'window-divider-mode)
+  (setq window-divider-default-places t
+        window-divider-default-bottom-width 1
+        window-divider-default-right-width 1)
+  (window-divider-mode +1))
+
 
 ; (use-package disable-mouse)
  ; (global-disable-mouse-mode)
@@ -169,7 +170,7 @@ apps are not started from a shell."
   (interactive)
   (find-file "/ssh:hs884@ilab1.cs.rutgers.edu:")
  )
-(global-set-key (kbd "C-c l") #'ilab-ssh)
+(global-set-key (kbd "C-c s") #'ilab-ssh)
 (add-hook
    'c-mode-hook
    (lambda () (when (file-remote-p default-directory) (company-mode -1))))
@@ -446,65 +447,93 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 
 (setq org-agenda-files '(
-    "~/org/inbox.org"
-    "~/org/gtd.org"
-  ))
+      "~/org/inbox.org"
+      "~/org/gtd.org"
+    ))
 
-  (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)
-  (setq calendar-week-start-day 0)
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
+    (setq calendar-week-start-day 0)
 
-  (with-eval-after-load 'org
-    (bind-key "C-c a" #'org-agenda org-mode-map)
-    (bind-key "C-c c" #'org-capture ))
+  (setq org-agenda-prefix-format
+        '(
+          (agenda . " %-12b %?-15t% s")
+          (todo . " %i %-12:c")
+          (tags . " %i %-12:c")
+          (search . " %i %-12:c")
+          )
+)
 
-  (setq org-todo-keywords
-      '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d!)"))
-  )
+    (with-eval-after-load 'org
+      (bind-key "C-c a" #'org-agenda org-mode-map)
+      (bind-key "C-c c" #'org-capture ))
 
-  (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                             ("~/org/time.org" :level . 1)
-  ))
+    (setq org-todo-keywords
+        '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
+    )
 
-  ;; Save Org buffers after refiling!
-  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+    (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                               ("~/org/time.org" :level . 1)
+    ))
 
-(setq org-archive-location "~/.emacs.d/archive.org::")
+
+  (defun gtd_settings ()
+    (interactive)
+    (find-file "~/org/gtd.org")
+   )
+  (global-set-key (kbd "C-c g") #'gtd_settings)
+    ;; Save Org buffers after refiling!
+    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+  (setq org-archive-location "~/.emacs.d/archive.org::")
 
 (require 'org-clock)
-  (setq org-clock-persist 'history)
-  (org-clock-persistence-insinuate)
-  
-  (add-to-list 'org-modules 'org-habit)
-  (require 'org-habit)
-  (setq org-habit-following-days 2)
-  (setq org-habit-preceding-days 7)
+            (setq org-clock-persist 'history)
+            (org-clock-persistence-insinuate)
+
+            (add-to-list 'org-modules 'org-habit)
+            (require 'org-habit)
+            (setq org-habit-following-days 1)
+            (setq org-habit-preceding-days 14)
+            (setq org-habit-show-habits-only-for-today t)
+           (setq org-habit-graph-column 35)
+
+            ; streak count https://www.reddit.com/r/emacs/comments/awsvd1/need_help_to_show_current_streak_habit_as_a/
+
   (defun org-habit-streak-count ()
-  (point-min)
-  (while (not (eobp))
-    (when (get-text-property (point) 'org-habit-p)
-      (let ((count (count-matches
-                    (char-to-string org-habit-completed-glyph)
-                    (line-beginning-position) (line-end-position))))
-        (end-of-line)
-        (insert (number-to-string count))))
-      (forward-line 1)))
+(goto-char (point-min))
+(while (not (eobp))
+  ;;on habit line?
+  (when (get-text-property (point) 'org-habit-p)
+    (let ((streak 0)
+          (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
+          )
+      (move-to-column counter)
+      ;;until end of line
+      (while (= (char-after (point)) org-habit-completed-glyph)
+              (setq streak (+ streak 1))
+              (setq counter (- counter 1))
+              (backward-char 1))
+      (end-of-line)
+      (insert (number-to-string streak))))
+  (forward-line 1)))
+
 (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
 (use-package org-journal
-    :bind (("C-c j" . org-journal-mode)
+  :bind (("C-c j" . org-journal-mode)
 
-    )
-    :custom
-    (org-journal-dir "~/org/journal/")
-    (org-journal-file-format "%Y%m%d")
-    (org-journal-date-format "%e %b %Y (%A)")
-    (org-journal-time-format "")
-    (setq org-journal-find-file 'find-file)
-    )
+         )
+  :custom
+  (org-journal-dir "~/org/journal/")
+  (org-journal-file-format "%Y%m%d")
+  (org-journal-date-format "%e %b %Y (%A)")
+  (org-journal-time-format "")
+  (setq org-journal-find-file 'find-file)
+  )
 
-  (defun org-journal-find-location ()
+(defun org-journal-find-location ()
   ;; Open today's journal, but specify a non-nil prefix argument in order to
   ;; inhibit inserting the heading; org-capture will insert the heading.
   (org-journal-new-entry t)
@@ -512,40 +541,41 @@ apps are not started from a shell."
     (org-narrow-to-subtree))
   (goto-char (point-max)))
 
-  (defun org-journal-save-entry-and-exit()
-    "Simple convenience function.
+(defun org-journal-save-entry-and-exit()
+  "Simple convenience function.
       Saves the buffer of the current day's entry and kills the window
       Similar to org-capture like behavior"
-    (interactive)
-    (save-buffer)
-    (kill-buffer-and-window))
+  (interactive)
+  (save-buffer)
+  (kill-buffer-and-window))
 
-  (add-hook 'org-journal-mode-hook
-            (lambda ()
-              (define-key org-journal-mode-map
-                (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+(add-hook 'org-journal-mode-hook
+          (lambda ()
+            (define-key org-journal-mode-map
+              (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
 
-  (defun insert-created-date (&rest ignore)
-    (insert (format-time-string
+(defun insert-created-date (&rest ignore)
+  (insert (format-time-string
            (concat
-                   "Goals\n\n"
-                   "** Accomplishments\n\n"
-                   "** Moments\n"
-                   )))
-  ; in org-capture, this folds the entry; when inserting a heading, this moves point back to the heading line
+            "Goals\n"
+            "** Accomplishments\n"
+            "** Moments\n"
+            )))
+
+                                        ; in org-capture, this folds the entry; when inserting a heading, this moves point back to the heading line
   (org-back-to-heading))
-  ; when inserting a heading, this moves point to the end of the line
-  ;;(move-end-of-line ()))
+                                        ; when inserting a heading, this moves point to the end of the line
+
 
 (add-hook 'org-journal-after-entry-create-hook
           #'insert-created-date)
 
 (setq org-capture-templates
       `(
-      ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-      ("j" "Journal entry" plain (function org-journal-find-location) " %(format-time-string org-journal-time-format)\n%i %?" :jump-to-captured t :immediate-finish t)
+        ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
+        ("j" "Journal entry" plain (function org-journal-find-location) "*** %^{Moment}\n%?" :jump-to-captured t :immediate-finish t)
+        )
       )
-)
 
 (use-package org-roam
   :init
@@ -554,26 +584,26 @@ apps are not started from a shell."
   (org-roam-directory "~/org/roam/")
   (org-roam-completion-everywhere t)
   (org-roam-capture-templates '(
-     ("d" "default" plain
-        "%?"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-        :unnarrowed t)
-     ("c" "concept" plain
-        "\n* ${title}\n**%?"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: %^{tags}\n")
-        :unnarrowed t)
-  ))
+                                ("d" "default" plain
+                                 "%?"
+                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+                                 :unnarrowed t)
+                                ("c" "concept" plain
+                                 "\n* ${title}\n**%?"
+                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: %^{tags}\n")
+                                 :unnarrowed t)
+                                ))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n i" . org-roam-node-insert)
          :map org-mode-map
          ("C-M-i" . completion-at-point)
-        )
+         )
   :bind-keymap
   :config
   (org-roam-setup)
   (org-roam-db-autosync-mode)
-)
+  )
 
 (use-package helm
   :bind
@@ -585,7 +615,7 @@ apps are not started from a shell."
   (require 'helm-config)
   (helm-mode 1)
   (setq helm-split-window-inside-p t
-    helm-move-to-line-cycle-in-source t)
+        helm-move-to-line-cycle-in-source t)
   (setq helm-autoresize-max-height 0)
   (setq helm-autoresize-min-height 20)
   (helm-autoresize-mode 1)
