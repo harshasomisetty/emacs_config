@@ -14,3 +14,4 @@ games/*
 elpy/*
 tramp
 .secrets.el
+history

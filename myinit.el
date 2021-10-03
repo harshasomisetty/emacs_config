@@ -28,43 +28,39 @@ apps are not started from a shell."
   kept-old-versions 5    ; and how many of the old
   auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
 )
+(setq ring-bell-function 'ignore)
+
 
 (use-package deft
+  :bind ("C-x C-g" . deft-find-file)
   :config
-  (setq deft-extensions '("org"))
-  (setq deft-directory "~/org")
-  (setq deft-recursive t)
-  )
-(global-set-key (kbd "C-x C-g") 'deft-find-file)
+  (setq deft-extensions '("org")
+        deft-directory "~/org"
+        deft-recursive t
+        deft-use-filename-as-title t))
+
+
 
 (setq user-init-file "~/.emacs.d/myinit.org")
-(setq default-directory "~/org")
+(setq default-directory "~/org/")
+(setq-default shell-file-name "/bin/bash")
 
-(defun find-user-init-file ()
-"Edit the `user-init-file', in another window."
-(interactive)
-(find-file user-init-file))
+(set-register ?i (cons 'file user-init-file))
 
-(global-set-key (kbd "C-c i") #'find-user-init-file)
-
-
-(defun learning ()
-  (interactive)
-  (find-file "~/org/learning.org")
- )
-(global-set-key (kbd "C-c l") #'learning)
+(set-register ?l (cons 'file (concat default-directory "learning.org")))
 
 ; customized startup screen
 
- (setq inhibit-startup-screen t)
-; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
- (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq inhibit-startup-screen t)
+(setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-   ; (setq initial-buffer-choice "~/org/school/os/hw1/sigHandler.c")
-   ; (split-window-right)
-   ; (find-file "~/org/literature/DOE.org")
-   ; (switch-to-buffer-other-window "DOE.org")
-   ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+
+(setq initial-buffer-choice "~/org/literature/osnotes.org")
+(split-window-right)
+(find-file "~/.emacs.d/myinit.org")
+(switch-to-buffer-other-window "myinit.org")
+  ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
 (use-package avy)
 (global-set-key (kbd "M-g w") 'avy-goto-word-1)
@@ -74,6 +70,9 @@ apps are not started from a shell."
 (global-set-key (kbd "M-o") 'ace-window)
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 (setq aw-scope 'frame)
+
+(use-package disable-mouse)
+(global-disable-mouse-mode)
 
 ; clean whitespaces
   ; (add-hook 'before-save-hook 'whitespace-cleanup)
@@ -144,7 +143,7 @@ apps are not started from a shell."
         window-divider-default-right-width 1)
   (window-divider-mode +1))
 
-
+(setq org-src-window-setup 'current-window)
 ; (use-package disable-mouse)
  ; (global-disable-mouse-mode)
 
@@ -154,8 +153,9 @@ apps are not started from a shell."
 (setq spaceline-workspace-numbers-unicode t)
 (spaceline-toggle-major-mode-on)
 (spaceline-toggle-column-on)
-(spaceline-emacs-theme)
-(spaceline-helm-mode 1))
+(spaceline-emacs-theme))
+
+
 
 (setq remote-file-name-inhibit-cache nil)
 (setq vc-ignore-dir-regexp
@@ -167,25 +167,20 @@ apps are not started from a shell."
 (put 'temporary-file-directory 'standard-value
      (list temporary-file-directory))
 
-(defun ilab-ssh ()
-  (interactive)
-  (find-file "/ssh:hs884@ilab1.cs.rutgers.edu:")
- )
-(global-set-key (kbd "C-c s") #'ilab-ssh)
+(set-register ?s (cons 'file "/ssh:hs884@ilab1.cs.rutgers.edu:"))
+
 (add-hook
    'c-mode-hook
    (lambda () (when (file-remote-p default-directory) (company-mode -1))))
-(setq-default shell-file-name "/bin/bash")
 
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(
-   (emacs-lisp . t)
-   (python . t)
-   (C . t)
-   (R . t)
-   (java . t)
- ))
+  (emacs-lisp . t)
+  (python . t)
+  (C . t)
+  (R . t)
+  ))
 
 (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
 
@@ -376,11 +371,13 @@ apps are not started from a shell."
 (org-reload)
 
 (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
+(setq-default indent-tabs-mode nil)
 
-   (use-package org-bullets)
- (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
-   (setq org-hide-emphasis-markers t)
+(use-package org-bullets
+  :hook ((org-mode) . org-bullets-mode))
+
+(add-hook 'org-mode-hook 'org-indent-mode)
 
 (setq org-startup-indented t
       org-ellipsis " ->" ;; folding symbol
@@ -392,44 +389,122 @@ apps are not started from a shell."
       org-fontify-done-headline t
       org-fontify-quote-and-verse-blocks t)
 
-; ; table
-(use-package valign)
-(setq valign-fancy-bar t)
-(add-hook 'org-mode-hook #'valign-mode)
+					; ; table
+(use-package valign
+  :config
+   (setq valign-fancy-bar t)
+  :hook ((org-mode) . valign-mode)
+  )
 
 (setq org-src-fontify-natively t)
 
- (let* ((variable-tuple
-          (cond ((x-list-fonts "Cochin")         '(:font "Cochin" :foreground "white"))
-                ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-                ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-                ((x-list-fonts "Verdana")         '(:font "Verdana"))
-                ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-         (base-font-color     (face-foreground 'default nil 'default))
-         (headline           `(:inherit default :weight normal)))
+(defun my/buffer-face-mode-variable ()
+  "Set font to a variable width (proportional) fonts in current buffer"
+  (interactive)
+  (setq buffer-face-mode-face '(:family "Cochin"
+                                        :height 150
+                                        :width normal))
+  (buffer-face-mode))
 
-  (custom-theme-set-faces
-   'user
-   `(org-level-8 ((t (,@headline ,@variable-tuple :height 1))))
-   `(org-level-7 ((t (,@headline ,@variable-tuple :height 1))))
-   `(org-level-6 ((t (,@headline ,@variable-tuple :height 1))))
-   `(org-level-5 ((t (,@headline ,@variable-tuple :height 1.02))))
-   `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.05))))
-   `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.17))))
-   `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.27))))
-   `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-   `(org-document-title ((t (,@headline ,@variable-tuple :height 1.50 :underline nil))))))
+(defun my/style-org ()
+  ;; I have removed indentation to make the file look cleaner
+  (my/buffer-face-mode-variable)
+  (setq line-spacing 0.1)
 
- (custom-theme-set-faces
-     'user
-     ; '(default ((t (:family "Cochin" :height 140 :weight normal :foreground "gray70"))))
-     '(variable-pitch ((t (:family "Cochin" :height 165 :weight normal))))
-     '(fixed-pitch ((t (:family "PT Mono" :height 140 :weight thin))))
- )
+  (variable-pitch-mode +1)
+  (mapc
+   (lambda (face) ;; Other fonts that require it are set to fixed-pitch.
+     (set-face-attribute face nil :inherit 'fixed-pitch))
+   (list 'org-block
+         'org-table
+         'org-verbatim
+         'org-block-begin-line
+         'org-block-end-line
+         'org-meta-line
+         'org-date
+         'org-drawer
+         'org-property-value
+         'org-special-keyword
+         'org-document-info-keyword))
+  (mapc ;; This sets the fonts to a smaller size
+   (lambda (face)
+     (set-face-attribute face nil :height 0.8))
+   (list 'org-document-info-keyword
+         'org-block-begin-line
+         'org-block-end-line
+         'org-meta-line
+         'org-drawer
+         'org-property-value
+         ))
+  ;; (set-face-attribute 'org-indent nil
+  ;; :inherit '(org-hide fixed-pitch))
+  (set-face-attribute 'org-code nil
+                      :inherit '(shadow fixed-pitch))
+  ;; Without indentation the headlines need to be different to be visible
+  (set-face-attribute 'org-level-1 nil
+                      :height 1.25
+                      :foreground "#BEA4DB")
+  (set-face-attribute 'org-level-2 nil
+                      :height 1.15
+                      :foreground "#A382FF"
+                      )
+  (set-face-attribute 'org-level-3 nil
+                      :height 1.1
+                      :foreground "#5E65CC"
+                      :slant 'italic)
+  (set-face-attribute 'org-level-4 nil
+                      :height 1.05
+                      :foreground "#ABABFF")
+  (set-face-attribute 'org-level-5 nil
+                      :foreground "#2843FB")
+  (set-face-attribute 'org-date nil
+                      :foreground "#ECBE7B"
+                      :height 0.8)
+  (set-face-attribute 'org-document-title nil
+                      :foreground "DarkOrange3"
+                      :height 1.3)
+  (set-face-attribute 'org-ellipsis nil
+                      :foreground "#4f747a" :underline nil)
+  (set-face-attribute 'variable-pitch nil
+                      :family "Cochin" :height 1.2)
+  )
+
+(add-hook 'org-mode-hook 'my/style-org)
+
+                                        ; used Ioseveka and cochin
+;; (let* ((variable-tuple
+;;         (cond
+;;          ((x-list-fonts "Ioseveka")         '(:font "Ioseveka" :foreground "white"))
+;;          ((x-list-fonts "Cochin")         '(:font "Cochin" :foreground "white"))
+;;          ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+;;          ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+;;          ((x-list-fonts "Verdana")         '(:font "Verdana"))
+;;          ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+;;          (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+;;        (base-font-color     (face-foreground 'default nil 'default))
+;;        (headline           `(:inherit default :weight normal)))
+
+;;   (custom-theme-set-faces
+;;    'user
+;;    `(org-level-8 ((t (,@headline ,@variable-tuple :height 1))))
+;;    `(org-level-7 ((t (,@headline ,@variable-tuple :height 1))))
+;;    `(org-level-6 ((t (,@headline ,@variable-tuple :height 1))))
+;;    `(org-level-5 ((t (,@headline ,@variable-tuple :height 1.02))))
+;;    `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.05))))
+;;    `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.17))))
+;;    `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.27))))
+;;    `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
+;;    `(org-document-title ((t (,@headline ,@variable-tuple :height 1.50 :underline nil))))))
+
+;; (custom-theme-set-faces
+;;  'user
+;;                                         ; '(default ((t (:family "Cochin" :height 140 :weight normal :foreground "gray70"))))
+;;  '(variable-pitch ((t (:family "Cochin" :height 165 :weight normal))))
+;;  '(fixed-pitch ((t (:family "PT Mono" :height 140 :weight thin))))
+;;  )
 
 
-;line fill
+                                        ;line fill
 (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
@@ -446,6 +521,40 @@ apps are not started from a shell."
  (require 'texmathp)
 (use-package cdlatex)
 (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
+
+(use-package org-download
+:ensure t
+:config
+;; add support to dired
+(add-hook 'dired-mode-hook 'org-download-enable)
+(setq-default org-download-image-dir "~/Pictures/emacs-pics")
+ )
+
+
+(defun ros ()
+          (interactive)
+          (if buffer-file-name
+              (progn
+                (message "Waiting for region selection with mouse...")
+                (let ((filename
+                       (concat "./"
+                               (file-name-nondirectory buffer-file-name)
+                               "_"
+                               (format-time-string "%Y%m%d_%H%M%S")
+                               ".png")))
+                  (if (executable-find "scrot")
+                      (call-process "scrot" nil nil nil "-s" filename)
+                    (call-process "screencapture" nil nil nil "-s" filename))
+                  (insert (concat "[[" filename "]]"))
+                  (org-display-inline-images t t)
+                  )
+                (message "File created and linked...")
+                )
+            (message "You're in a not saved buffer! Save it first!")
+            )
+          )
+
+(global-set-key (kbd "C-c r") #'ros)
 
 (setq org-agenda-files '(
       "~/org/inbox.org"
@@ -612,18 +721,18 @@ apps are not started from a shell."
   ("C-x C-f" . helm-find-files)
   ("M-y" . helm-show-kill-ring)
   ("C-x b" . helm-mini)
+  (:map helm-command-map
+        ("<tab>" . helm-execute-persistent-action)
+        ("C-i" . helm-execite-persistent-action)
+        ("C-z" . helm-select-action))
   :config
   (require 'helm-config)
   (helm-mode 1)
   (setq helm-split-window-inside-p t
-        helm-move-to-line-cycle-in-source t)
-  (setq helm-autoresize-max-height 0)
-  (setq helm-autoresize-min-height 20)
-  (helm-autoresize-mode 1)
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-  )
+        helm-move-to-line-cycle-in-source t
+        helm-autoresize-max-height 0
+        helm-autoresize-min-height 20
+        helm-autoresize-mode 1))
 
 (use-package magit)
 
