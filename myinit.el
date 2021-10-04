@@ -46,18 +46,41 @@ apps are not started from a shell."
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
-; customized startup screen
+(setq inhibit-startup-screen t
+        initial-scratch-message "Hello Harsha! Enjoy the Grind")
 
-  (setq inhibit-startup-screen t)
- ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  (defun display-startup-echo-area-message ()
+    (message "Start Grind"))
+
+  ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+(use-package frame-cmds)
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                          ;  (split-window-right)
+                                          ; (find-file "~/.emacs.d/myinit.org")
+                                          ;(switch-to-buffer-other-window "myinit.org")
+                                          ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
 
-  ;(setq initial-buffer-choice "~/org/literature/osnotes.org")
-;  (split-window-right)
- ; (find-file "~/.emacs.d/myinit.org")
-  ;(switch-to-buffer-other-window "myinit.org")
-    ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+  (defun bjm-frame-resize-l ()
+    (interactive)
+    (set-frame-width (selected-frame) 302)
+    (maximize-frame-vertically)
+    (set-frame-position (selected-frame) 0 1060)
+    )
+
+  (defun bjm-frame-resize-r ()
+
+    (interactive)
+    (set-frame-width (selected-frame) 302)
+    (maximize-frame-vertically)
+    (set-frame-position (selected-frame) 0 758)
+    )
+
+  ;;set keybindings
+  (global-set-key (kbd "C-c b <left>") 'bjm-frame-resize-l)
+  (global-set-key (kbd "C-c b <right>") 'bjm-frame-resize-r)
+  (global-set-key (kbd "C-c b <RET>") #'toggle-frame-maximized)
 
 (use-package avy
   :bind ("C-;" . avy-goto-word-1))
@@ -69,11 +92,8 @@ apps are not started from a shell."
   (setq aw-scope 'frame)
 )
 
-
-
-(use-package disable-mouse
-  :custom  
-  (global-disable-mouse-mode))
+(use-package disable-mouse)
+(global-disable-mouse-mode)
 
 (require 'org-tempo)
 
@@ -420,6 +440,7 @@ apps are not started from a shell."
          'org-meta-line
          'org-drawer
          'org-property-value
+         'minibuffer-prompt
          ))
 
   (set-face-attribute 'org-code nil
@@ -435,18 +456,18 @@ apps are not started from a shell."
                       :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
                       :height 1.25
-                      :foreground "#BEA4DB")
+                      :foreground "#6C88C4")
   (set-face-attribute 'org-level-2 nil
                       :height 1.15
-                      :foreground "#A382FF")
+                      :foreground "#00B0BA")
   (set-face-attribute 'org-level-3 nil
                       :height 1.1
-                      :foreground "#5E65CC")
+                      :foreground "#E7C582")
   (set-face-attribute 'org-level-4 nil
                       :height 1.05
-                      :foreground "#ABABFF")
+                      :foreground "#FF828B")
   (set-face-attribute 'org-level-5 nil
-                      :foreground "#2843FB")
+                      :foreground "#C05780")
   (set-face-attribute 'org-date nil
                       :foreground "#ECBE7B"
                       :height 0.8)
@@ -464,6 +485,15 @@ apps are not started from a shell."
 
 (use-package org-fragtog
   :hook (org-mode . org-fragtog-mode))
+
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autosubmarkers t
+        org-appear-autolinks t
+        org-appear-autoentities t
+        org-appear-delay .1
+        org-appear-autokeywords t))
 
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
 (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))

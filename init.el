@@ -16,7 +16,7 @@
 (setq straight-use-package-by-default t)
 (setq straight-recipe-repositories '(org-elpa melpa gnu-elpa-mirror el-get emacsmirror-mirror ))
 
-(load-file "~/.emacs.d/.secrets.el")
+;(load-file "~/.emacs.d/.secrets.el")
 
 (require 'org)
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))

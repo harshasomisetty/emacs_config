@@ -58,19 +58,43 @@
 
 ** Startup
 #+BEGIN_SRC emacs-lisp
-  ; customized startup screen
-
-  (setq inhibit-startup-screen t)
- ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-
-  ;(setq initial-buffer-choice "~/org/literature/osnotes.org")
-;  (split-window-right)
- ; (find-file "~/.emacs.d/myinit.org")
-  ;(switch-to-buffer-other-window "myinit.org")
-    ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
-
+    (setq inhibit-startup-screen t
+          initial-scratch-message "Hello Harsha! Enjoy the Grind")
+  
+    (defun display-startup-echo-area-message ()
+      (message "Start Grind"))
+  
+    ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  (use-package frame-cmds)
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                            ;  (split-window-right)
+                                            ; (find-file "~/.emacs.d/myinit.org")
+                                            ;(switch-to-buffer-other-window "myinit.org")
+                                            ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+  
+  
+    (defun bjm-frame-resize-l ()
+      (interactive)
+      (set-frame-width (selected-frame) 302)
+      (maximize-frame-vertically)
+      (set-frame-position (selected-frame) 0 1060)
+      )
+  
+    (defun bjm-frame-resize-r ()
+  
+      (interactive)
+      (set-frame-width (selected-frame) 302)
+      (maximize-frame-vertically)
+      (set-frame-position (selected-frame) 0 758)
+      )
+  
+    ;;set keybindings
+    (global-set-key (kbd "C-c b <left>") 'bjm-frame-resize-l)
+    (global-set-key (kbd "C-c b <right>") 'bjm-frame-resize-r)
+    (global-set-key (kbd "C-c b <RET>") #'toggle-frame-maximized)
+  
+  
 #+END_SRC
 ** Navigation
 
@@ -443,84 +467,85 @@
 **** fonts
 
 #+begin_src emacs-lisp
-    (defun my/buffer-face-mode-variable ()
-      "Set font to a variable width (proportional) fonts in current buffer"
-      (interactive)
-      (setq buffer-face-mode-face '(:family "Cochin"
-                                            :height 150
-                                            :width normal))
-      (buffer-face-mode))
+  (defun my/buffer-face-mode-variable ()
+    "Set font to a variable width (proportional) fonts in current buffer"
+    (interactive)
+    (setq buffer-face-mode-face '(:family "Cochin"
+                                          :height 150
+                                          :width normal))
+    (buffer-face-mode))
   
-    (defun my/style-org ()
-      ;; I have removed indentation to make the file look cleaner
-      (my/buffer-face-mode-variable)
-      (setq line-spacing 0.05)
+  (defun my/style-org ()
+    ;; I have removed indentation to make the file look cleaner
+    (my/buffer-face-mode-variable)
+    (setq line-spacing 0.05)
   
-      (variable-pitch-mode +1)
-      (mapc
-       (lambda (face) ;; Other fonts that require it are set to fixed-pitch.
-         (set-face-attribute face nil :inherit 'fixed-pitch))
-       (list 'org-block
-             'org-table
-             'org-verbatim
-             'org-block-begin-line
-             'org-block-end-line
-             'org-meta-line
-             'org-date
-             'org-drawer
-             'org-property-value
-             'org-special-keyword
-             'org-document-info-keyword))
-      (mapc ;; This sets the fonts to a smaller size
-       (lambda (face)
-         (set-face-attribute face nil :height 0.8))
-       (list 'org-document-info-keyword
-             'org-block-begin-line
-             'org-block-end-line
-             'org-meta-line
-             'org-drawer
-             'org-property-value
-             ))
-   
-      (set-face-attribute 'org-code nil
-                          :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'default nil
-                          :height 150
-                          :foreground "gray70")
-      (set-face-attribute 'variable-pitch nil
-                          :family "Cochin"
-                          :height 1.2)
-      (set-face-attribute 'fixed-pitch nil
-                          :height 1
-                          :family "PT Mono")
-      (set-face-attribute 'org-level-1 nil
-                          :height 1.25
-                          :foreground "#BEA4DB")
-      (set-face-attribute 'org-level-2 nil
-                          :height 1.15
-                          :foreground "#A382FF")
-      (set-face-attribute 'org-level-3 nil
-                          :height 1.1
-                          :foreground "#5E65CC")
-      (set-face-attribute 'org-level-4 nil
-                          :height 1.05
-                          :foreground "#ABABFF")
-      (set-face-attribute 'org-level-5 nil
-                          :foreground "#2843FB")
-      (set-face-attribute 'org-date nil
-                          :foreground "#ECBE7B"
-                          :height 0.8)
-      (set-face-attribute 'org-document-title nil
-                          :foreground "DarkOrange3"
-                          :height 1.3)
-      (set-face-attribute 'org-ellipsis nil
-                          :foreground "#3256A8" :underline nil)
+    (variable-pitch-mode +1)
+    (mapc
+     (lambda (face) ;; Other fonts that require it are set to fixed-pitch.
+       (set-face-attribute face nil :inherit 'fixed-pitch))
+     (list 'org-block
+           'org-table
+           'org-verbatim
+           'org-block-begin-line
+           'org-block-end-line
+           'org-meta-line
+           'org-date
+           'org-drawer
+           'org-property-value
+           'org-special-keyword
+           'org-document-info-keyword))
+    (mapc ;; This sets the fonts to a smaller size
+     (lambda (face)
+       (set-face-attribute face nil :height 0.8))
+     (list 'org-document-info-keyword
+           'org-block-begin-line
+           'org-block-end-line
+           'org-meta-line
+           'org-drawer
+           'org-property-value
+           'minibuffer-prompt
+           ))
   
-      )
+    (set-face-attribute 'org-code nil
+                        :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'default nil
+                        :height 150
+                        :foreground "gray70")
+    (set-face-attribute 'variable-pitch nil
+                        :family "Cochin"
+                        :height 1.2)
+    (set-face-attribute 'fixed-pitch nil
+                        :height 1
+                        :family "PT Mono")
+    (set-face-attribute 'org-level-1 nil
+                        :height 1.25
+                        :foreground "#6C88C4")
+    (set-face-attribute 'org-level-2 nil
+                        :height 1.15
+                        :foreground "#00B0BA")
+    (set-face-attribute 'org-level-3 nil
+                        :height 1.1
+                        :foreground "#E7C582")
+    (set-face-attribute 'org-level-4 nil
+                        :height 1.05
+                        :foreground "#FF828B")
+    (set-face-attribute 'org-level-5 nil
+                        :foreground "#C05780")
+    (set-face-attribute 'org-date nil
+                        :foreground "#ECBE7B"
+                        :height 0.8)
+    (set-face-attribute 'org-document-title nil
+                        :foreground "DarkOrange3"
+                        :height 1.3)
+    (set-face-attribute 'org-ellipsis nil
+                        :foreground "#3256A8" :underline nil)
   
-    (add-hook 'org-mode-hook 'my/style-org)
-    (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
-    (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
+    )
+  
+  (add-hook 'org-mode-hook 'my/style-org)
+  (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
+  (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
   
 #+end_src
 *** Latex
@@ -528,6 +553,15 @@
   
   (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode))
+  
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autosubmarkers t
+          org-appear-autolinks t
+          org-appear-autoentities t
+          org-appear-delay .1
+          org-appear-autokeywords t))
   
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
   (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
@@ -755,7 +789,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
     :init
-    (setq org-roam-v2-ack t)
+    (setq org-roam-v2-ack t) ; stops warning message
     :custom
     (org-roam-directory "~/org/roam/")
     (org-roam-completion-everywhere t)
@@ -769,9 +803,10 @@
                                    :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: %^{tags}\n")
                                    :unnarrowed t)
                                   ))
-    :bind (("C-c n l" . org-roam-buffer-toggle)
+    :bind (("C-c n l" . org-roam-buffer-toggle) ; see backlinks
            ("C-c n f" . org-roam-node-find)
            ("C-c n i" . org-roam-node-insert)
+           ("C-c n I" . org-roam-node-insert-immediate)
            :map org-mode-map
            ("C-M-i" . completion-at-point)
            )
@@ -781,7 +816,29 @@
     (org-roam-db-autosync-mode)
     )
   
+  (defun org-roam-node-insert-immediate (arg &rest args)
+    (interactive "P")
+    (let ((args (cons arg args))
+          (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                    '(:immediate-finish t)))))
+      (apply #'org-roam-node-insert args)))
   
+  
+  
+  (use-package org-roam-server
+    :ensure t
+    :config
+    (setq org-roam-server-host "127.0.0.1"
+          org-roam-server-port 8080
+          org-roam-server-authenticate nil
+          org-roam-server-export-inline-images t
+          org-roam-server-serve-files nil
+          org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")
+          org-roam-server-network-poll t
+          org-roam-server-network-arrows nil
+          org-roam-server-network-label-truncate t
+          org-roam-server-network-label-truncate-length 60
+          org-roam-server-network-label-wrap-length 20))
 #+END_SRC
 * Extensions
 ** Helm
