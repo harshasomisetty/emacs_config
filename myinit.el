@@ -60,16 +60,20 @@ apps are not started from a shell."
     ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
 (use-package avy
-  :bind ("C-:" . avg-goto-word-1))
+  :bind ("C-;" . avy-goto-word-1))
 
 (use-package ace-window
-  :bind ("M-o :" . ace-window)
-  :custom
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
-        aw-scope 'frame))
+  :bind ("C-x o" . ace-window)
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-scope 'frame)
+)
 
-(use-package disable-mouse)
-(global-disable-mouse-mode)
+
+
+(use-package disable-mouse
+  :custom  
+  (global-disable-mouse-mode))
 
 (require 'org-tempo)
 
@@ -531,7 +535,7 @@ apps are not started from a shell."
       )
 
 (with-eval-after-load 'org
-  (bind-key "C-c a" #'org-agenda org-mode-map)
+  (bind-key "C-c a" #'org-agenda global-map)
   (bind-key "C-c c" #'org-capture ))
 
 (setq org-todo-keywords
@@ -586,59 +590,67 @@ apps are not started from a shell."
 (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
 (use-package org-journal
-  :bind (("C-c j" . org-journal-mode)  
-         )
-  :custom
-  (org-journal-dir "~/org/journal/")
-  (org-journal-file-format "%Y%m%d")
-  (org-journal-date-format "%e %b %Y (%A)")
-  (org-journal-time-format "")
-  (setq org-journal-find-file 'find-file)
-  )
+    :bind (("C-c j" . org-journal-mode)  
+           )
+    :custom
+    (org-journal-dir "~/org/journal/")
+    (org-journal-file-format "%Y%m%d")
+    (org-journal-date-format "%e %b %Y (%A)")
+    (org-journal-time-format "")
+    (setq org-journal-find-file 'find-file)
+    )
 
-(defun org-journal-find-location ()
-  ;; Open today's journal, but specify a non-nil prefix argument in order to
-  ;; inhibit inserting the heading; org-capture will insert the heading.
-  (org-journal-new-entry t)
-  (unless (eq org-journal-file-type 'daily)
-    (org-narrow-to-subtree))
-  (goto-char (point-max)))
+  (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    (org-journal-new-entry t)
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max)))
 
-(defun org-journal-save-entry-and-exit()
-  "Simple convenience function.
-      Saves the buffer of the current day's entry and kills the window
-      Similar to org-capture like behavior"
-  (interactive)
-  (save-buffer)
-  (kill-buffer-and-window))
+  (defun org-journal-save-entry-and-exit()
+    "Simple convenience function.
+        Saves the buffer of the current day's entry and kills the window
+        Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
 
-(add-hook 'org-journal-mode-hook
-          (lambda ()
-            (define-key org-journal-mode-map
-              (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+  (add-hook 'org-journal-mode-hook
+            (lambda ()
+              (define-key org-journal-mode-map
+                (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
 
-(defun insert-created-date (&rest ignore)
-  (insert (format-time-string
-           (concat
-            "Goals\n"
-            "** Accomplishments\n"
-            "** Moments\n"
-            )))
+  (defun insert-created-date (&rest ignore)
+    (insert (format-time-string
+             (concat
+              "Goals\n"
+              "** Accomplishments\n"
+              "** Moments\n"
+              ))))
 
-                                        ; in org-capture, this folds the entry; when inserting a heading, this moves point back to the heading line
-  (org-back-to-heading))
-                                        ; when inserting a heading, this moves point to the end of the line
+  (defvar org-journal--date-location-scheduled-time nil)
 
+(defun org-journal-date-location (&optional scheduled-time)
+  (let ((scheduled-time (or scheduled-time (org-read-date nil nil nil "Date:"))))
+    (setq org-journal--date-location-scheduled-time scheduled-time)
+    (org-journal-new-entry t (org-time-string-to-time scheduled-time))
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max))))
 
-(add-hook 'org-journal-after-entry-create-hook
-          #'insert-created-date)
+  (add-hook 'org-journal-after-entry-create-hook
+            #'insert-created-date)
 
 (setq org-capture-templates
-      `(
-        ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-        ("j" "Journal entry" plain (function org-journal-find-location) "*** %^{Moment}\n%?" :jump-to-captured t :immediate-finish t)
-        )
-      )
+       `(
+         ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
+         ("j" "Journal entry" plain (function org-journal-find-location) "*** %^{Moment}\n%?"
+:jump-to-captured t :immediate-finish t)
+         ("f" "Future Journal entry" plain (function org-journal-date-location)  "%?\nn" :jump-to-captured t)
+
+         )
+       )
 
 (use-package org-roam
   :init
