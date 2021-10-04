@@ -5,8 +5,9 @@
 ** Metadata
 
 #+BEGIN_SRC emacs-lisp
-  ; auto reload files edited outside of emacs
-  (global-auto-revert-mode t)
+  
+  (global-auto-revert-mode 1)
+  
   (require 'package)
   (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
   
@@ -28,14 +29,18 @@
   
   ;  backup
   (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
-    backup-by-copying t    ; Don't delink hardlinks
+    user-init-file "~/.emacs.d/myinit.org"
+    default-directory "~/org/"
+    shell-file-name "/bin/bash"
+    auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
+  )
+  
+  (setq backup-by-copying t    ; Don't delink hardlinks
     version-control t      ; Use version numbers on backup
     delete-old-versions t  ; Automatically delete excess backup
     kept-new-versions 20   ; how many of the newest versions to keep
     kept-old-versions 5    ; and how many of the old
-    auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
-  )
-  (setq ring-bell-function 'ignore)
+    ring-bell-function 'ignore)
   
   
   (use-package deft
@@ -46,15 +51,9 @@
           deft-recursive t
           deft-use-filename-as-title t))
   
-  
-  
-  (setq user-init-file "~/.emacs.d/myinit.org")
-  (setq default-directory "~/org/")
-  (setq-default shell-file-name "/bin/bash")
-  
   (set-register ?i (cons 'file user-init-file))
-  
   (set-register ?l (cons 'file (concat default-directory "learning.org")))
+  
 #+END_SRC
 
 ** Startup
@@ -62,14 +61,14 @@
   ; customized startup screen
 
   (setq inhibit-startup-screen t)
-  (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-  ; (add-to-list 'default-frame-alist '(fullscreen . maximized))
+ ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 
-  (setq initial-buffer-choice "~/org/literature/osnotes.org")
-  (split-window-right)
-  (find-file "~/.emacs.d/myinit.org")
-  (switch-to-buffer-other-window "myinit.org")
+  ;(setq initial-buffer-choice "~/org/literature/osnotes.org")
+;  (split-window-right)
+ ; (find-file "~/.emacs.d/myinit.org")
+  ;(switch-to-buffer-other-window "myinit.org")
     ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
 #+END_SRC
@@ -77,72 +76,61 @@
 
 #+BEGIN_SRC emacs-lisp
   
-  (use-package avy)
-  (global-set-key (kbd "M-g w") 'avy-goto-word-1)
+  (use-package avy
+    :bind ("C-:" . avg-goto-word-1))
   
-  
-  (use-package ace-window)
-  (global-set-key (kbd "M-o") 'ace-window)
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-scope 'frame)
+  (use-package ace-window
+    :bind ("M-o :" . ace-window)
+    :custom
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+          aw-scope 'frame))
   
   (use-package disable-mouse)
   (global-disable-mouse-mode)
 #+END_SRC
+
 ** Editing
 
 #+BEGIN_SRC emacs-lisp
+  (require 'org-tempo)
   
+  ;; Move cursor to end of line, new line and indent
   
-    ; clean whitespaces
-    ; (add-hook 'before-save-hook 'whitespace-cleanup)
-     (require 'org-tempo)
-        ;; Move cursor to end of current line
-        ;; Insert new line below current line
-        ;; it will also indent newline
-        (global-set-key (kbd "<C-return>") (lambda ()
-                           (interactive)
-                           (end-of-line)
-                           (newline-and-indent)))
-  
-        ;; Move cursor to previous line
-        ;; Go to end of the line
-        ;; Insert new line below current line (So it actually insert new line above with indentation)
-        ;; it will also indent newline
-        (global-set-key (kbd "<C-S-return>") (lambda ()
-                               (interactive)
-                               (previous-line)
-                               (end-of-line)
-                               (newline-and-indent)
-                               ))
+  (global-set-key (kbd "<C-return>") (lambda ()
+                                       (interactive)
+                                       (end-of-line)
+                                       (newline-and-indent)))
   
   
   
-  ;needed for yas
-     (require 'subr-x)
-         (use-package yasnippet
-         :config
-         (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-        (yas-global-mode 1)
-       )
+  ;; Move cursor to previous line, new line, indent
+  (global-set-key (kbd "<C-S-return>") (lambda ()
+                                         (interactive)
+                                         (previous-line)
+                                         (end-of-line)
+                                         (newline-and-indent)
+                                         ))
   
   
-      (use-package company
-       :ensure t
-       :config
-       (setq company-idle-delay 0)
-       (setq company-minimum-prefix-length 2)
-       (global-company-mode t)
-     )
+  
+  (require 'subr-x)
+  (use-package yasnippet
+    :config
+    (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+    (yas-global-mode 1)
+    )
   
   
+  (use-package company
+    :ensure t
+    :config
+    (setq company-idle-delay 0)
+    (setq company-minimum-prefix-length 2)
+    (global-company-mode t)
+    )
 #+END_SRC
 
-#+RESULTS:
-: t
-
 ** Display
-
 
 #+BEGIN_SRC emacs-lisp
   
@@ -173,23 +161,218 @@
           window-divider-default-bottom-width 1
           window-divider-default-right-width 1)
     (window-divider-mode +1))
-
+  
   (setq org-src-window-setup 'current-window)
   ; (use-package disable-mouse)
    ; (global-disable-mouse-mode)
   
   (use-package spaceline-config
-  :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
-  :config
-  (setq spaceline-workspace-numbers-unicode t)
-  (spaceline-toggle-major-mode-on)
-  (spaceline-toggle-column-on)
-  (spaceline-emacs-theme))
-  
+    :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
+    :config
+    (setq spaceline-workspace-numbers-unicode t)
+    (spaceline-toggle-major-mode-on)
+    (spaceline-toggle-column-on)
+    (spaceline-emacs-theme))
 #+END_SRC
   
 ** Coding
-*** General Coding prefs
+*** Babel
+#+begin_src emacs-lisp 
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '(
+    (emacs-lisp . t)
+    (python . t)
+    (C . t)
+    (R . t)
+    ))
+  
+  (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
+  
+  (defun my-org-confirm-babel-evaluate (lang body)
+    (not (member lang '("C" "R" "python" "emacs-lisp"))))
+  
+  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+#+end_src
+
+*** C
+#+begin_src emacs-lisp
+  (define-key c-mode-map (kbd "C-c m") #'compile)  
+      (defun execute-c-program ()
+        (interactive)
+        (save-buffer)
+        (defvar foo)
+        (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+        (shell)
+        (kill-new foo)
+        (org-yank)
+      )
+  
+   (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+   (define-key c-mode-map (kbd "C-c g") #'gdb)
+  
+#+end_src
+
+*** ESS and R
+#+begin_src emacs-lisp :results output silent
+  (use-package ess-site
+    :straight ess
+    :config
+    ;; Execute screen options after initialize process
+    (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
+  
+    (setq ess-use-ido nil ; use helm
+          ess-eval-visibly 'nowait ; don't hang with R
+          ess-smart-S-assign-key nil ; unbind ess-insert-align
+          ) ; use helm
+    )
+  
+  
+  (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
+  
+  (use-package ess-r-mode
+    :straight ess
+    :config
+    ;; Hot key C-S-m for pipe operator in ESS
+    (defun pipe_R_operator ()
+      "R - %>% operator or 'then' pipe operator"
+      (interactive)
+      (just-one-space 1)
+      (insert "%>%")
+      (just-one-space 1))
+  
+    ;; ESS syntax highlight
+    (setq ess-R-font-lock-keywords
+          '((ess-R-fl-keyword:keywords . t)
+            (ess-R-fl-keyword:constants . t)
+            (ess-R-fl-keyword:modifiers . t)
+            (ess-R-fl-keyword:fun-defs . t)
+            (ess-R-fl-keyword:assign-ops . t)
+            (ess-fl-keyword:fun-calls . t)
+            (ess-fl-keyword:numbers . t)
+            (ess-fl-keyword:operators . t)
+            (ess-fl-keyword:delimiters . t)
+            (ess-fl-keyword:= . t)
+            (ess-R-fl-keyword:F&T . t)
+            (ess-R-fl-keyword:%op% . t)))
+  
+    (setq inferior-ess-r-font-lock-keywords
+          '((ess-S-fl-keyword:prompt . t)
+            (ess-R-fl-keyword:messages . t)
+            (ess-R-fl-keyword:modifiers . nil)
+            (ess-R-fl-keyword:fun-defs . t)
+            (ess-R-fl-keyword:keywords . nil)
+            (ess-R-fl-keyword:assign-ops . t)
+            (ess-R-fl-keyword:constants . t)
+            (ess-fl-keyword:matrix-labels . t)
+            (ess-fl-keyword:fun-calls . nil)
+            (ess-fl-keyword:numbers . nil)
+            (ess-fl-keyword:operators . nil)
+            (ess-fl-keyword:delimiters . nil)
+            (ess-fl-keyword:= . t)
+            (ess-R-fl-keyword:F&T . nil)))
+  
+    :bind
+    (:map ess-r-mode-map
+          ("M--" . ess-insert-assign)
+          ("C-S-m" . pipe_R_operator)
+          :map
+          inferior-ess-r-mode-map
+          ("M--" . ess-insert-assign)
+          ("C-S-m" . pipe_R_operator))
+    )
+#+end_src
+*** Python
+
+#+begin_src emacs-lisp :results silent output
+    (use-package python
+      :mode ("\\.py\\'" . python-mode)
+      :config
+      (setq python-shell-interpreter "python3"))
+  
+  (use-package elpy
+    :after python
+    :init
+    ;; Truncate long line in inferior mode
+    (add-hook 'inferior-python-mode-hook (lambda () (setq truncate-lines t)))
+    ;; Enable company
+    (add-hook 'python-mode-hook 'company-mode)
+    (add-hook 'inferior-python-mode-hook 'company-mode)
+    ;; Enable highlight indentation
+    (add-hook 'highlight-indentation-mode-hook
+              'highlight-indentation-current-column-mode)
+    ;; Enable elpy
+    (elpy-enable)
+    :config
+    ;; Do not enable elpy flymake for now
+    (remove-hook 'elpy-modules 'elpy-module-flymake)
+    (remove-hook 'elpy-modules 'elpy-module-highlight-indentation)
+  
+    (setq elpy-rpc-python-command "python3"
+          elpy-rpc-backend "rope" ; completion backend
+    )
+    ;; Function: send block to elpy: bound to C-c C-c
+    (defun forward-block (&optional n)
+      (interactive "p")
+      (let ((n (if (null n) 1 n)))
+        (search-forward-regexp "\n[\t\n ]*\n+" nil "NOERROR" n)))
+  
+    (defun elpy-shell-send-current-block ()
+      (interactive)
+      (beginning-of-line)
+      "Send current block to Python shell."
+      (push-mark)
+      (forward-block)
+      (elpy-shell-send-region-or-buffer)
+      (display-buffer (process-buffer (elpy-shell-get-or-create-process))
+                      nil
+                      'visible))
+  
+    ;; Font-lock
+    (add-hook 'python-mode-hook
+              '(lambda()
+                 (font-lock-add-keywords
+                  nil
+                  '(("\\<\\([_A-Za-z0-9]*\\)(" 1
+                     font-lock-function-name-face) ; highlight function names
+                    ))))
+  
+    :bind (:map python-mode-map
+           ("C-c <RET>" . elpy-shell-send-region-or-buffer)
+           ("C-c C-c" . elpy-send-current-block)))
+  
+  (use-package pipenv
+    :hook (python-mode . pipenv-mode))
+#+end_src
+*** GDB
+#+begin_src emacs-lisp
+  (setq gdb-many-windows t
+        gdb-use-separate-io-buffer t)
+  
+  (advice-add 'gdb-setup-windows :after
+              (lambda () (set-window-dedicated-p (selected-window) t)))
+  
+  
+  (defconst gud-window-register 123456)
+  
+  (defun gud-quit ()
+    (interactive)
+    (gud-basic-call "quit"))
+  
+  (add-hook 'gud-mode-hook
+            (lambda ()
+              (gud-tooltip-mode)
+              (window-configuration-to-register gud-window-register)
+              (local-set-key (kbd "C-q") 'gud-quit)))
+  
+  (advice-add 'gud-sentinel :after
+              (lambda (proc msg)
+                (when (memq (process-status proc) '(signal exit))
+                  (jump-to-register gud-window-register)
+                  (bury-buffer)))) 
+#+end_src
+
+*** Lisp
 #+begin_src emacs-lisp
 #+end_src
 *** Tramp
@@ -211,220 +394,6 @@
      (lambda () (when (file-remote-p default-directory) (company-mode -1))))
   #+END_SRC
 
-#+RESULTS:
-: ilab-ssh
-
-*** Babel
-#+begin_src emacs-lisp :results silent output
-  
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '(
-    (emacs-lisp . t)
-    (python . t)
-    (C . t)
-    (R . t)
-    ))
-  
-  (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
-  
-  (defun my-org-confirm-babel-evaluate (lang body)
-    (not (member lang '("C" "R" "python" "emacs-lisp"))))
-  
-  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
-  
-#+end_src
-*** C
-#+begin_src emacs-lisp
-  (define-key c-mode-map (kbd "C-c m") #'compile)
-  
-      (defun execute-c-program ()
-        (interactive)
-        (save-buffer)
-        (defvar foo)
-        (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-        (shell)
-        (kill-new foo)
-        (org-yank)
-      )
-  
-    (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
-   (define-key c-mode-map (kbd "C-c g") #'gdb)
-  
-#+end_src
-
-#+RESULTS:
-: gdb
-
-*** ESS and R
-#+begin_src emacs-lisp :results output silent
-  (use-package ess-site
-  :straight ess
-  :config
-  ;; Execute screen options after initialize process
-  (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
-
-  ;; Disable IDO so helm is used instead
-  (setq ess-use-ido nil)
-
-  ;; We don’t want R evaluation to hang the editor, hence
-  (setq ess-eval-visibly 'nowait)
-
-  ;; Unbind ess-insert-assign (defaut value is "_")
-  (setq ess-smart-S-assign-key nil))
-(setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
-
-(use-package ess-r-mode
-  :straight ess
-  :config
-  ;; Hot key C-S-m for pipe operator in ESS
-  (defun pipe_R_operator ()
-    "R - %>% operator or 'then' pipe operator"
-    (interactive)
-    (just-one-space 1)
-    (insert "%>%")
-    (just-one-space 1))
-
-  ;; ESS syntax highlight
-  (setq ess-R-font-lock-keywords
-        '((ess-R-fl-keyword:keywords . t)
-          (ess-R-fl-keyword:constants . t)
-          (ess-R-fl-keyword:modifiers . t)
-          (ess-R-fl-keyword:fun-defs . t)
-          (ess-R-fl-keyword:assign-ops . t)
-          (ess-fl-keyword:fun-calls . t)
-          (ess-fl-keyword:numbers . t)
-          (ess-fl-keyword:operators . t)
-          (ess-fl-keyword:delimiters . t)
-          (ess-fl-keyword:= . t)
-          (ess-R-fl-keyword:F&T . t)
-          (ess-R-fl-keyword:%op% . t)))
-
-  (setq inferior-ess-r-font-lock-keywords
-        '((ess-S-fl-keyword:prompt . t)
-          (ess-R-fl-keyword:messages . t)
-          (ess-R-fl-keyword:modifiers . nil)
-          (ess-R-fl-keyword:fun-defs . t)
-          (ess-R-fl-keyword:keywords . nil)
-          (ess-R-fl-keyword:assign-ops . t)
-          (ess-R-fl-keyword:constants . t)
-          (ess-fl-keyword:matrix-labels . t)
-          (ess-fl-keyword:fun-calls . nil)
-          (ess-fl-keyword:numbers . nil)
-          (ess-fl-keyword:operators . nil)
-          (ess-fl-keyword:delimiters . nil)
-          (ess-fl-keyword:= . t)
-          (ess-R-fl-keyword:F&T . nil)))
-
-  :bind
-  (:map ess-r-mode-map
-   ("M--" . ess-insert-assign)
-   ("C-S-m" . pipe_R_operator)
-   :map
-   inferior-ess-r-mode-map
-   ("M--" . ess-insert-assign)
-   ("C-S-m" . pipe_R_operator))
-  )
-#+end_src
-*** Python
-
-#+begin_src emacs-lisp :results silent output
-  (use-package python
-  :mode ("\\.py\\'" . python-mode)
-  :config
-  (setq python-shell-interpreter "python3"))
-
-(use-package elpy
-  :after python
-  :init
-  ;; Truncate long line in inferior mode
-  (add-hook 'inferior-python-mode-hook (lambda () (setq truncate-lines t)))
-  ;; Enable company
-  (add-hook 'python-mode-hook 'company-mode)
-  (add-hook 'inferior-python-mode-hook 'company-mode)
-  ;; Enable highlight indentation
-  (add-hook 'highlight-indentation-mode-hook
-            'highlight-indentation-current-column-mode)
-  ;; Enable elpy
-  (elpy-enable)
-  :config
-  ;; Do not enable elpy flymake for now
-  (remove-hook 'elpy-modules 'elpy-module-flymake)
-  (remove-hook 'elpy-modules 'elpy-module-highlight-indentation)
-
-  ;; The old `elpy-use-ipython' is obseleted, see:
-  ;; https://elpy.readthedocs.io/en/latest/ide.html#interpreter-setup
-  ;; (setq python-shell-interpreter "ipython3"
-  ;; python-shell-interpreter-args "-i --simple-prompt")
-
-  (setq elpy-rpc-python-command "python3")
-
-  ;; Completion backend
-  (setq elpy-rpc-backend "rope")
-
-  ;; Function: send block to elpy: bound to C-c C-c
-  (defun forward-block (&optional n)
-    (interactive "p")
-    (let ((n (if (null n) 1 n)))
-      (search-forward-regexp "\n[\t\n ]*\n+" nil "NOERROR" n)))
-
-  (defun elpy-shell-send-current-block ()
-    (interactive)
-    (beginning-of-line)
-    "Send current block to Python shell."
-    (push-mark)
-    (forward-block)
-    (elpy-shell-send-region-or-buffer)
-    (display-buffer (process-buffer (elpy-shell-get-or-create-process))
-                    nil
-                    'visible))
-
-  ;; Font-lock
-  (add-hook 'python-mode-hook
-            '(lambda()
-               (font-lock-add-keywords
-                nil
-                '(("\\<\\([_A-Za-z0-9]*\\)(" 1
-                   font-lock-function-name-face) ; highlight function names
-                  ))))
-
-  :bind (:map python-mode-map
-         ("C-c <RET>" . elpy-shell-send-region-or-buffer)
-         ("C-c C-c" . elpy-send-current-block)))
-
-(use-package pipenv
-  :hook (python-mode . pipenv-mode))
-#+end_src
-*** GDB
-#+begin_src emacs-lisp
-  (setq gdb-many-windows t
-        gdb-use-separate-io-buffer t)
-  
-  (advice-add 'gdb-setup-windows :after
-            (lambda () (set-window-dedicated-p (selected-window) t)))
-
-
-    (defconst gud-window-register 123456)
- 
-(defun gud-quit ()
-  (interactive)
-  (gud-basic-call "quit"))
- 
-(add-hook 'gud-mode-hook
-          (lambda ()
-            (gud-tooltip-mode)
-            (window-configuration-to-register gud-window-register)
-            (local-set-key (kbd "C-q") 'gud-quit)))
- 
-(advice-add 'gud-sentinel :after
-            (lambda (proc msg)
-              (when (memq (process-status proc) '(signal exit))
-                (jump-to-register gud-window-register)
-                (bury-buffer)))) 
-#+end_src
-
-#+RESULTS:
-
 * Org-mode
 ** Init
 
@@ -437,8 +406,10 @@
 
     (org-reload)
 #+END_SRC
+
 ** General
 *** Looks
+  Using insp from [[https://hugocisneros.com/org-config/][here]]
 **** general
 #+begin_src emacs-lisp
   (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
@@ -451,16 +422,15 @@
   (add-hook 'org-mode-hook 'org-indent-mode)
   
   (setq org-startup-indented t
-	org-ellipsis " ->" ;; folding symbol
-	org-pretty-entities t
-	org-hide-emphasis-markers t
-	;; show actually italicized text instead of /italicized text/
-	org-agenda-block-separator ""
-	org-fontify-whole-heading-line t
-	org-fontify-done-headline t
-	org-fontify-quote-and-verse-blocks t)
+        org-ellipsis " ▼ " ;; folding symbol
+        org-pretty-entities t
+        org-hide-emphasis-markers t
+        org-agenda-block-separator ""
+        org-fontify-whole-heading-line t
+        org-fontify-done-headline t
+        org-src-fontify-natively t
+        org-fontify-quote-and-verse-blocks t)
   
-					  ; ; table
   (use-package valign
     :config
      (setq valign-fancy-bar t)
@@ -470,229 +440,196 @@
   
 #+end_src
 **** fonts
-#+BEGIN_SRC emacs-lisp
-  
-  (setq org-src-fontify-natively t)
-  
-  (defun my/buffer-face-mode-variable ()
-    "Set font to a variable width (proportional) fonts in current buffer"
-    (interactive)
-    (setq buffer-face-mode-face '(:family "Cochin"
-                                          :height 150
-                                          :width normal))
-    (buffer-face-mode))
-  
-  (defun my/style-org ()
-    ;; I have removed indentation to make the file look cleaner
-    (my/buffer-face-mode-variable)
-    (setq line-spacing 0.1)
-  
-    (variable-pitch-mode +1)
-    (mapc
-     (lambda (face) ;; Other fonts that require it are set to fixed-pitch.
-       (set-face-attribute face nil :inherit 'fixed-pitch))
-     (list 'org-block
-           'org-table
-           'org-verbatim
-           'org-block-begin-line
-           'org-block-end-line
-           'org-meta-line
-           'org-date
-           'org-drawer
-           'org-property-value
-           'org-special-keyword
-           'org-document-info-keyword))
-    (mapc ;; This sets the fonts to a smaller size
-     (lambda (face)
-       (set-face-attribute face nil :height 0.8))
-     (list 'org-document-info-keyword
-           'org-block-begin-line
-           'org-block-end-line
-           'org-meta-line
-           'org-drawer
-           'org-property-value
-           ))
-    ;; (set-face-attribute 'org-indent nil
-    ;; :inherit '(org-hide fixed-pitch))
-    (set-face-attribute 'org-code nil
-                        :inherit '(shadow fixed-pitch))
-    ;; Without indentation the headlines need to be different to be visible
-    (set-face-attribute 'org-level-1 nil
-                        :height 1.25
-                        :foreground "#BEA4DB")
-    (set-face-attribute 'org-level-2 nil
-                        :height 1.15
-                        :foreground "#A382FF"
-                        )
-    (set-face-attribute 'org-level-3 nil
-                        :height 1.1
-                        :foreground "#5E65CC"
-                        :slant 'italic)
-    (set-face-attribute 'org-level-4 nil
-                        :height 1.05
-                        :foreground "#ABABFF")
-    (set-face-attribute 'org-level-5 nil
-                        :foreground "#2843FB")
-    (set-face-attribute 'org-date nil
-                        :foreground "#ECBE7B"
-                        :height 0.8)
-    (set-face-attribute 'org-document-title nil
-                        :foreground "DarkOrange3"
-                        :height 1.3)
-    (set-face-attribute 'org-ellipsis nil
-                        :foreground "#4f747a" :underline nil)
-    (set-face-attribute 'variable-pitch nil
-                        :family "Cochin" :height 1.2)
-    )
-  
-  (add-hook 'org-mode-hook 'my/style-org)
-  
-                                          ; used Ioseveka and cochin
-  ;; (let* ((variable-tuple
-  ;;         (cond
-  ;;          ((x-list-fonts "Ioseveka")         '(:font "Ioseveka" :foreground "white"))
-  ;;          ((x-list-fonts "Cochin")         '(:font "Cochin" :foreground "white"))
-  ;;          ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-  ;;          ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-  ;;          ((x-list-fonts "Verdana")         '(:font "Verdana"))
-  ;;          ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-  ;;          (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-  ;;        (base-font-color     (face-foreground 'default nil 'default))
-  ;;        (headline           `(:inherit default :weight normal)))
-  
-  ;;   (custom-theme-set-faces
-  ;;    'user
-  ;;    `(org-level-8 ((t (,@headline ,@variable-tuple :height 1))))
-  ;;    `(org-level-7 ((t (,@headline ,@variable-tuple :height 1))))
-  ;;    `(org-level-6 ((t (,@headline ,@variable-tuple :height 1))))
-  ;;    `(org-level-5 ((t (,@headline ,@variable-tuple :height 1.02))))
-  ;;    `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.05))))
-  ;;    `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.17))))
-  ;;    `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.27))))
-  ;;    `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-  ;;    `(org-document-title ((t (,@headline ,@variable-tuple :height 1.50 :underline nil))))))
-  
-  ;; (custom-theme-set-faces
-  ;;  'user
-  ;;                                         ; '(default ((t (:family "Cochin" :height 140 :weight normal :foreground "gray70"))))
-  ;;  '(variable-pitch ((t (:family "Cochin" :height 165 :weight normal))))
-  ;;  '(fixed-pitch ((t (:family "PT Mono" :height 140 :weight thin))))
-  ;;  )
-  
-  
-                                          ;line fill
-  (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
-  (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
-  
-  
-  
-#+END_SRC
 
+#+begin_src emacs-lisp
+    (defun my/buffer-face-mode-variable ()
+      "Set font to a variable width (proportional) fonts in current buffer"
+      (interactive)
+      (setq buffer-face-mode-face '(:family "Cochin"
+                                            :height 150
+                                            :width normal))
+      (buffer-face-mode))
+  
+    (defun my/style-org ()
+      ;; I have removed indentation to make the file look cleaner
+      (my/buffer-face-mode-variable)
+      (setq line-spacing 0.05)
+  
+      (variable-pitch-mode +1)
+      (mapc
+       (lambda (face) ;; Other fonts that require it are set to fixed-pitch.
+         (set-face-attribute face nil :inherit 'fixed-pitch))
+       (list 'org-block
+             'org-table
+             'org-verbatim
+             'org-block-begin-line
+             'org-block-end-line
+             'org-meta-line
+             'org-date
+             'org-drawer
+             'org-property-value
+             'org-special-keyword
+             'org-document-info-keyword))
+      (mapc ;; This sets the fonts to a smaller size
+       (lambda (face)
+         (set-face-attribute face nil :height 0.8))
+       (list 'org-document-info-keyword
+             'org-block-begin-line
+             'org-block-end-line
+             'org-meta-line
+             'org-drawer
+             'org-property-value
+             ))
+   
+      (set-face-attribute 'org-code nil
+                          :inherit '(shadow fixed-pitch))
+      (set-face-attribute 'default nil
+                          :height 150
+                          :foreground "gray70")
+      (set-face-attribute 'variable-pitch nil
+                          :family "Cochin"
+                          :height 1.2)
+      (set-face-attribute 'fixed-pitch nil
+                          :height 1
+                          :family "PT Mono")
+      (set-face-attribute 'org-level-1 nil
+                          :height 1.25
+                          :foreground "#BEA4DB")
+      (set-face-attribute 'org-level-2 nil
+                          :height 1.15
+                          :foreground "#A382FF")
+      (set-face-attribute 'org-level-3 nil
+                          :height 1.1
+                          :foreground "#5E65CC")
+      (set-face-attribute 'org-level-4 nil
+                          :height 1.05
+                          :foreground "#ABABFF")
+      (set-face-attribute 'org-level-5 nil
+                          :foreground "#2843FB")
+      (set-face-attribute 'org-date nil
+                          :foreground "#ECBE7B"
+                          :height 0.8)
+      (set-face-attribute 'org-document-title nil
+                          :foreground "DarkOrange3"
+                          :height 1.3)
+      (set-face-attribute 'org-ellipsis nil
+                          :foreground "#3256A8" :underline nil)
+  
+      )
+  
+    (add-hook 'org-mode-hook 'my/style-org)
+    (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
+    (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
+  
+#+end_src
 *** Latex
 #+BEGIN_SRC emacs-lisp
-
-
- (use-package org-fragtog)
- (add-hook 'org-mode-hook 'org-fragtog-mode)
- (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
- (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
- (use-package tex
-    :straight auctex
-    :defer t
-    :config
-    (setq TeX-auto-save t)
-    (setq TeX-parse-self t))
-  (require 'texmathp)
- (use-package cdlatex)
- (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
-
-
+  
+  (use-package org-fragtog
+    :hook (org-mode . org-fragtog-mode))
+  
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  
+  (use-package tex
+     :straight auctex
+     :defer t
+     :config
+     (setq TeX-auto-save t)
+     (setq TeX-parse-self t))
+  
+  (use-package cdlatex
+    :requires texmathp
+    :hook (org-mode . turn-on-org-cdlatex))
+  
+  
+  
 #+END_SRC
 *** Images
 #+begin_src emacs-lisp
   
   (use-package org-download
-  :ensure t
-  :config
-  ;; add support to dired
-  (add-hook 'dired-mode-hook 'org-download-enable)
-  (setq-default org-download-image-dir "~/Pictures/emacs-pics")
-   )
+    :ensure t
+    :hook (dired-mode . org-download-enable)
+    :config
+    ;; add support to dired
+    (setq-default org-download-image-dir "~/Pictures/emacs-pics")
+    )
   
-
+  
   (defun ros ()
-            (interactive)
-            (if buffer-file-name
-                (progn
-                  (message "Waiting for region selection with mouse...")
-                  (let ((filename
-                         (concat "./"
-                                 (file-name-nondirectory buffer-file-name)
-                                 "_"
-                                 (format-time-string "%Y%m%d_%H%M%S")
-                                 ".png")))
-                    (if (executable-find "scrot")
-                        (call-process "scrot" nil nil nil "-s" filename)
-                      (call-process "screencapture" nil nil nil "-s" filename))
-                    (insert (concat "[[" filename "]]"))
-                    (org-display-inline-images t t)
-                    )
-                  (message "File created and linked...")
-                  )
-              (message "You're in a not saved buffer! Save it first!")
-              )
+    (interactive)
+    (if buffer-file-name
+        (progn
+          (message "Waiting for region selection with mouse...")
+          (let ((filename
+                 (concat "./"
+                         (file-name-nondirectory buffer-file-name)
+                         "_"
+                         (format-time-string "%Y%m%d_%H%M%S")
+                         ".png")))
+            (if (executable-find "scrot")
+                (call-process "scrot" nil nil nil "-s" filename)
+              (call-process "screencapture" nil nil nil "-s" filename))
+            (insert (concat "[[" filename "]]"))
+            (org-display-inline-images t t)
             )
+          (message "File created and linked...")
+          )
+      (message "You're in a not saved buffer! Save it first!")
+      )
+    )
   
   (global-set-key (kbd "C-c r") #'ros)
 #+end_src
+
 ** Life
 *** Agenda
-
 #+BEGIN_SRC emacs-lisp
   
-       (setq org-agenda-files '(
-         "~/org/inbox.org"
-         "~/org/gtd.org"
-       ))
+  (setq org-agenda-files '(
+                           "~/org/inbox.org"
+                           "~/org/gtd.org"
+                           ))
   
-       (setq org-agenda-start-with-log-mode t)
-       (setq org-log-done 'time)
-       (setq org-log-into-drawer t)
-       (setq calendar-week-start-day 0)
+  (set-register ?g (cons 'file (concat default-directory "gtd.org")))
   
-     (setq org-agenda-prefix-format
-           '(
-             (agenda . " %-12b %?-15t% s")
-             (todo . " %i %-12:c")
-             (tags . " %i %-12:c")
-             (search . " %i %-12:c")
-             )
-   )
+  (setq org-agenda-start-with-log-mode t
+        org-log-done 'time
+        org-log-into-drawer t
+        calendar-week-start-day 0)
   
-       (with-eval-after-load 'org
-         (bind-key "C-c a" #'org-agenda org-mode-map)
-         (bind-key "C-c c" #'org-capture ))
+  (setq org-agenda-prefix-format
+        '(
+          (agenda . " %-12b %?-15t% s")
+          (todo . " %i %-12:c")
+          (tags . " %i %-12:c")
+          (search . " %i %-12:c")
+          )
+        )
   
-       (setq org-todo-keywords
-           '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
-       )
+  (with-eval-after-load 'org
+    (bind-key "C-c a" #'org-agenda org-mode-map)
+    (bind-key "C-c c" #'org-capture ))
   
-       (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                                  ("~/org/time.org" :level . 1)
-       ))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
+        )
   
-  
-     (defun gtd_settings ()
-       (interactive)
-       (find-file "~/org/gtd.org")
-      )
-     (global-set-key (kbd "C-c g") #'gtd_settings)
-       ;; Save Org buffers after refiling!
-       (advice-add 'org-refile :after 'org-save-all-org-buffers)
-  
-     (setq org-archive-location "~/.emacs.d/archive.org::")
+  (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                             ("~/org/time.org" :level . 1)
+                             ))
   
   
+  (defun gtd_settings ()
+    (interactive)
+    (find-file "~/org/gtd.org")
+    )
+  (global-set-key (kbd "C-c g") #'gtd_settings)
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+  
+  (setq org-archive-location "~/.emacs.d/archive.org::")
   
 #+END_SRC
 
@@ -703,36 +640,35 @@
 
 #+BEGIN_SRC emacs-lisp
   
-              (require 'org-clock)
-              (setq org-clock-persist 'history)
-              (org-clock-persistence-insinuate)
+  (require 'org-clock)
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
   
-              (add-to-list 'org-modules 'org-habit)
-              (require 'org-habit)
-              (setq org-habit-following-days 1)
-              (setq org-habit-preceding-days 14)
-              (setq org-habit-show-habits-only-for-today t)
-             (setq org-habit-graph-column 35)
+  (add-to-list 'org-modules 'org-habit)
+  (require 'org-habit)
+  (setq org-habit-following-days 1
+        org-habit-preceding-days 14
+        org-habit-show-habits-only-for-today t
+        org-habit-graph-column 35)
   
-              ; streak count https://www.reddit.com/r/emacs/comments/awsvd1/need_help_to_show_current_streak_habit_as_a/
-  
-    (defun org-habit-streak-count ()
-  (goto-char (point-min))
-  (while (not (eobp))
-    ;;on habit line?
-    (when (get-text-property (point) 'org-habit-p)
-      (let ((streak 0)
-            (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
-            )
-        (move-to-column counter)
-        ;;until end of line
-        (while (= (char-after (point)) org-habit-completed-glyph)
-                (setq streak (+ streak 1))
-                (setq counter (- counter 1))
-                (backward-char 1))
-        (end-of-line)
-        (insert (number-to-string streak))))
-    (forward-line 1)))
+     
+  (defun org-habit-streak-count ()
+    (goto-char (point-min))
+    (while (not (eobp))
+      ;;on habit line?
+      (when (get-text-property (point) 'org-habit-p)
+        (let ((streak 0)
+              (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
+              )
+          (move-to-column counter)
+          ;;until end of line
+          (while (= (char-after (point)) org-habit-completed-glyph)
+            (setq streak (+ streak 1))
+            (setq counter (- counter 1))
+            (backward-char 1))
+          (end-of-line)
+          (insert (number-to-string streak))))
+      (forward-line 1)))
   
   (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 #+END_SRC
@@ -744,8 +680,7 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-journal
-    :bind (("C-c j" . org-journal-mode)
-  
+    :bind (("C-c j" . org-journal-mode)  
            )
     :custom
     (org-journal-dir "~/org/journal/")
@@ -795,9 +730,6 @@
   
     #+END_SRC
 
-#+RESULTS:
-| insert-created-date | pc/insert-journal-template |
-
 *** Capture Templates
 #+begin_src emacs-lisp
   
@@ -808,10 +740,6 @@
           )
         )
 #+end_src
-
-#+RESULTS:
-| t | Todo [inbox]  | entry | (file+headline ~/org/inbox.org Inbox) | * TODO %i%? | :empty-lines | 1 |
-| j | Journal entry | plain | #'org-journal-find-location           | *** %^{Moment}   |              |   |
 
 ** Roam
 
@@ -873,15 +801,11 @@
 ** Magit
 
 #+BEGIN_SRC emacs-lisp
-      (use-package magit)
-   
+  (use-package magit)
+ #+END_SRC
 
-#+END_SRC
-
-#+RESULTS:
 ** Spotify Smudge
 #+begin_src emacs-lisp
-    (use-package smudge
-    )
+    (use-package smudge)
 #+end_src
 

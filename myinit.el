@@ -1,5 +1,5 @@
-; auto reload files edited outside of emacs
-(global-auto-revert-mode t)
+(global-auto-revert-mode 1)
+
 (require 'package)
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
@@ -21,14 +21,18 @@ apps are not started from a shell."
 
 ;  backup
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
-  backup-by-copying t    ; Don't delink hardlinks
+  user-init-file "~/.emacs.d/myinit.org"
+  default-directory "~/org/"
+  shell-file-name "/bin/bash"
+  auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
+)
+
+(setq backup-by-copying t    ; Don't delink hardlinks
   version-control t      ; Use version numbers on backup
   delete-old-versions t  ; Automatically delete excess backup
   kept-new-versions 20   ; how many of the newest versions to keep
   kept-old-versions 5    ; and how many of the old
-  auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
-)
-(setq ring-bell-function 'ignore)
+  ring-bell-function 'ignore)
 
 
 (use-package deft
@@ -39,81 +43,70 @@ apps are not started from a shell."
         deft-recursive t
         deft-use-filename-as-title t))
 
-
-
-(setq user-init-file "~/.emacs.d/myinit.org")
-(setq default-directory "~/org/")
-(setq-default shell-file-name "/bin/bash")
-
 (set-register ?i (cons 'file user-init-file))
-
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
 ; customized startup screen
 
-(setq inhibit-startup-screen t)
-(setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-; (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (setq inhibit-startup-screen t)
+ ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 
-(setq initial-buffer-choice "~/org/literature/osnotes.org")
-(split-window-right)
-(find-file "~/.emacs.d/myinit.org")
-(switch-to-buffer-other-window "myinit.org")
-  ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+  ;(setq initial-buffer-choice "~/org/literature/osnotes.org")
+;  (split-window-right)
+ ; (find-file "~/.emacs.d/myinit.org")
+  ;(switch-to-buffer-other-window "myinit.org")
+    ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
 
-(use-package avy)
-(global-set-key (kbd "M-g w") 'avy-goto-word-1)
+(use-package avy
+  :bind ("C-:" . avg-goto-word-1))
 
-
-(use-package ace-window)
-(global-set-key (kbd "M-o") 'ace-window)
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-(setq aw-scope 'frame)
+(use-package ace-window
+  :bind ("M-o :" . ace-window)
+  :custom
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+        aw-scope 'frame))
 
 (use-package disable-mouse)
 (global-disable-mouse-mode)
 
-; clean whitespaces
-  ; (add-hook 'before-save-hook 'whitespace-cleanup)
-   (require 'org-tempo)
-      ;; Move cursor to end of current line
-      ;; Insert new line below current line
-      ;; it will also indent newline
-      (global-set-key (kbd "<C-return>") (lambda ()
-                         (interactive)
-                         (end-of-line)
-                         (newline-and-indent)))
+(require 'org-tempo)
 
-      ;; Move cursor to previous line
-      ;; Go to end of the line
-      ;; Insert new line below current line (So it actually insert new line above with indentation)
-      ;; it will also indent newline
-      (global-set-key (kbd "<C-S-return>") (lambda ()
-                             (interactive)
-                             (previous-line)
-                             (end-of-line)
-                             (newline-and-indent)
-                             ))
+;; Move cursor to end of line, new line and indent
+
+(global-set-key (kbd "<C-return>") (lambda ()
+                                     (interactive)
+                                     (end-of-line)
+                                     (newline-and-indent)))
 
 
 
-;needed for yas
-   (require 'subr-x)
-       (use-package yasnippet
-       :config
-       (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-      (yas-global-mode 1)
-     )
+;; Move cursor to previous line, new line, indent
+(global-set-key (kbd "<C-S-return>") (lambda ()
+                                       (interactive)
+                                       (previous-line)
+                                       (end-of-line)
+                                       (newline-and-indent)
+                                       ))
 
 
-    (use-package company
-     :ensure t
-     :config
-     (setq company-idle-delay 0)
-     (setq company-minimum-prefix-length 2)
-     (global-company-mode t)
-   )
+
+(require 'subr-x)
+(use-package yasnippet
+  :config
+  (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+  (yas-global-mode 1)
+  )
+
+
+(use-package company
+  :ensure t
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 2)
+  (global-company-mode t)
+  )
 
 ; reduce visual clutter
  (menu-bar-mode -1)
@@ -148,30 +141,12 @@ apps are not started from a shell."
  ; (global-disable-mouse-mode)
 
 (use-package spaceline-config
-:straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
-:config
-(setq spaceline-workspace-numbers-unicode t)
-(spaceline-toggle-major-mode-on)
-(spaceline-toggle-column-on)
-(spaceline-emacs-theme))
-
-
-
-(setq remote-file-name-inhibit-cache nil)
-(setq vc-ignore-dir-regexp
-      (format "%s\\|%s"
-                    vc-ignore-dir-regexp
-                    tramp-file-name-regexp))
-(setq tramp-verbose 1)
-(setq tramp-verbose 6)
-(put 'temporary-file-directory 'standard-value
-     (list temporary-file-directory))
-
-(set-register ?s (cons 'file "/ssh:hs884@ilab1.cs.rutgers.edu:"))
-
-(add-hook
-   'c-mode-hook
-   (lambda () (when (file-remote-p default-directory) (company-mode -1))))
+  :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
+  :config
+  (setq spaceline-workspace-numbers-unicode t)
+  (spaceline-toggle-major-mode-on)
+  (spaceline-toggle-column-on)
+  (spaceline-emacs-theme))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -189,8 +164,7 @@ apps are not started from a shell."
 
 (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
-(define-key c-mode-map (kbd "C-c m") #'compile)
-
+(define-key c-mode-map (kbd "C-c m") #'compile)  
     (defun execute-c-program ()
       (interactive)
       (save-buffer)
@@ -201,7 +175,7 @@ apps are not started from a shell."
       (org-yank)
     )
 
-  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+ (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
  (define-key c-mode-map (kbd "C-c g") #'gdb)
 
 (use-package ess-site
@@ -210,14 +184,13 @@ apps are not started from a shell."
   ;; Execute screen options after initialize process
   (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
 
-  ;; Disable IDO so helm is used instead
-  (setq ess-use-ido nil)
+  (setq ess-use-ido nil ; use helm
+        ess-eval-visibly 'nowait ; don't hang with R
+        ess-smart-S-assign-key nil ; unbind ess-insert-align
+        ) ; use helm
+  )
 
-  ;; We don’t want R evaluation to hang the editor, hence
-  (setq ess-eval-visibly 'nowait)
 
-  ;; Unbind ess-insert-assign (defaut value is "_")
-  (setq ess-smart-S-assign-key nil))
 (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
 
 (use-package ess-r-mode
@@ -264,18 +237,18 @@ apps are not started from a shell."
 
   :bind
   (:map ess-r-mode-map
-   ("M--" . ess-insert-assign)
-   ("C-S-m" . pipe_R_operator)
-   :map
-   inferior-ess-r-mode-map
-   ("M--" . ess-insert-assign)
-   ("C-S-m" . pipe_R_operator))
+        ("M--" . ess-insert-assign)
+        ("C-S-m" . pipe_R_operator)
+        :map
+        inferior-ess-r-mode-map
+        ("M--" . ess-insert-assign)
+        ("C-S-m" . pipe_R_operator))
   )
 
 (use-package python
-  :mode ("\\.py\\'" . python-mode)
-  :config
-  (setq python-shell-interpreter "python3"))
+    :mode ("\\.py\\'" . python-mode)
+    :config
+    (setq python-shell-interpreter "python3"))
 
 (use-package elpy
   :after python
@@ -295,16 +268,9 @@ apps are not started from a shell."
   (remove-hook 'elpy-modules 'elpy-module-flymake)
   (remove-hook 'elpy-modules 'elpy-module-highlight-indentation)
 
-  ;; The old `elpy-use-ipython' is obseleted, see:
-  ;; https://elpy.readthedocs.io/en/latest/ide.html#interpreter-setup
-  ;; (setq python-shell-interpreter "ipython3"
-  ;; python-shell-interpreter-args "-i --simple-prompt")
-
-  (setq elpy-rpc-python-command "python3")
-
-  ;; Completion backend
-  (setq elpy-rpc-backend "rope")
-
+  (setq elpy-rpc-python-command "python3"
+        elpy-rpc-backend "rope" ; completion backend
+  )
   ;; Function: send block to elpy: bound to C-c C-c
   (defun forward-block (&optional n)
     (interactive "p")
@@ -339,29 +305,47 @@ apps are not started from a shell."
   :hook (python-mode . pipenv-mode))
 
 (setq gdb-many-windows t
-        gdb-use-separate-io-buffer t)
-  
-  (advice-add 'gdb-setup-windows :after
+      gdb-use-separate-io-buffer t)
+
+(advice-add 'gdb-setup-windows :after
             (lambda () (set-window-dedicated-p (selected-window) t)))
 
 
-    (defconst gud-window-register 123456)
- 
+(defconst gud-window-register 123456)
+
 (defun gud-quit ()
   (interactive)
   (gud-basic-call "quit"))
- 
+
 (add-hook 'gud-mode-hook
           (lambda ()
             (gud-tooltip-mode)
             (window-configuration-to-register gud-window-register)
             (local-set-key (kbd "C-q") 'gud-quit)))
- 
+
 (advice-add 'gud-sentinel :after
             (lambda (proc msg)
               (when (memq (process-status proc) '(signal exit))
                 (jump-to-register gud-window-register)
                 (bury-buffer))))
+
+
+
+(setq remote-file-name-inhibit-cache nil)
+(setq vc-ignore-dir-regexp
+      (format "%s\\|%s"
+                    vc-ignore-dir-regexp
+                    tramp-file-name-regexp))
+(setq tramp-verbose 1)
+(setq tramp-verbose 6)
+(put 'temporary-file-directory 'standard-value
+     (list temporary-file-directory))
+
+(set-register ?s (cons 'file "/ssh:hs884@ilab1.cs.rutgers.edu:"))
+
+(add-hook
+   'c-mode-hook
+   (lambda () (when (file-remote-p default-directory) (company-mode -1))))
 
 (use-package org)
 (use-package org-contrib)
@@ -380,23 +364,20 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'org-indent-mode)
 
 (setq org-startup-indented t
-      org-ellipsis " ->" ;; folding symbol
+      org-ellipsis " ▼ " ;; folding symbol
       org-pretty-entities t
       org-hide-emphasis-markers t
-      ;; show actually italicized text instead of /italicized text/
       org-agenda-block-separator ""
       org-fontify-whole-heading-line t
       org-fontify-done-headline t
+      org-src-fontify-natively t
       org-fontify-quote-and-verse-blocks t)
 
-					; ; table
 (use-package valign
   :config
    (setq valign-fancy-bar t)
   :hook ((org-mode) . valign-mode)
   )
-
-(setq org-src-fontify-natively t)
 
 (defun my/buffer-face-mode-variable ()
   "Set font to a variable width (proportional) fonts in current buffer"
@@ -409,7 +390,7 @@ apps are not started from a shell."
 (defun my/style-org ()
   ;; I have removed indentation to make the file look cleaner
   (my/buffer-face-mode-variable)
-  (setq line-spacing 0.1)
+  (setq line-spacing 0.05)
 
   (variable-pitch-mode +1)
   (mapc
@@ -436,22 +417,27 @@ apps are not started from a shell."
          'org-drawer
          'org-property-value
          ))
-  ;; (set-face-attribute 'org-indent nil
-  ;; :inherit '(org-hide fixed-pitch))
+
   (set-face-attribute 'org-code nil
                       :inherit '(shadow fixed-pitch))
-  ;; Without indentation the headlines need to be different to be visible
+  (set-face-attribute 'default nil
+                      :height 150
+                      :foreground "gray70")
+  (set-face-attribute 'variable-pitch nil
+                      :family "Cochin"
+                      :height 1.2)
+  (set-face-attribute 'fixed-pitch nil
+                      :height 1
+                      :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
                       :height 1.25
                       :foreground "#BEA4DB")
   (set-face-attribute 'org-level-2 nil
                       :height 1.15
-                      :foreground "#A382FF"
-                      )
+                      :foreground "#A382FF")
   (set-face-attribute 'org-level-3 nil
                       :height 1.1
-                      :foreground "#5E65CC"
-                      :slant 'italic)
+                      :foreground "#5E65CC")
   (set-face-attribute 'org-level-4 nil
                       :height 1.05
                       :foreground "#ABABFF")
@@ -464,176 +450,143 @@ apps are not started from a shell."
                       :foreground "DarkOrange3"
                       :height 1.3)
   (set-face-attribute 'org-ellipsis nil
-                      :foreground "#4f747a" :underline nil)
-  (set-face-attribute 'variable-pitch nil
-                      :family "Cochin" :height 1.2)
+                      :foreground "#3256A8" :underline nil)
+
   )
 
 (add-hook 'org-mode-hook 'my/style-org)
-
-                                        ; used Ioseveka and cochin
-;; (let* ((variable-tuple
-;;         (cond
-;;          ((x-list-fonts "Ioseveka")         '(:font "Ioseveka" :foreground "white"))
-;;          ((x-list-fonts "Cochin")         '(:font "Cochin" :foreground "white"))
-;;          ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-;;          ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-;;          ((x-list-fonts "Verdana")         '(:font "Verdana"))
-;;          ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-;;          (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-;;        (base-font-color     (face-foreground 'default nil 'default))
-;;        (headline           `(:inherit default :weight normal)))
-
-;;   (custom-theme-set-faces
-;;    'user
-;;    `(org-level-8 ((t (,@headline ,@variable-tuple :height 1))))
-;;    `(org-level-7 ((t (,@headline ,@variable-tuple :height 1))))
-;;    `(org-level-6 ((t (,@headline ,@variable-tuple :height 1))))
-;;    `(org-level-5 ((t (,@headline ,@variable-tuple :height 1.02))))
-;;    `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.05))))
-;;    `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.17))))
-;;    `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.27))))
-;;    `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-;;    `(org-document-title ((t (,@headline ,@variable-tuple :height 1.50 :underline nil))))))
-
-;; (custom-theme-set-faces
-;;  'user
-;;                                         ; '(default ((t (:family "Cochin" :height 140 :weight normal :foreground "gray70"))))
-;;  '(variable-pitch ((t (:family "Cochin" :height 165 :weight normal))))
-;;  '(fixed-pitch ((t (:family "PT Mono" :height 140 :weight thin))))
-;;  )
-
-
-                                        ;line fill
 (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
-(use-package org-fragtog)
-(add-hook 'org-mode-hook 'org-fragtog-mode)
+(use-package org-fragtog
+  :hook (org-mode . org-fragtog-mode))
+
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
 (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+
 (use-package tex
    :straight auctex
    :defer t
    :config
    (setq TeX-auto-save t)
    (setq TeX-parse-self t))
- (require 'texmathp)
-(use-package cdlatex)
-(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
+
+(use-package cdlatex
+  :requires texmathp
+  :hook (org-mode . turn-on-org-cdlatex))
 
 (use-package org-download
-:ensure t
-:config
-;; add support to dired
-(add-hook 'dired-mode-hook 'org-download-enable)
-(setq-default org-download-image-dir "~/Pictures/emacs-pics")
- )
+  :ensure t
+  :hook (dired-mode . org-download-enable)
+  :config
+  ;; add support to dired
+  (setq-default org-download-image-dir "~/Pictures/emacs-pics")
+  )
 
 
 (defun ros ()
-          (interactive)
-          (if buffer-file-name
-              (progn
-                (message "Waiting for region selection with mouse...")
-                (let ((filename
-                       (concat "./"
-                               (file-name-nondirectory buffer-file-name)
-                               "_"
-                               (format-time-string "%Y%m%d_%H%M%S")
-                               ".png")))
-                  (if (executable-find "scrot")
-                      (call-process "scrot" nil nil nil "-s" filename)
-                    (call-process "screencapture" nil nil nil "-s" filename))
-                  (insert (concat "[[" filename "]]"))
-                  (org-display-inline-images t t)
-                  )
-                (message "File created and linked...")
-                )
-            (message "You're in a not saved buffer! Save it first!")
-            )
+  (interactive)
+  (if buffer-file-name
+      (progn
+        (message "Waiting for region selection with mouse...")
+        (let ((filename
+               (concat "./"
+                       (file-name-nondirectory buffer-file-name)
+                       "_"
+                       (format-time-string "%Y%m%d_%H%M%S")
+                       ".png")))
+          (if (executable-find "scrot")
+              (call-process "scrot" nil nil nil "-s" filename)
+            (call-process "screencapture" nil nil nil "-s" filename))
+          (insert (concat "[[" filename "]]"))
+          (org-display-inline-images t t)
           )
+        (message "File created and linked...")
+        )
+    (message "You're in a not saved buffer! Save it first!")
+    )
+  )
 
 (global-set-key (kbd "C-c r") #'ros)
 
 (setq org-agenda-files '(
-      "~/org/inbox.org"
-      "~/org/gtd.org"
-    ))
+                         "~/org/inbox.org"
+                         "~/org/gtd.org"
+                         ))
 
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-    (setq calendar-week-start-day 0)
+(set-register ?g (cons 'file (concat default-directory "gtd.org")))
 
-  (setq org-agenda-prefix-format
-        '(
-          (agenda . " %-12b %?-15t% s")
-          (todo . " %i %-12:c")
-          (tags . " %i %-12:c")
-          (search . " %i %-12:c")
-          )
-)
+(setq org-agenda-start-with-log-mode t
+      org-log-done 'time
+      org-log-into-drawer t
+      calendar-week-start-day 0)
 
-    (with-eval-after-load 'org
-      (bind-key "C-c a" #'org-agenda org-mode-map)
-      (bind-key "C-c c" #'org-capture ))
+(setq org-agenda-prefix-format
+      '(
+        (agenda . " %-12b %?-15t% s")
+        (todo . " %i %-12:c")
+        (tags . " %i %-12:c")
+        (search . " %i %-12:c")
+        )
+      )
 
-    (setq org-todo-keywords
-        '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
-    )
+(with-eval-after-load 'org
+  (bind-key "C-c a" #'org-agenda org-mode-map)
+  (bind-key "C-c c" #'org-capture ))
 
-    (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                               ("~/org/time.org" :level . 1)
-    ))
+(setq org-todo-keywords
+      '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
+      )
+
+(setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                           ("~/org/time.org" :level . 1)
+                           ))
 
 
-  (defun gtd_settings ()
-    (interactive)
-    (find-file "~/org/gtd.org")
-   )
-  (global-set-key (kbd "C-c g") #'gtd_settings)
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+(defun gtd_settings ()
+  (interactive)
+  (find-file "~/org/gtd.org")
+  )
+(global-set-key (kbd "C-c g") #'gtd_settings)
+;; Save Org buffers after refiling!
+(advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-  (setq org-archive-location "~/.emacs.d/archive.org::")
+(setq org-archive-location "~/.emacs.d/archive.org::")
 
 (require 'org-clock)
-            (setq org-clock-persist 'history)
-            (org-clock-persistence-insinuate)
+(setq org-clock-persist 'history)
+(org-clock-persistence-insinuate)
 
-            (add-to-list 'org-modules 'org-habit)
-            (require 'org-habit)
-            (setq org-habit-following-days 1)
-            (setq org-habit-preceding-days 14)
-            (setq org-habit-show-habits-only-for-today t)
-           (setq org-habit-graph-column 35)
+(add-to-list 'org-modules 'org-habit)
+(require 'org-habit)
+(setq org-habit-following-days 1
+      org-habit-preceding-days 14
+      org-habit-show-habits-only-for-today t
+      org-habit-graph-column 35)
 
-            ; streak count https://www.reddit.com/r/emacs/comments/awsvd1/need_help_to_show_current_streak_habit_as_a/
 
-  (defun org-habit-streak-count ()
-(goto-char (point-min))
-(while (not (eobp))
-  ;;on habit line?
-  (when (get-text-property (point) 'org-habit-p)
-    (let ((streak 0)
-          (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
-          )
-      (move-to-column counter)
-      ;;until end of line
-      (while (= (char-after (point)) org-habit-completed-glyph)
-              (setq streak (+ streak 1))
-              (setq counter (- counter 1))
-              (backward-char 1))
-      (end-of-line)
-      (insert (number-to-string streak))))
-  (forward-line 1)))
+(defun org-habit-streak-count ()
+  (goto-char (point-min))
+  (while (not (eobp))
+    ;;on habit line?
+    (when (get-text-property (point) 'org-habit-p)
+      (let ((streak 0)
+            (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
+            )
+        (move-to-column counter)
+        ;;until end of line
+        (while (= (char-after (point)) org-habit-completed-glyph)
+          (setq streak (+ streak 1))
+          (setq counter (- counter 1))
+          (backward-char 1))
+        (end-of-line)
+        (insert (number-to-string streak))))
+    (forward-line 1)))
 
 (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
 (use-package org-journal
-  :bind (("C-c j" . org-journal-mode)
-
+  :bind (("C-c j" . org-journal-mode)  
          )
   :custom
   (org-journal-dir "~/org/journal/")
@@ -736,5 +689,4 @@ apps are not started from a shell."
 
 (use-package magit)
 
-(use-package smudge
-)
+(use-package smudge)
