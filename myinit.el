@@ -53,34 +53,12 @@ apps are not started from a shell."
     (message "Start Grind"))
 
   ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-(use-package frame-cmds)
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
                                           ;  (split-window-right)
                                           ; (find-file "~/.emacs.d/myinit.org")
                                           ;(switch-to-buffer-other-window "myinit.org")
                                           ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
-
-
-  (defun bjm-frame-resize-l ()
-    (interactive)
-    (set-frame-width (selected-frame) 302)
-    (maximize-frame-vertically)
-    (set-frame-position (selected-frame) 0 1060)
-    )
-
-  (defun bjm-frame-resize-r ()
-
-    (interactive)
-    (set-frame-width (selected-frame) 302)
-    (maximize-frame-vertically)
-    (set-frame-position (selected-frame) 0 758)
-    )
-
-  ;;set keybindings
-  (global-set-key (kbd "C-c b <left>") 'bjm-frame-resize-l)
-  (global-set-key (kbd "C-c b <right>") 'bjm-frame-resize-r)
-  (global-set-key (kbd "C-c b <RET>") #'toggle-frame-maximized)
 
 (use-package avy
   :bind ("C-;" . avy-goto-word-1))
@@ -370,6 +348,29 @@ apps are not started from a shell."
 (add-hook
    'c-mode-hook
    (lambda () (when (file-remote-p default-directory) (company-mode -1))))
+
+(use-package helm
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
+  ("M-y" . helm-show-kill-ring)
+  ("C-x b" . helm-mini)
+  (:map helm-command-map
+        ("<tab>" . helm-execute-persistent-action)
+        ("C-i" . helm-execite-persistent-action)
+        ("C-z" . helm-select-action))
+  :config
+  (require 'helm-config)
+  (helm-mode 1)
+  (setq helm-split-window-inside-p t
+        helm-move-to-line-cycle-in-source t
+        helm-autoresize-max-height 0
+        helm-autoresize-min-height 20
+        helm-autoresize-mode 1))
+
+(use-package magit)
+
+(use-package smudge)
 
 (use-package org)
 (use-package org-contrib)
@@ -683,52 +684,65 @@ apps are not started from a shell."
        )
 
 (use-package org-roam
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory "~/org/roam/")
-  (org-roam-completion-everywhere t)
-  (org-roam-capture-templates '(
-                                ("d" "default" plain
-                                 "%?"
-                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-                                 :unnarrowed t)
-                                ("c" "concept" plain
-                                 "\n* ${title}\n**%?"
-                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: %^{tags}\n")
-                                 :unnarrowed t)
-                                ))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
-         :map org-mode-map
-         ("C-M-i" . completion-at-point)
-         )
-  :bind-keymap
+    :init
+    (setq org-roam-v2-ack t) ; stops warning message
+    :custom
+    (org-roam-directory "~/org/roam/")
+    (org-roam-completion-everywhere t)
+    (org-roam-capture-templates '(
+                                  ("d" "default" plain
+                                   "\n\n* %?"
+                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                   :unnarrowed t)
+                                  ("t" "Term/Definition" plain
+                                   "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
+                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                   :unnarrowed t)
+  
+                                  ))
+    :config
+    (org-roam-setup)
+    (org-roam-db-autosync-mode)
+    :bind (("C-c n f" . org-roam-node-find)
+           ("C-c n g" . org-roam-graph)
+           ("C-c n r" . org-roam-node-random)		    
+           (:map org-mode-map
+                 (("C-c n i" . org-roam-node-insert)
+                  ("C-c n o" . org-id-get-create)
+                  ("C-c n t" . org-roam-tag-add)
+                  ("C-c n a" . org-roam-alias-add)
+                  ("C-M-i" . completion-at-point)
+                  ("C-c n l" . org-roam-buffer-toggle)
+                  ("C-c n I" . org-roam-node-insert-immediate)))))
+  (require 'org-roam)
+  (cl-defmethod org-roam-node-directories ((node org-roam-node))
+  (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
+      (format "(%s)" (car (f-split dirs)))
+    ""))
+
+(cl-defmethod org-roam-node-backlinkscount ((node org-roam-node))
+  (let* ((count (caar (org-roam-db-query
+                       [:select (funcall count source)
+                                :from links
+                                :where (= dest $s1)
+                                :and (= type "id")]
+                       (org-roam-node-id node)))))
+    (format "[%d]" count)))
+
+(setq org-roam-node-display-template "${directories:10} ${tags:10} ${title:100} ${backlinkscount:6}")
+
+(use-package org-roam-ui
+:straight
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
   :config
-  (org-roam-setup)
-  (org-roam-db-autosync-mode)
-  )
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 
-(use-package helm
-  :bind
-  ("M-x" . helm-M-x)
-  ("C-x C-f" . helm-find-files)
-  ("M-y" . helm-show-kill-ring)
-  ("C-x b" . helm-mini)
-  (:map helm-command-map
-        ("<tab>" . helm-execute-persistent-action)
-        ("C-i" . helm-execite-persistent-action)
-        ("C-z" . helm-select-action))
+(use-package org-noter
   :config
-  (require 'helm-config)
-  (helm-mode 1)
-  (setq helm-split-window-inside-p t
-        helm-move-to-line-cycle-in-source t
-        helm-autoresize-max-height 0
-        helm-autoresize-min-height 20
-        helm-autoresize-mode 1))
-
-(use-package magit)
-
-(use-package smudge)
+  (setq org-noter-default-notes-file-name '("notes.org")
+        org-noter-notes-search-path '("~/org")
+        org-noter-separate-notes-from-heading t))
