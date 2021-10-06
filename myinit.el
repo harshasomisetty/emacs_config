@@ -46,19 +46,21 @@ apps are not started from a shell."
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
-(setq inhibit-startup-screen t
-        initial-scratch-message "Hello Harsha! Enjoy the Grind")
-
-  (defun display-startup-echo-area-message ()
-    (message "Start Grind"))
-
-  ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
-;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
-                                          ;  (split-window-right)
-                                          ; (find-file "~/.emacs.d/myinit.org")
-                                          ;(switch-to-buffer-other-window "myinit.org")
-                                          ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+(setq inhibit-startup-screen t)
+  
+    (defun display-startup-echo-area-message ()
+      (message "Start Grind"))
+  
+    ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                            ;  (split-window-right)
+                                            ; (find-file "~/.emacs.d/myinit.org")
+                                            ;(switch-to-buffer-other-window "myinit.org")
+                                            ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+;  (load "~/.emacs.d/.quotes.el")
+;  (setq initial-scratch-message
+ ;  (nth (random (length quotes)) quotes))
 
 (use-package avy
   :bind ("C-;" . avy-goto-word-1))
@@ -72,6 +74,14 @@ apps are not started from a shell."
 
 (use-package disable-mouse)
 (global-disable-mouse-mode)
+
+(use-package no-spam
+  :config
+  (no-spam-add-repeat-delay next-line 10)
+  (no-spam-add-repeat-delay previous-line 10)
+  (no-spam-add-repeat-delay forward-char 10)
+  (no-spam-add-repeat-delay backward-char 10)
+  (no-spam-mode))
 
 (require 'org-tempo)
 
@@ -698,7 +708,7 @@ apps are not started from a shell."
                                    "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
                                    :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
                                    :unnarrowed t)
-  
+
                                   ))
     :config
     (org-roam-setup)
@@ -729,7 +739,12 @@ apps are not started from a shell."
                        (org-roam-node-id node)))))
     (format "[%d]" count)))
 
-(setq org-roam-node-display-template "${directories:10} ${tags:10} ${title:100} ${backlinkscount:6}")
+(cl-defmethod org-roam-node-directories ((node org-roam-node))
+(if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
+    (format "(%s)" (string-join (f-split dirs) "/"))
+  ""))
+
+(setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
 
 (use-package org-roam-ui
 :straight

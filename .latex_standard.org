@@ -1,6 +1,6 @@
 #+LATEX_CLASS: article
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil num:nil
 #+STARTUP: latexpreview
 
 #+LATEX_HEADER: \usepackage[T1]{fontenc}
@@ -15,6 +15,7 @@
 #+LATEX_HEADER: \hypersetup{colorlinks, linkcolor=blue, urlcolor=bblue}
 
 #+LATEX_HEADER: \usepackage{listings} % Code highlighting
+#+LaTeX_HEADER: \usepackage{indentfirst}
 
 % List spacing
 #+LATEX_HEADER: \usepackage{enumitem}

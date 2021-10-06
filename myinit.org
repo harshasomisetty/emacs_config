@@ -58,8 +58,7 @@
 
 ** Startup
 #+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-screen t
-          initial-scratch-message "Hello Harsha! Enjoy the Grind")
+    (setq inhibit-startup-screen t)
   
     (defun display-startup-echo-area-message ()
       (message "Start Grind"))
@@ -71,6 +70,9 @@
                                             ; (find-file "~/.emacs.d/myinit.org")
                                             ;(switch-to-buffer-other-window "myinit.org")
                                             ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+ (load "~/.emacs.d/.quotes.el")
+ (setq initial-scratch-message
+ (nth (random (length quotes)) quotes))
   
 #+END_SRC
 ** Navigation
@@ -86,9 +88,17 @@
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
     (setq aw-scope 'frame)
   )
- 
+  
   (use-package disable-mouse)
   (global-disable-mouse-mode)
+  
+  (use-package no-spam
+    :config
+    (no-spam-add-repeat-delay next-line 10)
+    (no-spam-add-repeat-delay previous-line 10)
+    (no-spam-add-repeat-delay forward-char 10)
+    (no-spam-add-repeat-delay backward-char 10)
+    (no-spam-mode))
 #+END_SRC
 
 ** Editing
