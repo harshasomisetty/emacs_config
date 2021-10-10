@@ -37,30 +37,40 @@ apps are not started from a shell."
 
 (use-package deft
   :bind ("C-x C-g" . deft-find-file)
+  :demand t
   :config
   (setq deft-extensions '("org")
         deft-directory "~/org"
         deft-recursive t
         deft-use-filename-as-title t))
 
+(defcustom deft-ignore-file-regexp
+(concat "\\(?:"
+        "Fall19"
+        "\\)")
+"Regular expression for files to be ignored."
+:type 'regexp
+:safe 'stringp
+:group 'deft)
+
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
 (setq inhibit-startup-screen t)
-  
-    (defun display-startup-echo-area-message ()
-      (message "Start Grind"))
-  
-    ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
-                                            ;  (split-window-right)
-                                            ; (find-file "~/.emacs.d/myinit.org")
-                                            ;(switch-to-buffer-other-window "myinit.org")
-                                            ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
-;  (load "~/.emacs.d/.quotes.el")
-;  (setq initial-scratch-message
- ;  (nth (random (length quotes)) quotes))
+
+   (defun display-startup-echo-area-message ()
+     (message "Start Grind"))
+
+   ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+   (add-to-list 'default-frame-alist '(fullscreen . maximized))
+ ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                           ;  (split-window-right)
+                                           ; (find-file "~/.emacs.d/myinit.org")
+                                           ;(switch-to-buffer-other-window "myinit.org")
+                                           ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
+(load "~/.emacs.d/.quotes.el")
+(setq initial-scratch-message
+(nth (random (length quotes)) quotes))
 
 (use-package avy
   :bind ("C-;" . avy-goto-word-1))
@@ -113,7 +123,7 @@ apps are not started from a shell."
 
 
 (use-package company
-  :ensure t
+  :disabled t
   :config
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 2)
@@ -455,30 +465,29 @@ apps are not started from a shell."
          ))
 
   (set-face-attribute 'org-code nil
-                      :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'default nil
-                      :height 150
-                      :foreground "gray70")
+                      :inherit '(shadow fixed-pitch)
+                      :height .8)
   (set-face-attribute 'variable-pitch nil
                       :family "Cochin"
                       :height 1.2)
+  (set-face-attribute 'default nil
+                      :foreground (nth 0 chosen-color))
   (set-face-attribute 'fixed-pitch nil
-                      :height 1
                       :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
-                      :height 1.25
-                      :foreground "#6C88C4")
+                      :height 1.3
+                      :foreground (nth 1 chosen-color))
   (set-face-attribute 'org-level-2 nil
-                      :height 1.15
-                      :foreground "#00B0BA")
+                      :height 1.2
+                      :foreground (nth 2 chosen-color))
   (set-face-attribute 'org-level-3 nil
                       :height 1.1
-                      :foreground "#E7C582")
+                      :foreground (nth 3 chosen-color))
   (set-face-attribute 'org-level-4 nil
                       :height 1.05
-                      :foreground "#FF828B")
+                      :foreground (nth 4 chosen-color))
   (set-face-attribute 'org-level-5 nil
-                      :foreground "#C05780")
+                      :foreground (nth 5 chosen-color))
   (set-face-attribute 'org-date nil
                       :foreground "#ECBE7B"
                       :height 0.8)
@@ -494,31 +503,47 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
+(defun col-strip (col-str)
+  (butlast (split-string (mapconcat (lambda (x) (concat "#" x " "))
+                                    (split-string col-str "-")
+                                    "") " ")))
+
+(setq color-schemes
+      '((col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
+        (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
+        (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
+
+(setq chosen-color (nth 1 color-schemes))
+
 (use-package org-fragtog
-  :hook (org-mode . org-fragtog-mode))
+    :hook (org-mode . org-fragtog-mode))
 
-(use-package org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autosubmarkers t
-        org-appear-autolinks t
-        org-appear-autoentities t
-        org-appear-delay .1
-        org-appear-autokeywords t))
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autosubmarkers t
+          org-appear-autolinks t
+          org-appear-autoentities t
+          org-appear-delay .1
+          org-appear-autokeywords t))
 
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-(setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 
-(use-package tex
-   :straight auctex
-   :defer t
-   :config
-   (setq TeX-auto-save t)
-   (setq TeX-parse-self t))
+  (use-package tex
+     :straight auctex
+     :defer t
+     :config
+     (setq TeX-auto-save t)
+     (setq TeX-parse-self t))
 
-(use-package cdlatex
-  :requires texmathp
-  :hook (org-mode . turn-on-org-cdlatex))
+  (use-package cdlatex
+    :requires texmathp
+    :config
+    (setq cdlatex-paired-parens "")
+
+)
+(add-hook 'org-mode-hook #'turn-on-org-cdlatex)
 
 (use-package org-download
   :ensure t
@@ -694,57 +719,65 @@ apps are not started from a shell."
        )
 
 (use-package org-roam
-    :init
-    (setq org-roam-v2-ack t) ; stops warning message
-    :custom
-    (org-roam-directory "~/org/roam/")
-    (org-roam-completion-everywhere t)
-    (org-roam-capture-templates '(
-                                  ("d" "default" plain
-                                   "\n\n* %?"
-                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
-                                   :unnarrowed t)
-                                  ("t" "Term/Definition" plain
-                                   "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
-                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
-                                   :unnarrowed t)
+      :init
+      (setq org-roam-v2-ack t) ; stops warning message
+      :demand t
+      :custom
+      (org-roam-directory "~/org/roam/")
+      (org-roam-completion-everywhere t)
+      (org-roam-capture-templates '(
+                                    ("d" "default" plain
+                                     "\n\n* %?"
+                                     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                     :unnarrowed t)
+                                    ("t" "Term/Definition" plain
+                                     "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
+                                     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                     :unnarrowed t)
 
-                                  ))
-    :config
-    (org-roam-setup)
-    (org-roam-db-autosync-mode)
-    :bind (("C-c n f" . org-roam-node-find)
-           ("C-c n g" . org-roam-graph)
-           ("C-c n r" . org-roam-node-random)		    
-           (:map org-mode-map
-                 (("C-c n i" . org-roam-node-insert)
-                  ("C-c n o" . org-id-get-create)
-                  ("C-c n t" . org-roam-tag-add)
-                  ("C-c n a" . org-roam-alias-add)
-                  ("C-M-i" . completion-at-point)
-                  ("C-c n l" . org-roam-buffer-toggle)
-                  ("C-c n I" . org-roam-node-insert-immediate)))))
-  (require 'org-roam)
+                                    ))
+      :config
+      (org-roam-setup)
+      (org-roam-db-autosync-mode)
+      :bind (("C-c n f" . org-roam-node-find)
+             ("C-c n g" . org-roam-graph)
+             ("C-c n r" . org-roam-node-random)		    
+             (:map org-mode-map
+                   (("C-c n i" . org-roam-node-insert)
+                    ("C-c n o" . org-id-get-create)
+                    ("C-c n t" . org-roam-tag-add)
+                    ("C-c n a" . org-roam-alias-add)
+                    ("C-M-i" . completion-at-point)
+                    ("C-c n l" . org-roam-buffer-toggle)
+                    ("C-c n I" . org-roam-node-insert-immediate)))))
+    (require 'org-roam)
+    (cl-defmethod org-roam-node-directories ((node org-roam-node))
+    (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
+        (format "(%s)" (car (f-split dirs)))
+      ""))
+
+(defun org-roam-node-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+
+  (cl-defmethod org-roam-node-backlinkscount ((node org-roam-node))
+    (let* ((count (caar (org-roam-db-query
+                         [:select (funcall count source)
+                                  :from links
+                                  :where (= dest $s1)
+                                  :and (= type "id")]
+                         (org-roam-node-id node)))))
+      (format "[%d]" count)))
+
   (cl-defmethod org-roam-node-directories ((node org-roam-node))
   (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
-      (format "(%s)" (car (f-split dirs)))
+      (format "(%s)" (string-join (f-split dirs) "/"))
     ""))
 
-(cl-defmethod org-roam-node-backlinkscount ((node org-roam-node))
-  (let* ((count (caar (org-roam-db-query
-                       [:select (funcall count source)
-                                :from links
-                                :where (= dest $s1)
-                                :and (= type "id")]
-                       (org-roam-node-id node)))))
-    (format "[%d]" count)))
-
-(cl-defmethod org-roam-node-directories ((node org-roam-node))
-(if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
-    (format "(%s)" (string-join (f-split dirs) "/"))
-  ""))
-
-(setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
+  (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
 
 (use-package org-roam-ui
 :straight
