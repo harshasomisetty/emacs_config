@@ -412,6 +412,7 @@ apps are not started from a shell."
       org-ellipsis " ▼ " ;; folding symbol
       org-pretty-entities t
       org-hide-emphasis-markers t
+      org-hide-leading-stars t
       org-agenda-block-separator ""
       org-fontify-whole-heading-line t
       org-fontify-done-headline t
@@ -423,6 +424,18 @@ apps are not started from a shell."
    (setq valign-fancy-bar t)
   :hook ((org-mode) . valign-mode)
   )
+
+(defun col-strip (col-str)
+  (butlast (split-string (mapconcat (lambda (x) (concat "#" x " "))
+                                    (split-string col-str "-")
+                                    "") " ")))
+
+(setq color-schemes (list
+        (col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
+        (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
+        (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
+
+(setq chosen-color (nth 1 color-schemes))
 
 (defun my/buffer-face-mode-variable ()
   "Set font to a variable width (proportional) fonts in current buffer"
@@ -467,12 +480,14 @@ apps are not started from a shell."
   (set-face-attribute 'org-code nil
                       :inherit '(shadow fixed-pitch)
                       :height .8)
+  (set-face-attribute 'default nil
+                      :height 150
+                      :foreground "gray70")
   (set-face-attribute 'variable-pitch nil
                       :family "Cochin"
                       :height 1.2)
-  (set-face-attribute 'default nil
-                      :foreground (nth 0 chosen-color))
   (set-face-attribute 'fixed-pitch nil
+                      :height 1
                       :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
                       :height 1.3
@@ -502,18 +517,6 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'my/style-org)
 (add-hook 'org-mode-hook 'visual-line-mode) ; make lines go to full screen
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
-
-(defun col-strip (col-str)
-  (butlast (split-string (mapconcat (lambda (x) (concat "#" x " "))
-                                    (split-string col-str "-")
-                                    "") " ")))
-
-(setq color-schemes
-      '((col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
-        (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
-        (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
-
-(setq chosen-color (nth 1 color-schemes))
 
 (use-package org-fragtog
     :hook (org-mode . org-fragtog-mode))
