@@ -85,13 +85,13 @@ apps are not started from a shell."
 (use-package disable-mouse)
 (global-disable-mouse-mode)
 
-(use-package no-spam
-  :config
-  (no-spam-add-repeat-delay next-line 10)
-  (no-spam-add-repeat-delay previous-line 10)
-  (no-spam-add-repeat-delay forward-char 10)
-  (no-spam-add-repeat-delay backward-char 10)
-  (no-spam-mode))
+;; (use-package no-spam
+;;   :config
+;;   (no-spam-add-repeat-delay next-line 10)
+;;   (no-spam-add-repeat-delay previous-line 10)
+;;   (no-spam-add-repeat-delay forward-char 10)
+;;   (no-spam-add-repeat-delay backward-char 10)
+;;   (no-spam-mode))
 
 (require 'org-tempo)
 
@@ -199,6 +199,7 @@ apps are not started from a shell."
 
  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
  (define-key c-mode-map (kbd "C-c g") #'gdb)
+ (use-package clang-format)
 
 (use-package ess-site
   :straight ess
@@ -261,6 +262,7 @@ apps are not started from a shell."
   (:map ess-r-mode-map
         ("M--" . ess-insert-assign)
         ("C-S-m" . pipe_R_operator)
+        ("C-c r" . R)
         :map
         inferior-ess-r-mode-map
         ("M--" . ess-insert-assign)
@@ -395,7 +397,6 @@ apps are not started from a shell."
 (use-package org)
 (use-package org-contrib)
 (defun org-clocking-buffer (&rest _))
-
 
 (org-reload)
 
@@ -582,6 +583,9 @@ apps are not started from a shell."
 
 (global-set-key (kbd "C-c r") #'ros)
 
+(setq ispell-program-name "hunspell")
+(setq ispell-local-dictionary "en_US")
+
 (setq org-agenda-files '(
                          "~/org/inbox.org"
                          "~/org/gtd.org"
@@ -591,10 +595,12 @@ apps are not started from a shell."
 
 (setq org-agenda-start-with-log-mode t
       org-log-done 'time
+      org-agenda-skip-deadline-if-done t
+      org-agenda-skip-scheduled-if-done t
       org-log-into-drawer t
-      calendar-week-start-day 0)
-
-(setq org-agenda-prefix-format
+      calendar-week-start-day 0
+      org-archive-location "~/.emacs.d/archive.org::"
+      org-agenda-prefix-format
       '(
         (agenda . " %-12b %?-15t% s")
         (todo . " %i %-12:c")
@@ -615,16 +621,19 @@ apps are not started from a shell."
                            ("~/org/time.org" :level . 1)
                            ))
 
+(defun archive-when-done ()
+"Archive current entry if it is marked as DONE (see `org-done-keywords')."
+(when (org-entry-is-done-p)
+  (org-archive-subtree-default)))
+
 
 (defun gtd_settings ()
   (interactive)
   (find-file "~/org/gtd.org")
   )
-(global-set-key (kbd "C-c g") #'gtd_settings)
+
 ;; Save Org buffers after refiling!
 (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-(setq org-archive-location "~/.emacs.d/archive.org::")
 
 (require 'org-clock)
 (setq org-clock-persist 'history)
@@ -659,7 +668,7 @@ apps are not started from a shell."
 (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
 (use-package org-journal
-  :bind (("C-c j" . org-journal-mode)  
+  :bind (("C-c j" . org-journal-new-entry)  
          )
   :custom
   (org-journal-dir "~/org/journal/")
