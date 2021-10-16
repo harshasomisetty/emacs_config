@@ -153,15 +153,15 @@ apps are not started from a shell."
 
 (defun full-screen ()
   (interactive)
-  (set-frame-position (selected-frame) (/ max-frame-width 1) 0)
+  (set-frame-position (selected-frame) 0 0)
   (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
 
-(global-set-key (kbd "C-c C-w C-e") 'left-two-thirds)
-(global-set-key (kbd "C-c C-w C-d") 'left-one-thirds)
-(global-set-key (kbd "C-c C-w C-t") 'right-two-thirds)
-(global-set-key (kbd "C-c C-w C-g") 'right-one-thirds)
-(global-set-key (kbd "C-c C-w C-f") 'center-third)
-(global-set-key (kbd "C-c C-w <C-return>") 'full-screen)
+(global-set-key (kbd "C-c w e") 'left-two-thirds)
+(global-set-key (kbd "C-c w d") 'left-one-thirds)
+(global-set-key (kbd "C-c w t") 'right-two-thirds)
+(global-set-key (kbd "C-c w g") 'right-one-thirds)
+(global-set-key (kbd "C-c w f") 'center-third)
+(global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (use-package avy
   :bind ("C-;" . avy-goto-word-1))
