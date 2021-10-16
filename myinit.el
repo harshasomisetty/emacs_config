@@ -56,80 +56,6 @@ apps are not started from a shell."
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
-(setq inhibit-startup-screen t)
-
-   (defun display-startup-echo-area-message ()
-     (message "Start Grind"))
-
-   ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-   (add-to-list 'default-frame-alist '(fullscreen . maximized))
- ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
-                                           ;  (split-window-right)
-                                           ; (find-file "~/.emacs.d/myinit.org")
-                                           ;(switch-to-buffer-other-window "myinit.org")
-                                           ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
-(load "~/.emacs.d/.quotes.el")
-(setq initial-scratch-message
-(nth (random (length quotes)) quotes))
-
-(use-package avy
-  :bind ("C-;" . avy-goto-word-1))
-
-(use-package ace-window
-  :bind ("C-x o" . ace-window)
-  :config
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-scope 'frame)
-)
-
-(use-package disable-mouse)
-(global-disable-mouse-mode)
-
-;; (use-package no-spam
-;;   :config
-;;   (no-spam-add-repeat-delay next-line 10)
-;;   (no-spam-add-repeat-delay previous-line 10)
-;;   (no-spam-add-repeat-delay forward-char 10)
-;;   (no-spam-add-repeat-delay backward-char 10)
-;;   (no-spam-mode))
-
-(require 'org-tempo)
-
-;; Move cursor to end of line, new line and indent
-
-(global-set-key (kbd "<C-return>") (lambda ()
-                                     (interactive)
-                                     (end-of-line)
-                                     (newline-and-indent)))
-
-
-
-;; Move cursor to previous line, new line, indent
-(global-set-key (kbd "<C-S-return>") (lambda ()
-                                       (interactive)
-                                       (previous-line)
-                                       (end-of-line)
-                                       (newline-and-indent)
-                                       ))
-
-
-
-(require 'subr-x)
-(use-package yasnippet
-  :config
-  (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-  (yas-global-mode 1)
-  )
-
-
-(use-package company
-  :disabled t
-  :config
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 2)
-  (global-company-mode t)
-  )
-
 ; reduce visual clutter
  (menu-bar-mode -1)
  (tool-bar-mode -1)
@@ -169,6 +95,131 @@ apps are not started from a shell."
   (spaceline-toggle-major-mode-on)
   (spaceline-toggle-column-on)
   (spaceline-emacs-theme))
+
+(setq inhibit-startup-screen t)
+
+(load "~/.emacs.d/.quotes.el")
+(setq initial-scratch-message
+      (nth (random (length quotes)) quotes))
+
+                                        ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+                                        ; (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                        ; (split-window-right)
+
+                                        ; (find-file "~/.emacs.d/myinit.org")
+                                        ; (switch-to-buffer-other-window "myinit.org")
+
+
+(defun emacs-startup-screen ()
+  "Display the weekly org-agenda and all todos."
+  (org-agenda nil "a")
+  (delete-other-windows)
+  (split-window-right)
+  (switch-to-buffer "*scratch*")
+  )
+(add-hook 'emacs-startup-hook #'emacs-startup-screen)
+
+(setq frame-resize-pixelwise t
+      l (display-monitor-attributes-list)
+      max-frame-width (nth 3 (nth 0 (nth 0 l)))
+      max-frame-height (nth 4 (nth 0 (nth 0 l))))
+
+(defun left-two-thirds ()
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+
+(defun left-one-thirds ()
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+
+(defun right-two-thirds ()
+  (interactive)
+  (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+  (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+
+(defun right-one-thirds ()
+  (interactive)
+  (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+
+(defun center-third ()
+  (interactive)
+  (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+
+(defun full-screen ()
+  (interactive)
+  (set-frame-position (selected-frame) (/ max-frame-width 1) 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
+
+(global-set-key (kbd "C-c C-w C-e") 'left-two-thirds)
+(global-set-key (kbd "C-c C-w C-d") 'left-one-thirds)
+(global-set-key (kbd "C-c C-w C-t") 'right-two-thirds)
+(global-set-key (kbd "C-c C-w C-g") 'right-one-thirds)
+(global-set-key (kbd "C-c C-w C-f") 'center-third)
+(global-set-key (kbd "C-c C-w <C-return>") 'full-screen)
+
+(use-package avy
+  :bind ("C-;" . avy-goto-word-1))
+
+(use-package ace-window
+  :bind ("C-x o" . ace-window)
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-scope 'frame)
+  )
+
+(use-package disable-mouse)
+(global-disable-mouse-mode)
+
+(use-package no-spam
+  :config
+  (no-spam-add-repeat-delay next-line 10)
+  (no-spam-add-repeat-delay previous-line 10)
+  (no-spam-add-repeat-delay forward-char 10)
+  (no-spam-add-repeat-delay backward-char 10)
+  (no-spam-mode))
+
+(require 'org-tempo)
+
+;; Move cursor to end of line, new line and indent
+
+(global-set-key (kbd "<C-return>") (lambda ()
+                                     (interactive)
+                                     (end-of-line)
+                                     (newline-and-indent)))
+
+
+
+;; Move cursor to previous line, new line, indent
+(global-set-key (kbd "<C-S-return>") (lambda ()
+                                       (interactive)
+                                       (previous-line)
+                                       (end-of-line)
+                                       (newline-and-indent)
+                                       ))
+
+
+
+(require 'subr-x)
+(use-package yasnippet
+  :config
+  (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+  (yas-global-mode 1)
+  )
+
+
+(use-package company
+  :disabled t
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 2)
+  (global-company-mode t)
+  )
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -589,6 +640,7 @@ apps are not started from a shell."
 (setq org-agenda-files '(
                          "~/org/inbox.org"
                          "~/org/gtd.org"
+                         "~/org/habits.org"
                          ))
 
 (set-register ?g (cons 'file (concat default-directory "gtd.org")))
@@ -667,6 +719,14 @@ apps are not started from a shell."
 
 (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count)
 
+(setq org-clock-into-drawer t
+      org-clock-idle-time 5
+      org-time-stamp-rounding-minutes (quote (0 5))
+      org-clock-history-length 23
+      org-clock-persist t
+      org-clock-in-resume t
+      org-clock-persist-query-resume nil)
+
 (use-package org-journal
   :bind (("C-c j" . org-journal-new-entry)  
          )
@@ -709,6 +769,12 @@ apps are not started from a shell."
 
 (add-hook 'org-journal-after-header-create-hook
           #'insert-created-date)
+
+
+(add-hook 'org-journal-after-entry-create-hook
+          'beginning-of-line
+          'kill-line
+          'end-of-buffer)
 
 (setq org-capture-templates
        `(

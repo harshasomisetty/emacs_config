@@ -67,94 +67,7 @@
   
 #+END_SRC
 
-** Startup
-#+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-screen t)
-  
-    (defun display-startup-echo-area-message ()
-      (message "Start Grind"))
-  
-    ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  ;  (setq initial-buffer-choice "~/org/literature/osnotes.org")
-                                            ;  (split-window-right)
-                                            ; (find-file "~/.emacs.d/myinit.org")
-                                            ;(switch-to-buffer-other-window "myinit.org")
-                                            ; (let ((org-agenda-window-setup)) (org-agenda nil "a"))
- (load "~/.emacs.d/.quotes.el")
- (setq initial-scratch-message
- (nth (random (length quotes)) quotes))
-  
-#+END_SRC
-** Navigation
-
-#+BEGIN_SRC emacs-lisp
-  
-  (use-package avy
-    :bind ("C-;" . avy-goto-word-1))
-  
-  (use-package ace-window
-    :bind ("C-x o" . ace-window)
-    :config
-    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-    (setq aw-scope 'frame)
-    )
-  
-  (use-package disable-mouse)
-  (global-disable-mouse-mode)
-  
-  (use-package no-spam
-    :config
-    (no-spam-add-repeat-delay next-line 10)
-    (no-spam-add-repeat-delay previous-line 10)
-    (no-spam-add-repeat-delay forward-char 10)
-    (no-spam-add-repeat-delay backward-char 10)
-    (no-spam-mode))
-#+END_SRC
-
-** Editing
-
-#+BEGIN_SRC emacs-lisp
-  (require 'org-tempo)
-  
-  ;; Move cursor to end of line, new line and indent
-  
-  (global-set-key (kbd "<C-return>") (lambda ()
-                                       (interactive)
-                                       (end-of-line)
-                                       (newline-and-indent)))
-  
-  
-  
-  ;; Move cursor to previous line, new line, indent
-  (global-set-key (kbd "<C-S-return>") (lambda ()
-                                         (interactive)
-                                         (previous-line)
-                                         (end-of-line)
-                                         (newline-and-indent)
-                                         ))
-  
-  
-  
-  (require 'subr-x)
-  (use-package yasnippet
-    :config
-    (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-    (yas-global-mode 1)
-    )
-  
-  
-  (use-package company
-    :disabled t
-    :config
-    (setq company-idle-delay 0)
-    (setq company-minimum-prefix-length 2)
-    (global-company-mode t)
-    )
-#+END_SRC
-
 ** Display
-
 #+BEGIN_SRC emacs-lisp
   
   ; reduce visual clutter
@@ -198,7 +111,144 @@
     (spaceline-emacs-theme))
   
 #+END_SRC
+*** Startup
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t)
   
+  (load "~/.emacs.d/.quotes.el")
+  (setq initial-scratch-message
+        (nth (random (length quotes)) quotes))
+  
+                                          ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  
+                                          ; (setq initial-buffer-choice "~/org/literature/osnotes.org")
+                                          ; (split-window-right)
+  
+                                          ; (find-file "~/.emacs.d/myinit.org")
+                                          ; (switch-to-buffer-other-window "myinit.org")
+  
+  
+  (defun emacs-startup-screen ()
+    "Display the weekly org-agenda and all todos."
+    (org-agenda nil "a")
+    (delete-other-windows)
+    (split-window-right)
+    (switch-to-buffer "*scratch*")
+    )
+  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+#+END_SRC
+
+*** Window Size
+#+begin_src emacs-lisp
+  (setq frame-resize-pixelwise t
+        l (display-monitor-attributes-list)
+        max-frame-width (nth 3 (nth 0 (nth 0 l)))
+        max-frame-height (nth 4 (nth 0 (nth 0 l))))
+  
+  (defun left-two-thirds ()
+    (interactive)
+    (set-frame-position (selected-frame) 0 0)
+    (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+  
+  (defun left-one-thirds ()
+    (interactive)
+    (set-frame-position (selected-frame) 0 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+  
+  (defun right-two-thirds ()
+    (interactive)
+    (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+    (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+  
+  (defun right-one-thirds ()
+    (interactive)
+    (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+  
+  (defun center-third ()
+    (interactive)
+    (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+  
+  (defun full-screen ()
+    (interactive)
+    (set-frame-position (selected-frame) 0 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
+  
+  (global-set-key (kbd "C-c C-w C-e") 'left-two-thirds)
+  (global-set-key (kbd "C-c C-w C-d") 'left-one-thirds)
+  (global-set-key (kbd "C-c C-w C-t") 'right-two-thirds)
+  (global-set-key (kbd "C-c C-w C-g") 'right-one-thirds)
+  (global-set-key (kbd "C-c C-w C-f") 'center-third)
+  (global-set-key (kbd "C-c C-w <C-return>") 'full-screen)
+#+end_src
+** Navigation
+
+#+BEGIN_SRC emacs-lisp
+  
+  (use-package avy
+    :bind ("C-;" . avy-goto-word-1))
+  
+  (use-package ace-window
+    :bind ("C-x o" . ace-window)
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+    (setq aw-scope 'frame)
+    )
+  
+  (use-package disable-mouse)
+  (global-disable-mouse-mode)
+  
+  (use-package no-spam
+    :config
+    (no-spam-add-repeat-delay next-line 10)
+    (no-spam-add-repeat-delay previous-line 10)
+    (no-spam-add-repeat-delay forward-char 10)
+    (no-spam-add-repeat-delay backward-char 10)
+    (no-spam-mode))
+#+END_SRC
+** Editing
+
+#+BEGIN_SRC emacs-lisp
+  (require 'org-tempo)
+  
+  ;; Move cursor to end of line, new line and indent
+  
+  (global-set-key (kbd "<C-return>") (lambda ()
+                                       (interactive)
+                                       (end-of-line)
+                                       (newline-and-indent)))
+  
+  
+  
+  ;; Move cursor to previous line, new line, indent
+  (global-set-key (kbd "<C-S-return>") (lambda ()
+                                         (interactive)
+                                         (previous-line)
+                                         (end-of-line)
+                                         (newline-and-indent)
+                                         ))
+  
+  
+  
+  (require 'subr-x)
+  (use-package yasnippet
+    :config
+    (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+    (yas-global-mode 1)
+    )
+  
+  
+  (use-package company
+    :disabled t
+    :config
+    (setq company-idle-delay 0)
+    (setq company-minimum-prefix-length 2)
+    (global-company-mode t)
+    )
+#+END_SRC
+
 ** Coding
 *** Babel
 #+begin_src emacs-lisp 
@@ -454,6 +504,7 @@
     (use-package smudge)
 #+end_src
 
+
 * Org-mode
 ** Init
 
@@ -468,7 +519,7 @@
 
 ** Formatting
 *** Looks
-  Using insp from [[https://hugocisneros.com/org-config/][here]]
+  g insp from [[https://hugocisneros.com/org-config/][here]]
 **** Gen
 #+begin_src emacs-lisp
   (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
@@ -686,6 +737,7 @@
   (setq org-agenda-files '(
                            "~/org/inbox.org"
                            "~/org/gtd.org"
+                           "~/org/habits.org"
                            ))
   
   (set-register ?g (cons 'file (concat default-directory "gtd.org")))
@@ -779,53 +831,69 @@
 #+RESULTS:
 | org-habit-streak-count |
 
+*** Clocking
+[[org-clock-persist-query-resume nil][good ref]], [[http://doc.norang.ca/org-mode.html#Clocking][link]]
+#+begin_src emacs-lisp
+  (setq org-clock-into-drawer t
+        org-clock-idle-time 5
+        org-time-stamp-rounding-minutes (quote (0 5))
+        org-clock-history-length 23
+        org-clock-persist t
+        org-clock-in-resume t
+        org-clock-persist-query-resume nil)
+        
+#+end_src
 *** Journal
 
 #+BEGIN_SRC emacs-lisp
-      (use-package org-journal
-        :bind (("C-c j" . org-journal-new-entry)  
-               )
-        :custom
-        (org-journal-dir "~/org/journal/")
-        (org-journal-file-format "%Y%m%d")
-        (org-journal-date-format "%e %b %Y (%A)")
-        (org-journal-time-format "")
-        (setq org-journal-date-prefix "")
-        (setq org-journal-find-file 'find-file)
-        )
-    
-        
-      (defun org-journal-find-location ()
-        ;; Open today's journal, but specify a non-nil prefix argument in order to
-        ;; inhibit inserting the heading; org-capture will insert the heading.
-        (org-journal-new-entry t)
-        (unless (eq org-journal-file-type 'daily)
-          (org-narrow-to-subtree))
-        (goto-char (point-max)))
-    
-      (defun org-journal-save-entry-and-exit()
-        "Simple convenience function.
-            Saves the buffer of the current day's entry and kills the window
-            Similar to org-capture like behavior"
-        (interactive)
-        (save-buffer)
-        (kill-buffer-and-window))
-    
-      (add-hook 'org-journal-mode-hook
-                (lambda ()
-                  (define-key org-journal-mode-map
-                    (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+  (use-package org-journal
+    :bind (("C-c j" . org-journal-new-entry)  
+           )
+    :custom
+    (org-journal-dir "~/org/journal/")
+    (org-journal-file-format "%Y%m%d")
+    (org-journal-date-format "%e %b %Y (%A)")
+    (org-journal-time-format "")
+    (setq org-journal-date-prefix "")
+    (setq org-journal-find-file 'find-file)
+    )
   
-      (defun insert-created-date (&rest ignore)
-        (insert (concat
-                 "\n* Gratitude\n"
-                   )))
-    
-    
-      (add-hook 'org-journal-after-header-create-hook
-                #'insert-created-date)
-    
-    
+  
+  (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    (org-journal-new-entry t)
+    (unless (eq org-journal-file-type 'daily)
+      (org-narrow-to-subtree))
+    (goto-char (point-max)))
+  
+  (defun org-journal-save-entry-and-exit()
+    "Simple convenience function.
+        Saves the buffer of the current day's entry and kills the window
+        Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
+  
+  (add-hook 'org-journal-mode-hook
+            (lambda ()
+              (define-key org-journal-mode-map
+                (kbd "C-x C-s") 'org-journal-save-entry-and-exit)))
+  
+  (defun insert-created-date (&rest ignore)
+    (insert (concat
+             "\n* Gratitude\n"
+               )))
+  
+  
+  (add-hook 'org-journal-after-header-create-hook
+            #'insert-created-date)
+  
+  
+  (add-hook 'org-journal-after-entry-create-hook
+            'beginning-of-line
+            'kill-line
+            'end-of-buffer)
     #+END_SRC
 
 *** Capture Templates
@@ -930,8 +998,8 @@
     (setq org-noter-default-notes-file-name '("notes.org")
           org-noter-notes-search-path '("~/org")
           org-noter-separate-notes-from-heading t))
+  
 
 #+end_src
 *** BibTex
 *** Publish
-
