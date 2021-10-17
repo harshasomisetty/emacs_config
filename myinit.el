@@ -56,6 +56,9 @@ apps are not started from a shell."
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
+
+(use-package speed-type)
+
 ; reduce visual clutter
  (menu-bar-mode -1)
  (tool-bar-mode -1)
@@ -846,6 +849,7 @@ apps are not started from a shell."
     ""))
 
   (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
+  (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
 
 (use-package org-roam-ui
 :straight

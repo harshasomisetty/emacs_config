@@ -65,6 +65,8 @@
   (set-register ?i (cons 'file user-init-file))
   (set-register ?l (cons 'file (concat default-directory "learning.org")))
   
+
+  (use-package speed-type)
 #+END_SRC
 
 ** Display
@@ -163,7 +165,7 @@
   
   (defun right-one-thirds ()
     (interactive)
-    (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+    (set-frame-position (selected-frame) (* 2 (/ max-frame-width 3)) 0)
     (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
   
   (defun center-third ()
@@ -207,6 +209,19 @@
     (no-spam-add-repeat-delay forward-char 10)
     (no-spam-add-repeat-delay backward-char 10)
     (no-spam-mode))
+  
+  (defun my-split-vertical ()
+    (interactive)
+    (split-window-vertically)
+    (other-window 1))
+
+(defun my-split-horizontal ()
+    (interactive)
+    (split-window-horizontally)
+    (other-window 1))
+
+(global-set-key (kbd "C-x 2") 'my-split-vertical)
+(global-set-key (kbd "C-x 3") 'my-split-horizontal)
 #+END_SRC
 ** Editing
 
@@ -973,7 +988,7 @@
       ""))
   
     (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
-  
+    (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
   #+END_SRC
 **** roam ui
 #+begin_src emacs-lisp
