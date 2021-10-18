@@ -262,6 +262,8 @@
     (setq company-minimum-prefix-length 2)
     (global-company-mode t)
     )
+  
+  (add-hook 'after-init-hook #'global-flycheck-mode)
 #+END_SRC
 
 ** Coding
@@ -286,20 +288,21 @@
 
 *** C
 #+begin_src emacs-lisp
+  (setq-default c-basic-offset 4)
   (define-key c-mode-map (kbd "C-c m") #'compile)  
-      (defun execute-c-program ()
-        (interactive)
-        (save-buffer)
-        (defvar foo)
-        (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-        (shell)
-        (kill-new foo)
-        (org-yank)
-      )
-  
-   (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
-   (define-key c-mode-map (kbd "C-c g") #'gdb)
-   (use-package clang-format)
+        (defun execute-c-program ()
+          (interactive)
+          (save-buffer)
+          (defvar foo)
+          (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+          (shell)
+          (kill-new foo)
+          (org-yank)
+        )
+    
+     (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+     (define-key c-mode-map (kbd "C-c g") #'gdb)
+     (use-package clang-format)
 #+end_src
 
 *** ESS and R
@@ -483,7 +486,23 @@
      'c-mode-hook
      (lambda () (when (file-remote-p default-directory) (company-mode -1))))
   #+END_SRC
-  
+*** shell
+#+begin_src emacs-lisp
+      (use-package bash-completion
+        :config
+        (bash-completion-setup))
+      
+      (use-package shell-pop
+        :init
+        (setq shell-pop-universal-key "C-t"
+              shell-pop-window-position "bottom")
+        )
+      
+      
+      
+      
+      
+#+end_src
 * Extensions
 ** Helm
 #+BEGIN_SRC emacs-lisp

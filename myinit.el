@@ -146,7 +146,7 @@ apps are not started from a shell."
 
 (defun right-one-thirds ()
   (interactive)
-  (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+  (set-frame-position (selected-frame) (* 2 (/ max-frame-width 3)) 0)
   (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
 
 (defun center-third ()
@@ -167,25 +167,38 @@ apps are not started from a shell."
 (global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (use-package avy
-  :bind ("C-;" . avy-goto-word-1))
+    :bind ("C-;" . avy-goto-word-1))
+  
+  (use-package ace-window
+    :bind ("C-x o" . ace-window)
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+    (setq aw-scope 'frame)
+    )
+  
+  (use-package disable-mouse)
+  (global-disable-mouse-mode)
+  
+  (use-package no-spam
+    :config
+    (no-spam-add-repeat-delay next-line 10)
+    (no-spam-add-repeat-delay previous-line 10)
+    (no-spam-add-repeat-delay forward-char 10)
+    (no-spam-add-repeat-delay backward-char 10)
+    (no-spam-mode))
+  
+  (defun my-split-vertical ()
+    (interactive)
+    (split-window-vertically)
+    (other-window 1))
 
-(use-package ace-window
-  :bind ("C-x o" . ace-window)
-  :config
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-scope 'frame)
-  )
+(defun my-split-horizontal ()
+    (interactive)
+    (split-window-horizontally)
+    (other-window 1))
 
-(use-package disable-mouse)
-(global-disable-mouse-mode)
-
-(use-package no-spam
-  :config
-  (no-spam-add-repeat-delay next-line 10)
-  (no-spam-add-repeat-delay previous-line 10)
-  (no-spam-add-repeat-delay forward-char 10)
-  (no-spam-add-repeat-delay backward-char 10)
-  (no-spam-mode))
+(global-set-key (kbd "C-x 2") 'my-split-vertical)
+(global-set-key (kbd "C-x 3") 'my-split-horizontal)
 
 (require 'org-tempo)
 
@@ -240,20 +253,21 @@ apps are not started from a shell."
 
 (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
+(setq-default c-basic-offset 8)
 (define-key c-mode-map (kbd "C-c m") #'compile)  
-    (defun execute-c-program ()
-      (interactive)
-      (save-buffer)
-      (defvar foo)
-      (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-      (shell)
-      (kill-new foo)
-      (org-yank)
-    )
+      (defun execute-c-program ()
+        (interactive)
+        (save-buffer)
+        (defvar foo)
+        (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+        (shell)
+        (kill-new foo)
+        (org-yank)
+      )
 
- (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
- (define-key c-mode-map (kbd "C-c g") #'gdb)
- (use-package clang-format)
+   (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+   (define-key c-mode-map (kbd "C-c g") #'gdb)
+   (use-package clang-format)
 
 (use-package ess-site
   :straight ess
@@ -424,6 +438,10 @@ apps are not started from a shell."
 (add-hook
    'c-mode-hook
    (lambda () (when (file-remote-p default-directory) (company-mode -1))))
+
+(use-package bash-completion
+  :config
+  (bash-completion-setup))
 
 (use-package helm
   :bind
