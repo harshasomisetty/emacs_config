@@ -99,31 +99,6 @@ apps are not started from a shell."
   (spaceline-toggle-column-on)
   (spaceline-emacs-theme))
 
-(setq inhibit-startup-screen t)
-
-(load "~/.emacs.d/.quotes.el")
-(setq initial-scratch-message
-      (nth (random (length quotes)) quotes))
-
-                                        ; (setq initial-frame-alist '((top . 0) (left . 1060) (width . 302) (height . 105)))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-                                        ; (setq initial-buffer-choice "~/org/literature/osnotes.org")
-                                        ; (split-window-right)
-
-                                        ; (find-file "~/.emacs.d/myinit.org")
-                                        ; (switch-to-buffer-other-window "myinit.org")
-
-
-(defun emacs-startup-screen ()
-  "Display the weekly org-agenda and all todos."
-  (org-agenda nil "a")
-  (delete-other-windows)
-  (split-window-right)
-  (switch-to-buffer "*scratch*")
-  )
-(add-hook 'emacs-startup-hook #'emacs-startup-screen)
-
 (setq frame-resize-pixelwise t
       l (display-monitor-attributes-list)
       max-frame-width (nth 3 (nth 0 (nth 0 l)))
@@ -165,6 +140,35 @@ apps are not started from a shell."
 (global-set-key (kbd "C-c w g") 'right-one-thirds)
 (global-set-key (kbd "C-c w f") 'center-third)
 (global-set-key (kbd "C-c w <return>") 'full-screen)
+
+(setq inhibit-startup-screen t)
+
+  (load "~/.emacs.d/.quotes.el")
+  (setq initial-scratch-message
+        (nth (random (length quotes)) quotes))
+
+  (defun files-startup-screen (file2 file1)
+
+    (switch-to-buffer (find-file file1 ))
+    (split-window-right)
+
+    (switch-to-buffer (find-file file2))
+    )
+
+  (defun agenda-startup-screen ()
+      "Display the weekly org-agenda and all todos."
+    (org-agenda nil "a")
+    (delete-other-windows)
+    (split-window-right)
+    (switch-to-buffer "*scratch*"))
+
+  (defun emacs-startup-screen ()
+    (right-two-thirds)
+;    (agenda-startup-screen)
+    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+    (balance-windows)
+    )
+  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -237,6 +241,8 @@ apps are not started from a shell."
   (global-company-mode t)
   )
 
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(
@@ -253,7 +259,7 @@ apps are not started from a shell."
 
 (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
-(setq-default c-basic-offset 8)
+(setq-default c-basic-offset 4)
 (define-key c-mode-map (kbd "C-c m") #'compile)  
       (defun execute-c-program ()
         (interactive)
@@ -439,9 +445,23 @@ apps are not started from a shell."
    'c-mode-hook
    (lambda () (when (file-remote-p default-directory) (company-mode -1))))
 
-(use-package bash-completion
-  :config
-  (bash-completion-setup))
+(use-package term
+    :config
+
+    (setq explicit-shell-file-name "zsh"
+          term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  (use-package bash-completion
+    :config
+    (bash-completion-setup))
+  
+  (use-package shell-pop
+    :init
+    (setq shell-pop-universal-key "C-t"
+          shell-pop-window-position "bottom"
+;          shell-pop-shell-type "terminal"
+          shell-pop-cleanup-buffer-at-process-exit t
+          shell-pop-window-size 30
+    ))
 
 (use-package helm
   :bind
@@ -592,34 +612,34 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
 (use-package org-fragtog
-    :hook (org-mode . org-fragtog-mode))
+      :hook (org-mode . org-fragtog-mode))
+  
+    (use-package org-appear
+      :hook (org-mode . org-appear-mode)
+      :config
+      (setq org-appear-autosubmarkers t
+            org-appear-autolinks t
+            org-appear-autoentities t
+            org-appear-delay .1
+            org-appear-autokeywords t))
+  
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  
+    (use-package tex
+       :straight auctex
+       :defer t
+       :config
+       (setq TeX-auto-save t)
+       (setq TeX-parse-self t))
+  
+    (use-package cdlatex
+      :requires texmathp
+      :config
+;      (setq cdlatex-paired-parens "")
 
-  (use-package org-appear
-    :hook (org-mode . org-appear-mode)
-    :config
-    (setq org-appear-autosubmarkers t
-          org-appear-autolinks t
-          org-appear-autoentities t
-          org-appear-delay .1
-          org-appear-autokeywords t))
-
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
-
-  (use-package tex
-     :straight auctex
-     :defer t
-     :config
-     (setq TeX-auto-save t)
-     (setq TeX-parse-self t))
-
-  (use-package cdlatex
-    :requires texmathp
-    :config
-    (setq cdlatex-paired-parens "")
-
-)
-(add-hook 'org-mode-hook #'turn-on-org-cdlatex)
+  )
+  (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
 
 (use-package org-download
   :ensure t
@@ -880,7 +900,9 @@ apps are not started from a shell."
         org-roam-ui-open-on-start t))
 
 (use-package org-noter
+  :bind ("C-c o" . org-noter)
   :config
   (setq org-noter-default-notes-file-name '("notes.org")
         org-noter-notes-search-path '("~/org")
+        org-noter-notes-window-location "Vertical"
         org-noter-separate-notes-from-heading t))
