@@ -143,29 +143,39 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
-  (load "~/.emacs.d/.quotes.el")
-  (setq initial-scratch-message
-        (nth (random (length quotes)) quotes))
+  (defun scratch-setup ()
+    (load "~/.emacs.d/.quotes.el")
+    (setq initial-scratch-message
+          (nth (random (length quotes)) quotes)))
 
-  (defun files-startup-screen (file2 file1)
+  (defun files-startup-screen (file2 &rest files)
+    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-    (switch-to-buffer (find-file file1 ))
-    (split-window-right)
 
-    (switch-to-buffer (find-file file2))
+    (dotimes (n (length files))
+      (setq index (- (- (length files) n) 1))
+
+      (switch-to-buffer (find-file (nth index files)))
+      (split-window-right)
+        )
+    (switch-to-buffer (find-file file2 ))  
     )
 
   (defun agenda-startup-screen ()
-      "Display the weekly org-agenda and all todos."
+    "Display the weekly org-agenda and all todos."
     (org-agenda nil "a")
     (delete-other-windows)
     (split-window-right)
     (switch-to-buffer "*scratch*"))
 
   (defun emacs-startup-screen ()
-    (right-two-thirds)
+
+
+    (scratch-setup)
+;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+    (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
 ;    (agenda-startup-screen)
-    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+    (right-two-thirds)
     (balance-windows)
     )
   (add-hook 'emacs-startup-hook #'emacs-startup-screen)
@@ -453,15 +463,16 @@ apps are not started from a shell."
   (use-package bash-completion
     :config
     (bash-completion-setup))
-  
+
   (use-package shell-pop
     :init
     (setq shell-pop-universal-key "C-t"
           shell-pop-window-position "bottom"
 ;          shell-pop-shell-type "terminal"
           shell-pop-cleanup-buffer-at-process-exit t
-          shell-pop-window-size 30
-    ))
+          shell-pop-window-size 30)
+    (push (cons "\\*shell\\*" display-buffer--same-window-action) display-buffer-alist)
+    )
 
 (use-package helm
   :bind
