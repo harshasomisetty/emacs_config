@@ -290,6 +290,11 @@ apps are not started from a shell."
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
+(use-package pdf-tools
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page))
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(

@@ -5,7 +5,6 @@
 ** Metadata
 
 #+BEGIN_SRC emacs-lisp
-  
   (global-auto-revert-mode 1)
   
   (require 'package)
@@ -151,6 +150,8 @@
   (global-set-key (kbd "C-c w f") 'center-third)
   (global-set-key (kbd "C-c w <return>") 'full-screen)
   
+  (use-package transpose-frame
+    :bind ("C-x 4 4" . transpose-frame))
 #+end_src
 *** Startup
 #+BEGIN_SRC emacs-lisp
@@ -234,8 +235,6 @@
 (global-set-key (kbd "C-x 3") 'my-split-horizontal)
 #+END_SRC
 *** Dired
-
-
 #+begin_src emacs-lisp
   (use-package dired
     :straight nil
@@ -323,6 +322,14 @@
   
   (add-hook 'after-init-hook #'global-flycheck-mode)
 #+END_SRC
+** Viewing
+*** PDF Tool
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :config
+    (pdf-tools-install)
+    (setq-default pdf-view-display-size 'fit-page))
+#+end_src
 
 ** Coding
 *** Babel
@@ -607,7 +614,6 @@
 #+begin_src emacs-lisp
     (use-package smudge)
 #+end_src
-
 
 * Org-mode
 ** Init
