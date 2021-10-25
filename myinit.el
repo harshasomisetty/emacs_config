@@ -34,7 +34,7 @@ apps are not started from a shell."
   kept-old-versions 5    ; and how many of the old
   ring-bell-function 'ignore)
 
-
+(use-package all-the-icons)
 
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
@@ -137,16 +137,17 @@ apps are not started from a shell."
 (global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (setq inhibit-startup-screen t)
-  
+
     (defun scratch-setup ()
       (load "~/.emacs.d/.quotes.el")
       (setq initial-scratch-message
             (nth (random (length quotes)) quotes)))
-  
+      (scratch-setup)
+
     (defun files-startup-screen (file2 &rest files)
       "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-  
-  
+
+
       (dotimes (n (length files))
         (setq index (- (- (length files) n) 1))
 
@@ -155,17 +156,17 @@ apps are not started from a shell."
           )
       (switch-to-buffer (find-file file2 ))  
       )
-  
+
     (defun agenda-startup-screen ()
       "Display the weekly org-agenda and all todos."
       (org-agenda nil "a")
       (delete-other-windows)
       (split-window-right)
       (switch-to-buffer "*scratch*"))
-  
+
     (defun emacs-startup-screen ()
-  
-      (scratch-setup)
+
+
   ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
 ;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
      (agenda-startup-screen)
@@ -208,6 +209,24 @@ apps are not started from a shell."
 (global-set-key (kbd "C-x 2") 'my-split-vertical)
 (global-set-key (kbd "C-x 3") 'my-split-horizontal)
 
+(use-package dired
+  :straight nil
+  :ensure nil
+  :config
+  (setq insert-directory-program "gls" dired-use-ls-dired t
+        dired-listing-switches "-agho --group-directories-first")
+
+  )
+
+(use-package dired-subtree :ensure t
+  :after dired
+  :config
+  (bind-key "<tab>" #'dired-subtree-toggle dired-mode-map)
+  (bind-key "<backtab>" #'dired-subtree-cycle dired-mode-map))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
 (use-package dired-hide-dotfiles
   :hook (dired-mode . dired-hide-dotfiles-mode)
   :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode)
@@ -230,8 +249,7 @@ apps are not started from a shell."
     "Regular expression for files to be ignored."
     :type 'regexp
     :safe 'stringp
-    :group 'deft)
-  (deft-refresh))
+    :group 'deft))
 
 (require 'org-tempo)
 
