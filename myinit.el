@@ -35,23 +35,6 @@ apps are not started from a shell."
   ring-bell-function 'ignore)
 
 
-(use-package deft
-  :bind ("C-x C-g" . deft-find-file)
-  :demand t
-  :config
-  (setq deft-extensions '("org")
-        deft-directory "~/org"
-        deft-recursive t
-        deft-use-filename-as-title t))
-
-(defcustom deft-ignore-file-regexp
-(concat "\\(?:"
-        "Fall19"
-        "\\)")
-"Regular expression for files to be ignored."
-:type 'regexp
-:safe 'stringp
-:group 'deft)
 
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
@@ -129,6 +112,16 @@ apps are not started from a shell."
   (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
   (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
 
+(defun left-half ()
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+
+(defun right-half ()
+  (interactive)
+  (set-frame-position (selected-frame) (/ max-frame-width 2) 0)
+  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+
 (defun full-screen ()
   (interactive)
   (set-frame-position (selected-frame) 0 0)
@@ -138,47 +131,48 @@ apps are not started from a shell."
 (global-set-key (kbd "C-c w d") 'left-one-thirds)
 (global-set-key (kbd "C-c w t") 'right-two-thirds)
 (global-set-key (kbd "C-c w g") 'right-one-thirds)
+(global-set-key (kbd "C-c w <left>") 'left-half)
+(global-set-key (kbd "C-c w <right>") 'right-half)
 (global-set-key (kbd "C-c w f") 'center-third)
 (global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (setq inhibit-startup-screen t)
+  
+    (defun scratch-setup ()
+      (load "~/.emacs.d/.quotes.el")
+      (setq initial-scratch-message
+            (nth (random (length quotes)) quotes)))
+  
+    (defun files-startup-screen (file2 &rest files)
+      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+  
+  
+      (dotimes (n (length files))
+        (setq index (- (- (length files) n) 1))
 
-  (defun scratch-setup ()
-    (load "~/.emacs.d/.quotes.el")
-    (setq initial-scratch-message
-          (nth (random (length quotes)) quotes)))
-
-  (defun files-startup-screen (file2 &rest files)
-    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-
-
-    (dotimes (n (length files))
-      (setq index (- (- (length files) n) 1))
-
-      (switch-to-buffer (find-file (nth index files)))
+        (switch-to-buffer (find-file (nth index files)))
+        (split-window-right)
+          )
+      (switch-to-buffer (find-file file2 ))  
+      )
+  
+    (defun agenda-startup-screen ()
+      "Display the weekly org-agenda and all todos."
+      (org-agenda nil "a")
+      (delete-other-windows)
       (split-window-right)
-        )
-    (switch-to-buffer (find-file file2 ))  
-    )
-
-  (defun agenda-startup-screen ()
-    "Display the weekly org-agenda and all todos."
-    (org-agenda nil "a")
-    (delete-other-windows)
-    (split-window-right)
-    (switch-to-buffer "*scratch*"))
-
-  (defun emacs-startup-screen ()
-
-
-    (scratch-setup)
-;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-    (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-;    (agenda-startup-screen)
-    (right-two-thirds)
-    (balance-windows)
-    )
-  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+      (switch-to-buffer "*scratch*"))
+  
+    (defun emacs-startup-screen ()
+  
+      (scratch-setup)
+  ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+     (agenda-startup-screen)
+      (right-two-thirds)
+      (balance-windows)
+      )
+    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -213,6 +207,31 @@ apps are not started from a shell."
 
 (global-set-key (kbd "C-x 2") 'my-split-vertical)
 (global-set-key (kbd "C-x 3") 'my-split-horizontal)
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode)
+  )
+
+(use-package deft
+  :demand t
+  :bind
+  ("C-x C-g" . deft-find-file)
+  :config
+  (setq deft-extensions '("org")
+        deft-directory "~/org"
+        deft-recursive t
+        deft-use-filename-as-title t)
+  (global-set-key (kbd "C-x C-g") 'deft-find-file)
+  (defcustom deft-ignore-file-regexp
+    (concat "\\(?:"
+            "Fall19"
+            "\\)")
+    "Regular expression for files to be ignored."
+    :type 'regexp
+    :safe 'stringp
+    :group 'deft)
+  (deft-refresh))
 
 (require 'org-tempo)
 
@@ -283,6 +302,7 @@ apps are not started from a shell."
 
    (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
    (define-key c-mode-map (kbd "C-c g") #'gdb)
+(define-key c-mode-map (kbd "C-c C-/") 'uncomment-region)
    (use-package clang-format)
 
 (use-package ess-site
@@ -479,7 +499,7 @@ apps are not started from a shell."
   ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
   ("M-y" . helm-show-kill-ring)
-  ("C-x b" . helm-mini)
+  ("C-x b" . helm-mini)        
   (:map helm-command-map
         ("<tab>" . helm-execute-persistent-action)
         ("C-i" . helm-execite-persistent-action)
@@ -491,7 +511,9 @@ apps are not started from a shell."
         helm-move-to-line-cycle-in-source t
         helm-autoresize-max-height 0
         helm-autoresize-min-height 20
-        helm-autoresize-mode 1))
+        helm-autoresize-mode 1)
+  (bind-keys ("C-x C-f" . helm-find-files))
+  )
 
 (use-package magit)
 
@@ -528,6 +550,12 @@ apps are not started from a shell."
    (setq valign-fancy-bar t)
   :hook ((org-mode) . valign-mode)
   )
+
+(use-package org-visual-outline
+  :disabled t
+  :config
+  (org-dynamic-bullets-mode)
+  (org-visual-indent-mode))
 
 (defun col-strip (col-str)
   (butlast (split-string (mapconcat (lambda (x) (concat "#" x " "))
@@ -624,7 +652,7 @@ apps are not started from a shell."
 
 (use-package org-fragtog
       :hook (org-mode . org-fragtog-mode))
-  
+
     (use-package org-appear
       :hook (org-mode . org-appear-mode)
       :config
@@ -633,17 +661,17 @@ apps are not started from a shell."
             org-appear-autoentities t
             org-appear-delay .1
             org-appear-autokeywords t))
-  
+
     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
-  
+    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+
     (use-package tex
        :straight auctex
        :defer t
        :config
        (setq TeX-auto-save t)
        (setq TeX-parse-self t))
-  
+
     (use-package cdlatex
       :requires texmathp
       :config

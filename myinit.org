@@ -42,24 +42,7 @@
     kept-old-versions 5    ; and how many of the old
     ring-bell-function 'ignore)
   
-  
-  (use-package deft
-    :bind ("C-x C-g" . deft-find-file)
-    :demand t
-    :config
-    (setq deft-extensions '("org")
-          deft-directory "~/org"
-          deft-recursive t
-          deft-use-filename-as-title t))
-  
-  (defcustom deft-ignore-file-regexp
-  (concat "\\(?:"
-          "Fall19"
-          "\\)")
-  "Regular expression for files to be ignored."
-  :type 'regexp
-  :safe 'stringp
-  :group 'deft)
+
   
   (set-register ?i (cons 'file user-init-file))
   (set-register ?l (cons 'file (concat default-directory "learning.org")))
@@ -144,6 +127,16 @@
     (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
     (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
   
+  (defun left-half ()
+    (interactive)
+    (set-frame-position (selected-frame) 0 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+  
+  (defun right-half ()
+    (interactive)
+    (set-frame-position (selected-frame) (/ max-frame-width 2) 0)
+    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+  
   (defun full-screen ()
     (interactive)
     (set-frame-position (selected-frame) 0 0)
@@ -153,9 +146,11 @@
   (global-set-key (kbd "C-c w d") 'left-one-thirds)
   (global-set-key (kbd "C-c w t") 'right-two-thirds)
   (global-set-key (kbd "C-c w g") 'right-one-thirds)
+  (global-set-key (kbd "C-c w <left>") 'left-half)
+  (global-set-key (kbd "C-c w <right>") 'right-half)
   (global-set-key (kbd "C-c w f") 'center-third)
   (global-set-key (kbd "C-c w <return>") 'full-screen)
-
+  
 #+end_src
 *** Startup
 #+BEGIN_SRC emacs-lisp
@@ -188,11 +183,10 @@
   
     (defun emacs-startup-screen ()
   
-  
       (scratch-setup)
   ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-  ;    (agenda-startup-screen)
+;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+     (agenda-startup-screen)
       (right-two-thirds)
       (balance-windows)
       )
@@ -238,6 +232,34 @@
 (global-set-key (kbd "C-x 2") 'my-split-vertical)
 (global-set-key (kbd "C-x 3") 'my-split-horizontal)
 #+END_SRC
+*** Dired
+#+begin_src emacs-lisp
+  (use-package dired-hide-dotfiles
+    :hook (dired-mode . dired-hide-dotfiles-mode)
+    :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode)
+    )
+  #+end_src
+*** Deft
+#+begin_src emacs-lisp
+  (use-package deft
+    :demand t
+    :bind
+    ("C-x C-g" . deft-find-file)
+    :config
+    (setq deft-extensions '("org")
+          deft-directory "~/org"
+          deft-recursive t
+          deft-use-filename-as-title t)
+    (global-set-key (kbd "C-x C-g") 'deft-find-file)
+    (defcustom deft-ignore-file-regexp
+      (concat "\\(?:"
+              "Fall19"
+              "\\)")
+      "Regular expression for files to be ignored."
+      :type 'regexp
+      :safe 'stringp
+      :group 'deft))
+    #+end_src
 ** Editing
 
 #+BEGIN_SRC emacs-lisp
@@ -314,9 +336,10 @@
           (kill-new foo)
           (org-yank)
         )
-    
+  
      (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
      (define-key c-mode-map (kbd "C-c g") #'gdb)
+  (define-key c-mode-map (kbd "C-c C-/") 'uncomment-region)
      (use-package clang-format)
 #+end_src
 
@@ -530,13 +553,12 @@
 * Extensions
 ** Helm
 #+BEGIN_SRC emacs-lisp
-  
   (use-package helm
     :bind
     ("M-x" . helm-M-x)
     ("C-x C-f" . helm-find-files)
     ("M-y" . helm-show-kill-ring)
-    ("C-x b" . helm-mini)
+    ("C-x b" . helm-mini)        
     (:map helm-command-map
           ("<tab>" . helm-execute-persistent-action)
           ("C-i" . helm-execite-persistent-action)
@@ -548,9 +570,12 @@
           helm-move-to-line-cycle-in-source t
           helm-autoresize-max-height 0
           helm-autoresize-min-height 20
-          helm-autoresize-mode 1))
+          helm-autoresize-mode 1)
+    (bind-keys ("C-x C-f" . helm-find-files))
+    )
   
 #+END_SRC
+
 ** Magit
 
 #+BEGIN_SRC emacs-lisp
@@ -606,7 +631,11 @@
     :hook ((org-mode) . valign-mode)
     )
   
-  
+  (use-package org-visual-outline
+    :disabled t
+    :config
+    (org-dynamic-bullets-mode)
+    (org-visual-indent-mode))
 #+end_src
 **** Colors
 
@@ -710,35 +739,35 @@
 *** Latex
 #+BEGIN_SRC emacs-lisp
   
-    (use-package org-fragtog
-      :hook (org-mode . org-fragtog-mode))
+      (use-package org-fragtog
+        :hook (org-mode . org-fragtog-mode))
   
-    (use-package org-appear
-      :hook (org-mode . org-appear-mode)
-      :config
-      (setq org-appear-autosubmarkers t
-            org-appear-autolinks t
-            org-appear-autoentities t
-            org-appear-delay .1
-            org-appear-autokeywords t))
+      (use-package org-appear
+        :hook (org-mode . org-appear-mode)
+        :config
+        (setq org-appear-autosubmarkers t
+              org-appear-autolinks t
+              org-appear-autoentities t
+              org-appear-delay .1
+              org-appear-autokeywords t))
   
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+      (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+      (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
   
-    (use-package tex
-       :straight auctex
-       :defer t
-       :config
-       (setq TeX-auto-save t)
-       (setq TeX-parse-self t))
+      (use-package tex
+         :straight auctex
+         :defer t
+         :config
+         (setq TeX-auto-save t)
+         (setq TeX-parse-self t))
   
-    (use-package cdlatex
-      :requires texmathp
-      :config
-;      (setq cdlatex-paired-parens "")
-
-  )
-  (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
+      (use-package cdlatex
+        :requires texmathp
+        :config
+  ;      (setq cdlatex-paired-parens "")
+  
+    )
+    (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
   
   
 #+END_SRC
