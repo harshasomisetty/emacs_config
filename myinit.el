@@ -13,26 +13,26 @@ apps are not started from a shell."
   (let ((path-from-shell (replace-regexp-in-string
                           "[ \t\n]*$" "" (shell-command-to-string
                                           "$SHELL --login -c 'echo $PATH'"
-                                                    ))))
+                                          ))))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
 (set-exec-path-from-shell-PATH)
 
-;  backup
+; directories
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
-  user-init-file "~/.emacs.d/myinit.org"
-  default-directory "~/org/"
-  shell-file-name "/bin/bash"
-  auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
-)
+      user-init-file "~/.emacs.d/myinit.org"
 
+      shell-file-name "/bin/bash"
+      auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
+      )
+(setq default-directory "~/org/")
 (setq backup-by-copying t    ; Don't delink hardlinks
-  version-control t      ; Use version numbers on backup
-  delete-old-versions t  ; Automatically delete excess backup
-  kept-new-versions 20   ; how many of the newest versions to keep
-  kept-old-versions 5    ; and how many of the old
-  ring-bell-function 'ignore)
+      version-control t      ; Use version numbers on backup
+      delete-old-versions t  ; Automatically delete excess backup
+      kept-new-versions 20   ; how many of the newest versions to keep
+      kept-old-versions 5    ; and how many of the old
+      ring-bell-function 'ignore)
 
 (use-package all-the-icons)
 
@@ -135,6 +135,9 @@ apps are not started from a shell."
 (global-set-key (kbd "C-c w <right>") 'right-half)
 (global-set-key (kbd "C-c w f") 'center-third)
 (global-set-key (kbd "C-c w <return>") 'full-screen)
+
+(use-package transpose-frame
+  :bind ("C-x 4 4" . transpose-frame))
 
 (setq inhibit-startup-screen t)
 
@@ -291,9 +294,14 @@ apps are not started from a shell."
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 (use-package pdf-tools
-  :config
-  (pdf-tools-install)
-  (setq-default pdf-view-display-size 'fit-page))
+    :bind (:map pdf-view-mode-map
+                ("C-s" . isearch-forward))
+    :config
+    (setq pdf-view-display-size 'fit-page)
+    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)
+)
+    )
+      (pdf-tools-install)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -586,11 +594,13 @@ apps are not started from a shell."
                                     "") " ")))
 
 (setq color-schemes (list
-        (col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
-        (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
-        (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
+                     (col-strip "2278bf-e15554-3bb273-507c6d-6e5775-598d91-7768ae")
+                     (col-strip "264653-287271-2a9d8f-8ab17d-e9c46a-efb366-f4a261-e76f51")
+                     (col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
+                     (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
+                     (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
 
-(setq chosen-color (nth 1 color-schemes))
+(setq chosen-color (nth 0 color-schemes))
 
 (defun my/buffer-face-mode-variable ()
   "Set font to a variable width (proportional) fonts in current buffer"
@@ -646,17 +656,19 @@ apps are not started from a shell."
                       :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
                       :height 1.3
-                      :foreground (nth 1 chosen-color))
+                      :foreground (nth 0 chosen-color))
   (set-face-attribute 'org-level-2 nil
                       :height 1.2
-                      :foreground (nth 2 chosen-color))
+                      :foreground (nth 1 chosen-color))
   (set-face-attribute 'org-level-3 nil
                       :height 1.1
-                      :foreground (nth 3 chosen-color))
+                      :foreground (nth 2 chosen-color))
   (set-face-attribute 'org-level-4 nil
                       :height 1.05
-                      :foreground (nth 4 chosen-color))
+                      :foreground (nth 3 chosen-color))
   (set-face-attribute 'org-level-5 nil
+                      :foreground (nth 4 chosen-color))
+  (set-face-attribute 'org-level-6 nil
                       :foreground (nth 5 chosen-color))
   (set-face-attribute 'org-date nil
                       :foreground "#ECBE7B"
@@ -740,55 +752,69 @@ apps are not started from a shell."
 (setq ispell-program-name "hunspell")
 (setq ispell-local-dictionary "en_US")
 
-(setq org-agenda-files '(
-                         "~/org/inbox.org"
-                         "~/org/gtd.org"
-                         "~/org/habits.org"
-                         ))
-
-(set-register ?g (cons 'file (concat default-directory "gtd.org")))
-
-(setq org-agenda-start-with-log-mode t
-      org-log-done 'time
-      org-agenda-skip-deadline-if-done t
-      org-agenda-skip-scheduled-if-done t
-      org-log-into-drawer t
-      calendar-week-start-day 0
-      org-archive-location "~/.emacs.d/archive.org::"
-      org-agenda-prefix-format
-      '(
-        (agenda . " %-12b %?-15t% s")
-        (todo . " %i %-12:c")
-        (tags . " %i %-12:c")
-        (search . " %i %-12:c")
+(use-package org-agenda
+  :straight nil :ensure nil
+  :config
+  (setq org-agenda-start-with-log-mode t
+        org-log-done 'time
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-log-into-drawer t
+        org-agenda-span 5
+        org-agenda-start-day "+0d"
+        org-archive-location "~/.emacs.d/archive.org::"
+        org-agenda-files '(
+                           "~/org/inbox.org"
+                           "~/org/gtd.org"
+                           "~/org/habits.org"
+                           )
+        org-agenda-prefix-format '(
+                                        ;                                     (agenda . " %-12b %?-15t% s")
+                                   (todo . " %i %-12:c")
+                                   (tags . " %i %-12:c")
+                                        ;                                     (search . " %i %-12:c")
+                                   )
+        org-todo-keywords '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
+        org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                             ("~/org/time.org" :level . 1)
+                             )
         )
-      )
+  (org-agenda-align-tags)
+  )
+(set-register ?g (cons 'file (concat default-directory "gtd.org")))
+(use-package dash)
+(use-package ht)
+(use-package s)
+(use-package ts)
 
+(use-package org-super-agenda
+  :config
+  (setq org-super-agenda-groups
+        '(;; Each group has an implicit boolean OR operator between its selectors.
+          (:name "Today"  ; Optionally specify section name
+                 :time-grid t  ; Items that appear on the time grid
+                 :priority "A"
+                 )
+          (:order-multi (2 (:name "DOE"
+                                  :tag "DOE")
+                           (:name "CStats"
+                                  :tag "CStats")
+                           (:name "MStats"
+                                  :tag "MStats")
+                           (:name "Networking"
+                                  :tag "Networking")
+                           (:name "OS"
+                                  :tag "OS")))
+          (:name "Habits"
+                 :habit t
+                 :tag "Habits")
+          )
+        )
+  (org-super-agenda-mode)
+  )
 (with-eval-after-load 'org
   (bind-key "C-c a" #'org-agenda global-map)
   (bind-key "C-c c" #'org-capture ))
-
-(setq org-todo-keywords
-      '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
-      )
-
-(setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                           ("~/org/time.org" :level . 1)
-                           ))
-
-(defun archive-when-done ()
-"Archive current entry if it is marked as DONE (see `org-done-keywords')."
-(when (org-entry-is-done-p)
-  (org-archive-subtree-default)))
-
-
-(defun gtd_settings ()
-  (interactive)
-  (find-file "~/org/gtd.org")
-  )
-
-;; Save Org buffers after refiling!
-(advice-add 'org-refile :after 'org-save-all-org-buffers)
 
 (require 'org-clock)
 (setq org-clock-persist 'history)
@@ -817,6 +843,7 @@ apps are not started from a shell."
           (setq counter (- counter 1))
           (backward-char 1))
         (end-of-line)
+        (move-to-column (+ org-habit-graph-column org-habit-preceding-days org-habit-following-days 1))
         (insert (number-to-string streak))))
     (forward-line 1)))
 
@@ -966,5 +993,9 @@ apps are not started from a shell."
   :config
   (setq org-noter-default-notes-file-name '("notes.org")
         org-noter-notes-search-path '("~/org")
-        org-noter-notes-window-location "Vertical"
-        org-noter-separate-notes-from-heading t))
+        org-noter-notes-window-location "Horizontal"
+        org-noter-separate-notes-from-heading t)
+
+  )
+(defun my/no-op (&rest args))
+ (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
