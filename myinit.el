@@ -39,10 +39,14 @@ apps are not started from a shell."
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
+(defun reload-config ()
+  (interactive)
+  (load-file "~/.emacs.d/init.el"))
 
 (use-package speed-type)
 
 ; reduce visual clutter
+
  (menu-bar-mode -1)
  (tool-bar-mode -1)
  (toggle-scroll-bar -1)
@@ -52,9 +56,6 @@ apps are not started from a shell."
  (global-display-line-numbers-mode)
  (setq display-line-numbers 'relative)
  (setq line-number-mode t)
-
- ; theme
- (load-theme 'doom-acario-dark t)
 
  ; padding
  (setq header-line-format " ")
@@ -141,42 +142,44 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
-    (defun scratch-setup ()
-      (load "~/.emacs.d/.quotes.el")
-      (setq initial-scratch-message
-            (nth (random (length quotes)) quotes)))
-      (scratch-setup)
+(load-theme 'doom-horizon t)
+(defun scratch-setup ()
+  (load "~/.emacs.d/.quotes.el")
+  (setq initial-scratch-message
+        (concat (nth (random (length quotes)) quotes)
+                "\n\n\n")))
+(scratch-setup)
 
-    (defun files-startup-screen (file2 &rest files)
-      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-
-
-      (dotimes (n (length files))
-        (setq index (- (- (length files) n) 1))
-
-        (switch-to-buffer (find-file (nth index files)))
-        (split-window-right)
-          )
-      (switch-to-buffer (find-file file2 ))  
-      )
-
-    (defun agenda-startup-screen ()
-      "Display the weekly org-agenda and all todos."
-      (org-agenda nil "a")
-      (delete-other-windows)
-      (split-window-right)
-      (switch-to-buffer "*scratch*"))
-
-    (defun emacs-startup-screen ()
+(defun files-startup-screen (file2 &rest files)
+  "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
 
-  ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-     (agenda-startup-screen)
-      (right-two-thirds)
-      (balance-windows)
-      )
-    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+  (dotimes (n (length files))
+    (setq index (- (- (length files) n) 1))
+
+    (switch-to-buffer (find-file (nth index files)))
+    (split-window-right)
+    )
+  (switch-to-buffer (find-file file2 ))  
+  )
+
+(defun agenda-startup-screen ()
+  "Display the weekly org-agenda and all todos."
+  (org-agenda nil "a")
+  (delete-other-windows)
+  (split-window-right)
+  (switch-to-buffer "*scratch*"))
+
+(defun emacs-startup-screen ()
+
+
+                                        ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+                                        ;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+  (agenda-startup-screen)
+  (right-two-thirds)
+  (balance-windows)
+  )
+(add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -594,13 +597,10 @@ apps are not started from a shell."
                                     "") " ")))
 
 (setq color-schemes (list
-                     (col-strip "2278bf-e15554-3bb273-507c6d-6e5775-598d91-7768ae")
-                     (col-strip "264653-287271-2a9d8f-8ab17d-e9c46a-efb366-f4a261-e76f51")
-                     (col-strip "2b4162-385f71-f5f0f6-d7b377-8f754f-e83151-e3170a")
-                     (col-strip "e8e9ec-6c88c4-00b0ba-e7c582-ff8288-c05780-ecbe7b")
-                     (col-strip "6897de-4d7c8a-75958f-8fad88-cbdf90-c2897d-b8336a")))
-
-(setq chosen-color (nth 0 color-schemes))
+                     (col-strip "a21d1d-5497de-8e35b7-ffff5b-56cb7d-df5252-707efa") ; red blue purple study
+                     (col-strip "2278bf-e15554-3bb273-507c6d-6e5775-598d91-7768ae") ; blue red green okay
+                     ))
+(setq pick-color 0)
 
 (defun my/buffer-face-mode-variable ()
   "Set font to a variable width (proportional) fonts in current buffer"
@@ -641,7 +641,7 @@ apps are not started from a shell."
          'org-property-value
          'minibuffer-prompt
          ))
-
+    (setq color-theme (nth pick-color color-schemes))
   (set-face-attribute 'org-code nil
                       :inherit '(shadow fixed-pitch)
                       :height .8)
@@ -656,20 +656,20 @@ apps are not started from a shell."
                       :family "PT Mono")
   (set-face-attribute 'org-level-1 nil
                       :height 1.3
-                      :foreground (nth 0 chosen-color))
+                      :foreground (nth 0 color-theme))
   (set-face-attribute 'org-level-2 nil
                       :height 1.2
-                      :foreground (nth 1 chosen-color))
+                      :foreground (nth 1 color-theme))
   (set-face-attribute 'org-level-3 nil
                       :height 1.1
-                      :foreground (nth 2 chosen-color))
+                      :foreground (nth 2 color-theme))
   (set-face-attribute 'org-level-4 nil
                       :height 1.05
-                      :foreground (nth 3 chosen-color))
+                      :foreground (nth 3 color-theme))
   (set-face-attribute 'org-level-5 nil
-                      :foreground (nth 4 chosen-color))
+                      :foreground (nth 4 color-theme))
   (set-face-attribute 'org-level-6 nil
-                      :foreground (nth 5 chosen-color))
+                      :foreground (nth 5 color-theme))
   (set-face-attribute 'org-date nil
                       :foreground "#ECBE7B"
                       :height 0.8)
@@ -760,7 +760,7 @@ apps are not started from a shell."
         org-agenda-skip-deadline-if-done t
         org-agenda-skip-scheduled-if-done t
         org-log-into-drawer t
-        org-agenda-span 5
+        org-agenda-span 4
         org-agenda-start-day "+0d"
         org-archive-location "~/.emacs.d/archive.org::"
         org-agenda-files '(
@@ -781,7 +781,7 @@ apps are not started from a shell."
         )
   (org-agenda-align-tags)
   )
-(set-register ?g (cons 'file (concat default-directory "gtd.org")))
+(set-register ?g (cons 'file  "~/org/gtd.org"))
 (use-package dash)
 (use-package ht)
 (use-package s)
@@ -795,7 +795,7 @@ apps are not started from a shell."
                  :time-grid t  ; Items that appear on the time grid
                  :priority "A"
                  )
-          (:order-multi (2 (:name "DOE"
+          (:order-multi ( (:name "DOE"
                                   :tag "DOE")
                            (:name "CStats"
                                   :tag "CStats")
@@ -808,6 +808,8 @@ apps are not started from a shell."
           (:name "Habits"
                  :habit t
                  :tag "Habits")
+          (:name "Projects"
+                 :tag "Projects")
           )
         )
   (org-super-agenda-mode)
@@ -864,7 +866,6 @@ apps are not started from a shell."
   (org-journal-dir "~/org/journal/")
   (org-journal-file-format "%Y%m%d")
   (org-journal-date-format "%e %b %Y (%A)")
-  (org-journal-time-format "")
   (setq org-journal-date-prefix "")
   (setq org-journal-find-file 'find-file)
   )
@@ -907,14 +908,13 @@ apps are not started from a shell."
           'end-of-buffer)
 
 (setq org-capture-templates
-       `(
-         ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-         ("j" "Journal entry" plain (function org-journal-find-location) "*** %^{Moment}\n%?"
-:jump-to-captured t :immediate-finish t)
-         ("f" "Future Journal entry" plain (function org-journal-date-location)  "%?\nn" :jump-to-captured t)
-
-         )
-       )
+      `(
+        ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
+        ("j" "Journal entry" plain (function org-journal-find-location)
+                            "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+                            :jump-to-captured t :immediate-finish t))
+        )
+      )
 
 (use-package org-roam
       :init
@@ -999,3 +999,22 @@ apps are not started from a shell."
   )
 (defun my/no-op (&rest args))
  (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
+
+(defun grind()
+  (interactive)
+  (setq pick-color 1)
+  (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
+                     " | sudo -S ~/bin/grind"))
+  (load-theme 'doom-acario-dark  t)
+  (my/style-org))
+
+(global-set-key (kbd "C-c g") 'grind)
+
+(defun ungrind()
+  (interactive)
+  (setq pick-color 0)
+  (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
+                         " | sudo -S ~/bin/ungrind"))
+  (load-theme 'doom-horizon t)
+  (my/style-org))
+  (global-set-key (kbd "C-c u") 'ungrind)
