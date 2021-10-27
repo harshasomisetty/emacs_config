@@ -24,16 +24,20 @@
       (setenv "PATH" path-from-shell)
       (setq exec-path (split-string path-from-shell path-separator))))
   
-  (set-exec-path-from-shell-PATH)
+  (defun reload-config ()
+    (interactive)
+    (load-file "~/.emacs.d/init.el"))
   
-  ; directories
+  (use-package all-the-icons)
+  (use-package speed-type)
+  
+                                          ; directories
   (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
         user-init-file "~/.emacs.d/myinit.org"
-  
-        shell-file-name "/bin/bash"
+        default-directory "~/org/"  
         auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
         )
-  (setq default-directory "~/org/")
+  
   (setq backup-by-copying t    ; Don't delink hardlinks
         version-control t      ; Use version numbers on backup
         delete-old-versions t  ; Automatically delete excess backup
@@ -41,23 +45,16 @@
         kept-old-versions 5    ; and how many of the old
         ring-bell-function 'ignore)
   
-  (use-package all-the-icons)
+  (set-exec-path-from-shell-PATH)  
   
   (set-register ?i (cons 'file user-init-file))
   (set-register ?l (cons 'file (concat default-directory "learning.org")))
   
-  (defun reload-config ()
-    (interactive)
-    (load-file "~/.emacs.d/init.el"))
-  
-  (use-package speed-type)
 #+END_SRC
 
 ** Display
 #+BEGIN_SRC emacs-lisp
   
-  ; reduce visual clutter
-
    (menu-bar-mode -1)
    (tool-bar-mode -1)
    (toggle-scroll-bar -1)
@@ -65,14 +62,13 @@
    (show-paren-mode 1)
    (fset 'yes-or-no-p 'y-or-n-p)
    (global-display-line-numbers-mode)
-   (setq display-line-numbers 'relative)
-   (setq line-number-mode t)
+   (setq display-line-numbers 'relative
+         line-number-mode t)
   
    ; padding
-   (setq header-line-format " ")
-  ; (setq left-margin-width 2)
-   (setq right-margin-width 2)
-  
+   (setq header-line-format " "
+         left-margin-width 1
+         right-margin-width 1)
   
   ; window settings
   (window-divider-mode)
@@ -82,10 +78,7 @@
           window-divider-default-right-width 1)
     (window-divider-mode +1))
   
-  (setq org-src-window-setup 'current-window)
-  ; (use-package disable-mouse)
-   ; (global-disable-mouse-mode)
-  
+;  (setq org-src-window-setup 'current-window)
   (use-package spaceline-config
     :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
     :config
@@ -169,15 +162,12 @@
   (defun files-startup-screen (file2 &rest files)
     "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
   
-  
     (dotimes (n (length files))
       (setq index (- (- (length files) n) 1))
-  
       (switch-to-buffer (find-file (nth index files)))
-      (split-window-right)
-      )
-    (switch-to-buffer (find-file file2 ))  
-    )
+      (split-window-right))
+    
+    (switch-to-buffer (find-file file2 )))
   
   (defun agenda-startup-screen ()
     "Display the weekly org-agenda and all todos."
@@ -202,40 +192,40 @@
 ** Navigation
 
 #+BEGIN_SRC emacs-lisp
+    (use-package avy
+      :bind ("C-;" . avy-goto-word-1))
   
-  (use-package avy
-    :bind ("C-;" . avy-goto-word-1))
+    (use-package ace-window
+      :bind ("C-x o" . ace-window)
+      :config
+      (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+      (setq aw-scope 'frame)
+      )
   
-  (use-package ace-window
-    :bind ("C-x o" . ace-window)
-    :config
-    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-    (setq aw-scope 'frame)
-    )
+    (use-package disable-mouse
+      :config
+      (global-disable-mouse-mode))
   
-  (use-package disable-mouse)
-  (global-disable-mouse-mode)
+    (use-package no-spam
+      :config
+      (no-spam-add-repeat-delay next-line 10
+                                previous-line 10
+                                forward-char 10
+                                backward-char 10)
+      (no-spam-mode))
   
-  (use-package no-spam
-    :config
-    (no-spam-add-repeat-delay next-line 10)
-    (no-spam-add-repeat-delay previous-line 10)
-    (no-spam-add-repeat-delay forward-char 10)
-    (no-spam-add-repeat-delay backward-char 10)
-    (no-spam-mode))
+    (defun my-split-vertical ()
+      (interactive)
+      (split-window-vertically)
+      (other-window 1))
   
-  (defun my-split-vertical ()
-    (interactive)
-    (split-window-vertically)
-    (other-window 1))
-
-(defun my-split-horizontal ()
-    (interactive)
-    (split-window-horizontally)
-    (other-window 1))
-
-(global-set-key (kbd "C-x 2") 'my-split-vertical)
-(global-set-key (kbd "C-x 3") 'my-split-horizontal)
+  (defun my-split-horizontal ()
+      (interactive)
+      (split-window-horizontally)
+      (other-window 1))
+  
+  (global-set-key (kbd "C-x 2") 'my-split-vertical)
+  (global-set-key (kbd "C-x 3") 'my-split-horizontal)
 #+END_SRC
 *** Dired
 #+begin_src emacs-lisp
@@ -244,9 +234,7 @@
     :ensure nil
     :config
     (setq insert-directory-program "gls" dired-use-ls-dired t
-          dired-listing-switches "-agho --group-directories-first")
-  
-    )
+          dired-listing-switches "-agho --group-directories-first"))
   
   (use-package dired-subtree :ensure t
     :after dired
@@ -259,8 +247,7 @@
   
   (use-package dired-hide-dotfiles
     :hook (dired-mode . dired-hide-dotfiles-mode)
-    :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode)
-    )
+    :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode))
   #+end_src
 *** Deft
 #+begin_src emacs-lisp
@@ -284,18 +271,13 @@
       :group 'deft))
     #+end_src
 ** Editing
-
 #+BEGIN_SRC emacs-lisp
   (require 'org-tempo)
-  
   ;; Move cursor to end of line, new line and indent
-  
   (global-set-key (kbd "<C-return>") (lambda ()
                                        (interactive)
                                        (end-of-line)
                                        (newline-and-indent)))
-  
-  
   
   ;; Move cursor to previous line, new line, indent
   (global-set-key (kbd "<C-S-return>") (lambda ()
@@ -304,9 +286,6 @@
                                          (end-of-line)
                                          (newline-and-indent)
                                          ))
-  
-  
-  
   (require 'subr-x)
   (use-package yasnippet
     :config
@@ -314,17 +293,66 @@
     (yas-global-mode 1)
     )
   
-  
   (use-package company
     :disabled t
     :config
-    (setq company-idle-delay 0)
-    (setq company-minimum-prefix-length 2)
-    (global-company-mode t)
-    )
+    (setq company-idle-delay 0
+          company-minimum-prefix-length 2)
+    :hook (after-init . global-company-mode))
+
+#+END_SRC
+*** Spelling
+[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
+#+begin_src emacs-lisp
+  (use-package ispell)
+  
+  (define-key ctl-x-map "\C-i"
+    #'endless/ispell-word-then-abbrev)
+  
+  (defun endless/simple-get-word ()
+    (car-safe (save-excursion (ispell-get-word nil))))
+  
+  (defun endless/ispell-word-then-abbrev (p)
+    "Call `ispell-word', then create an abbrev for it.
+  With prefix P, create local abbrev. Otherwise it will
+  be global.
+  If there's nothing wrong with the word at point, keep
+  looking for a typo until the beginning of buffer. You can
+  skip typos you don't want to fix with `SPC', and you can
+  abort completely with `C-g'."
+    (interactive "P")
+    (let (bef aft)
+      (save-excursion
+        (while (if (setq bef (endless/simple-get-word))
+                   ;; Word was corrected or used quit.
+                   (if (ispell-word nil 'quiet)
+                       nil ; End the loop.
+                     ;; Also end if we reach `bob'.
+                     (not (bobp)))
+                 ;; If there's no word at point, keep looking
+                 ;; until `bob'.
+                 (not (bobp)))
+          (backward-word)
+          (backward-char))
+        (setq aft (endless/simple-get-word)))
+      (if (and aft bef (not (equal aft bef)))
+          (let ((aft (downcase aft))
+                (bef (downcase bef)))
+            (define-abbrev
+              (if p local-abbrev-table global-abbrev-table)
+              bef aft)
+            (message "\"%s\" now expands to \"%s\" %sally"
+                     bef aft (if p "loc" "glob")))
+        (user-error "No typo at or before point"))))
+  
+  (setq save-abbrevs 'silently)
+  (setq-default abbrev-mode t)
+  
   
   (add-hook 'after-init-hook #'global-flycheck-mode)
-#+END_SRC
+  (setq ispell-program-name "hunspell")
+  (setq ispell-local-dictionary "en_US")
+#+end_src
 ** Viewing
 *** PDF Tool
 #+begin_src emacs-lisp
@@ -333,12 +361,9 @@
                 ("C-s" . isearch-forward))
     :config
     (setq pdf-view-display-size 'fit-page)
-    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)
-)
-    )
-      (pdf-tools-install)
+    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
+  (pdf-tools-install)
 #+end_src
-
 ** Coding
 *** Babel
 #+begin_src emacs-lisp 
@@ -539,9 +564,6 @@
                   (bury-buffer)))) 
 #+end_src
 
-*** Lisp
-#+begin_src emacs-lisp
-#+end_src
 *** Tramp
 #+BEGIN_SRC emacs-lisp 
   (setq remote-file-name-inhibit-cache nil)
@@ -549,8 +571,6 @@
         (format "%s\\|%s"
                       vc-ignore-dir-regexp
                       tramp-file-name-regexp))
-  (setq tramp-verbose 1)
-  (setq tramp-verbose 6)
   (put 'temporary-file-directory 'standard-value
        (list temporary-file-directory))
   
@@ -564,9 +584,9 @@
 #+begin_src emacs-lisp
     (use-package term
       :config
-  
       (setq explicit-shell-file-name "zsh"
             term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  
     (use-package bash-completion
       :config
       (bash-completion-setup))
@@ -580,11 +600,6 @@
             shell-pop-window-size 30)
       (push (cons "\\*shell\\*" display-buffer--same-window-action) display-buffer-alist)
       )
-  
-  
-  
-  
-  
 #+end_src
 * Extensions
 ** Helm
@@ -607,11 +622,8 @@
           helm-autoresize-max-height 0
           helm-autoresize-min-height 20
           helm-autoresize-mode 1)
-    (bind-keys ("C-x C-f" . helm-find-files))
-    )
-  
-#+END_SRC
-
+    (bind-keys ("C-x C-f" . helm-find-files)))
+  #+END_SRC
 ** Magit
 
 #+BEGIN_SRC emacs-lisp
@@ -620,9 +632,8 @@
 
 ** Spotify Smudge
 #+begin_src emacs-lisp
-    (use-package smudge)
+  (use-package smudge)
 #+end_src
-
 * Org-mode
 ** Init
 
@@ -631,7 +642,6 @@
   (use-package org)
   (use-package org-contrib)
   (defun org-clocking-buffer (&rest _))
-  
   (org-reload)
 #+END_SRC
 
@@ -663,8 +673,7 @@
   (use-package valign
     :config
      (setq valign-fancy-bar t)
-    :hook ((org-mode) . valign-mode)
-    )
+    :hook ((org-mode) . valign-mode))
   
   (use-package org-visual-outline
     :disabled t
@@ -675,7 +684,7 @@
 **** Colors
 
 #+begin_src emacs-lisp
-    (defun col-strip (col-str)
+  (defun col-strip (col-str)
     (butlast (split-string (mapconcat (lambda (x) (concat "#" x " "))
                                       (split-string col-str "-")
                                       "") " ")))
@@ -775,38 +784,34 @@
 
 *** Latex
 #+BEGIN_SRC emacs-lisp
+  (use-package org-fragtog
+    :hook (org-mode . org-fragtog-mode))
   
-      (use-package org-fragtog
-        :hook (org-mode . org-fragtog-mode))
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autosubmarkers t
+          org-appear-autolinks t
+          org-appear-autoentities t
+          org-appear-delay .1
+          org-appear-autokeywords t))
   
-      (use-package org-appear
-        :hook (org-mode . org-appear-mode)
-        :config
-        (setq org-appear-autosubmarkers t
-              org-appear-autolinks t
-              org-appear-autoentities t
-              org-appear-delay .1
-              org-appear-autokeywords t))
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
   
-      (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-      (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  (use-package tex
+    :straight auctex
+    :defer t
+    :config
+    (setq TeX-auto-save t)
+    (setq TeX-parse-self t))
   
-      (use-package tex
-         :straight auctex
-         :defer t
-         :config
-         (setq TeX-auto-save t)
-         (setq TeX-parse-self t))
-  
-      (use-package cdlatex
-        :requires texmathp
-        :config
-  ;      (setq cdlatex-paired-parens "")
-  
-    )
-    (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
-  
-  
+  (use-package cdlatex
+    :requires texmathp
+    :config
+                                          ;      (setq cdlatex-paired-parens "")
+    :hook (org-mode . turn-on-org-cdlatex)
+      )
 #+END_SRC
 *** Images
 #+begin_src emacs-lisp
@@ -845,15 +850,6 @@
   
   (global-set-key (kbd "C-c r") #'ros)
 #+end_src
-*** Flyspell
-#+begin_src emacs-lisp
-  
-  (setq ispell-program-name "hunspell")
-  (setq ispell-local-dictionary "en_US")
-  
-
-#+end_src
-
 ** Life
 *** Agenda
 #+BEGIN_SRC emacs-lisp
@@ -883,7 +879,10 @@
           org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
                                ("~/org/time.org" :level . 1)
                                )
+          org-capture-templates
+          `(("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1))
           )
+    
     (org-agenda-align-tags)
     )
   (set-register ?g (cons 'file  "~/org/gtd.org"))
@@ -922,6 +921,7 @@
   (with-eval-after-load 'org
     (bind-key "C-c a" #'org-agenda global-map)
     (bind-key "C-c c" #'org-capture ))
+  
 #+END_SRC
 
 *** Habits
@@ -974,7 +974,6 @@
         
 #+end_src
 *** Journal
-
 #+BEGIN_SRC emacs-lisp
   (use-package org-journal
     :bind (("C-c j" . org-journal-new-entry)  
@@ -986,7 +985,6 @@
     (setq org-journal-date-prefix "")
     (setq org-journal-find-file 'find-file)
     )
-  
   
   (defun org-journal-find-location ()
     ;; Open today's journal, but specify a non-nil prefix argument in order to
@@ -1014,7 +1012,6 @@
              "\n* Gratitude\n"
                )))
   
-  
   (add-hook 'org-journal-after-header-create-hook
             #'insert-created-date)
   
@@ -1023,23 +1020,12 @@
             'beginning-of-line
             'kill-line
             'end-of-buffer)
+  
+  (add-to-list 'org-capture-templates
+               '("j" "Journal entry" plain (function org-journal-find-location)
+                 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+                 :jump-to-captured t :immediate-finish t))
     #+END_SRC
-
-*** Capture Templates
-#+begin_src emacs-lisp
-  
-   (setq org-capture-templates
-         `(
-           ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-           ("j" "Journal entry" plain (function org-journal-find-location)
-                               "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
-                               :jump-to-captured t :immediate-finish t))
-           )
-         )
-  
-  
-#+end_src
-
 ** Literature
 *** Roam
 
@@ -1131,14 +1117,11 @@
     (setq org-noter-default-notes-file-name '("notes.org")
           org-noter-notes-search-path '("~/org")
           org-noter-notes-window-location "Horizontal"
-          org-noter-separate-notes-from-heading t)
+          org-noter-separate-notes-from-heading t))
   
-    )
   (defun my/no-op (&rest args))
-   (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
-  
-  
-#+end_src
+  (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
+  #+end_src
 *** BibTex
 *** Publish
 * Other

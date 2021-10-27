@@ -17,16 +17,20 @@ apps are not started from a shell."
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
-(set-exec-path-from-shell-PATH)
+(defun reload-config ()
+  (interactive)
+  (load-file "~/.emacs.d/init.el"))
 
-; directories
+(use-package all-the-icons)
+(use-package speed-type)
+
+                                        ; directories
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
       user-init-file "~/.emacs.d/myinit.org"
-
-      shell-file-name "/bin/bash"
+      default-directory "~/org/"  
       auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
       )
-(setq default-directory "~/org/")
+
 (setq backup-by-copying t    ; Don't delink hardlinks
       version-control t      ; Use version numbers on backup
       delete-old-versions t  ; Automatically delete excess backup
@@ -34,54 +38,42 @@ apps are not started from a shell."
       kept-old-versions 5    ; and how many of the old
       ring-bell-function 'ignore)
 
-(use-package all-the-icons)
+(set-exec-path-from-shell-PATH)  
 
 (set-register ?i (cons 'file user-init-file))
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
-(defun reload-config ()
-  (interactive)
-  (load-file "~/.emacs.d/init.el"))
-
-(use-package speed-type)
-
-; reduce visual clutter
-
- (menu-bar-mode -1)
- (tool-bar-mode -1)
- (toggle-scroll-bar -1)
- (blink-cursor-mode -1)
- (show-paren-mode 1)
- (fset 'yes-or-no-p 'y-or-n-p)
- (global-display-line-numbers-mode)
- (setq display-line-numbers 'relative)
- (setq line-number-mode t)
-
- ; padding
- (setq header-line-format " ")
-; (setq left-margin-width 2)
- (setq right-margin-width 2)
-
-
-; window settings
-(window-divider-mode)
-(when (boundp 'window-divider-mode)
-  (setq window-divider-default-places t
-        window-divider-default-bottom-width 1
-        window-divider-default-right-width 1)
-  (window-divider-mode +1))
-
-(setq org-src-window-setup 'current-window)
-; (use-package disable-mouse)
- ; (global-disable-mouse-mode)
-
-(use-package spaceline-config
-  :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
-  :config
-  (setq spaceline-workspace-numbers-unicode t)
-  (spaceline-toggle-major-mode-on)
-  (spaceline-toggle-column-on)
-  (spaceline-emacs-theme))
+(menu-bar-mode -1)
+   (tool-bar-mode -1)
+   (toggle-scroll-bar -1)
+   (blink-cursor-mode -1)
+   (show-paren-mode 1)
+   (fset 'yes-or-no-p 'y-or-n-p)
+   (global-display-line-numbers-mode)
+   (setq display-line-numbers 'relative
+         line-number-mode t)
+  
+   ; padding
+   (setq header-line-format " "
+         left-margin-width 1
+         right-margin-width 1)
+  
+  ; window settings
+  (window-divider-mode)
+  (when (boundp 'window-divider-mode)
+    (setq window-divider-default-places t
+          window-divider-default-bottom-width 1
+          window-divider-default-right-width 1)
+    (window-divider-mode +1))
+  
+;  (setq org-src-window-setup 'current-window)
+  (use-package spaceline-config
+    :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
+    :config
+    (setq spaceline-workspace-numbers-unicode t)
+    (spaceline-toggle-major-mode-on)
+    (spaceline-toggle-column-on)
+    (spaceline-emacs-theme))
 
 (setq frame-resize-pixelwise t
       l (display-monitor-attributes-list)
@@ -153,15 +145,12 @@ apps are not started from a shell."
 (defun files-startup-screen (file2 &rest files)
   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-
   (dotimes (n (length files))
     (setq index (- (- (length files) n) 1))
-
     (switch-to-buffer (find-file (nth index files)))
-    (split-window-right)
-    )
-  (switch-to-buffer (find-file file2 ))  
-  )
+    (split-window-right))
+
+  (switch-to-buffer (find-file file2 )))
 
 (defun agenda-startup-screen ()
   "Display the weekly org-agenda and all todos."
@@ -183,25 +172,26 @@ apps are not started from a shell."
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
-  
+
   (use-package ace-window
     :bind ("C-x o" . ace-window)
     :config
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
     (setq aw-scope 'frame)
     )
-  
-  (use-package disable-mouse)
-  (global-disable-mouse-mode)
-  
+
+  (use-package disable-mouse
+    :config
+    (global-disable-mouse-mode))
+
   (use-package no-spam
     :config
-    (no-spam-add-repeat-delay next-line 10)
-    (no-spam-add-repeat-delay previous-line 10)
-    (no-spam-add-repeat-delay forward-char 10)
-    (no-spam-add-repeat-delay backward-char 10)
+    (no-spam-add-repeat-delay next-line 10
+                              previous-line 10
+                              forward-char 10
+                              backward-char 10)
     (no-spam-mode))
-  
+
   (defun my-split-vertical ()
     (interactive)
     (split-window-vertically)
@@ -220,9 +210,7 @@ apps are not started from a shell."
   :ensure nil
   :config
   (setq insert-directory-program "gls" dired-use-ls-dired t
-        dired-listing-switches "-agho --group-directories-first")
-
-  )
+        dired-listing-switches "-agho --group-directories-first"))
 
 (use-package dired-subtree :ensure t
   :after dired
@@ -235,8 +223,7 @@ apps are not started from a shell."
 
 (use-package dired-hide-dotfiles
   :hook (dired-mode . dired-hide-dotfiles-mode)
-  :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode)
-  )
+  :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode))
 
 (use-package deft
   :demand t
@@ -258,15 +245,11 @@ apps are not started from a shell."
     :group 'deft))
 
 (require 'org-tempo)
-
 ;; Move cursor to end of line, new line and indent
-
 (global-set-key (kbd "<C-return>") (lambda ()
                                      (interactive)
                                      (end-of-line)
                                      (newline-and-indent)))
-
-
 
 ;; Move cursor to previous line, new line, indent
 (global-set-key (kbd "<C-S-return>") (lambda ()
@@ -275,9 +258,6 @@ apps are not started from a shell."
                                        (end-of-line)
                                        (newline-and-indent)
                                        ))
-
-
-
 (require 'subr-x)
 (use-package yasnippet
   :config
@@ -285,26 +265,24 @@ apps are not started from a shell."
   (yas-global-mode 1)
   )
 
-
 (use-package company
   :disabled t
   :config
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 2)
-  (global-company-mode t)
-  )
+  (setq company-idle-delay 0
+        company-minimum-prefix-length 2)
+  :hook (after-init . global-company-mode))
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
+(setq ispell-program-name "hunspell")
+(setq ispell-local-dictionary "en_US")
 
 (use-package pdf-tools
-    :bind (:map pdf-view-mode-map
-                ("C-s" . isearch-forward))
-    :config
-    (setq pdf-view-display-size 'fit-page)
-    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)
-)
-    )
-      (pdf-tools-install)
+  :bind (:map pdf-view-mode-map
+              ("C-s" . isearch-forward))
+  :config
+  (setq pdf-view-display-size 'fit-page)
+  :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
+(pdf-tools-install)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -491,15 +469,11 @@ apps are not started from a shell."
                 (jump-to-register gud-window-register)
                 (bury-buffer))))
 
-
-
 (setq remote-file-name-inhibit-cache nil)
 (setq vc-ignore-dir-regexp
       (format "%s\\|%s"
                     vc-ignore-dir-regexp
                     tramp-file-name-regexp))
-(setq tramp-verbose 1)
-(setq tramp-verbose 6)
 (put 'temporary-file-directory 'standard-value
      (list temporary-file-directory))
 
@@ -511,9 +485,9 @@ apps are not started from a shell."
 
 (use-package term
     :config
-
     (setq explicit-shell-file-name "zsh"
           term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+
   (use-package bash-completion
     :config
     (bash-completion-setup))
@@ -546,8 +520,7 @@ apps are not started from a shell."
         helm-autoresize-max-height 0
         helm-autoresize-min-height 20
         helm-autoresize-mode 1)
-  (bind-keys ("C-x C-f" . helm-find-files))
-  )
+  (bind-keys ("C-x C-f" . helm-find-files)))
 
 (use-package magit)
 
@@ -556,7 +529,6 @@ apps are not started from a shell."
 (use-package org)
 (use-package org-contrib)
 (defun org-clocking-buffer (&rest _))
-
 (org-reload)
 
 (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
@@ -582,8 +554,7 @@ apps are not started from a shell."
 (use-package valign
   :config
    (setq valign-fancy-bar t)
-  :hook ((org-mode) . valign-mode)
-  )
+  :hook ((org-mode) . valign-mode))
 
 (use-package org-visual-outline
   :disabled t
@@ -686,34 +657,33 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
 (use-package org-fragtog
-      :hook (org-mode . org-fragtog-mode))
+  :hook (org-mode . org-fragtog-mode))
 
-    (use-package org-appear
-      :hook (org-mode . org-appear-mode)
-      :config
-      (setq org-appear-autosubmarkers t
-            org-appear-autolinks t
-            org-appear-autoentities t
-            org-appear-delay .1
-            org-appear-autokeywords t))
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autosubmarkers t
+        org-appear-autolinks t
+        org-appear-autoentities t
+        org-appear-delay .1
+        org-appear-autokeywords t))
 
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+(setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 
-    (use-package tex
-       :straight auctex
-       :defer t
-       :config
-       (setq TeX-auto-save t)
-       (setq TeX-parse-self t))
+(use-package tex
+  :straight auctex
+  :defer t
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t))
 
-    (use-package cdlatex
-      :requires texmathp
-      :config
-;      (setq cdlatex-paired-parens "")
-
-  )
-  (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
+(use-package cdlatex
+  :requires texmathp
+  :config
+                                        ;      (setq cdlatex-paired-parens "")
+  :hook (org-mode . turn-on-org-cdlatex)
+    )
 
 (use-package org-download
   :ensure t
@@ -749,9 +719,6 @@ apps are not started from a shell."
 
 (global-set-key (kbd "C-c r") #'ros)
 
-(setq ispell-program-name "hunspell")
-(setq ispell-local-dictionary "en_US")
-
 (use-package org-agenda
   :straight nil :ensure nil
   :config
@@ -778,7 +745,10 @@ apps are not started from a shell."
         org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
                              ("~/org/time.org" :level . 1)
                              )
+        org-capture-templates
+        `(("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1))
         )
+
   (org-agenda-align-tags)
   )
 (set-register ?g (cons 'file  "~/org/gtd.org"))
@@ -870,7 +840,6 @@ apps are not started from a shell."
   (setq org-journal-find-file 'find-file)
   )
 
-
 (defun org-journal-find-location ()
   ;; Open today's journal, but specify a non-nil prefix argument in order to
   ;; inhibit inserting the heading; org-capture will insert the heading.
@@ -897,7 +866,6 @@ apps are not started from a shell."
            "\n* Gratitude\n"
              )))
 
-
 (add-hook 'org-journal-after-header-create-hook
           #'insert-created-date)
 
@@ -907,14 +875,10 @@ apps are not started from a shell."
           'kill-line
           'end-of-buffer)
 
-(setq org-capture-templates
-      `(
-        ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1)
-        ("j" "Journal entry" plain (function org-journal-find-location)
-                            "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
-                            :jump-to-captured t :immediate-finish t))
-        )
-      )
+(add-to-list 'org-capture-templates
+             '("j" "Journal entry" plain (function org-journal-find-location)
+               "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+               :jump-to-captured t :immediate-finish t))
 
 (use-package org-roam
       :init
@@ -994,11 +958,10 @@ apps are not started from a shell."
   (setq org-noter-default-notes-file-name '("notes.org")
         org-noter-notes-search-path '("~/org")
         org-noter-notes-window-location "Horizontal"
-        org-noter-separate-notes-from-heading t)
+        org-noter-separate-notes-from-heading t))
 
-  )
 (defun my/no-op (&rest args))
- (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
+(advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
 
 (defun grind()
   (interactive)
@@ -1008,7 +971,7 @@ apps are not started from a shell."
   (load-theme 'doom-acario-dark  t)
   (my/style-org))
 
-(global-set-key (kbd "C-c g") 'grind)
+(global-set-key (kbd "C-c g") #'grind)
 
 (defun ungrind()
   (interactive)
@@ -1017,4 +980,4 @@ apps are not started from a shell."
                          " | sudo -S ~/bin/ungrind"))
   (load-theme 'doom-horizon t)
   (my/style-org))
-  (global-set-key (kbd "C-c u") 'ungrind)
+  (global-set-key (kbd "C-c u") #'ungrind)
