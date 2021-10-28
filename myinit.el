@@ -134,41 +134,43 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
-(load-theme 'doom-horizon t)
-(defun scratch-setup ()
-  (load "~/.emacs.d/.quotes.el")
-  (setq initial-scratch-message
-        (concat (nth (random (length quotes)) quotes)
-                "\n\n\n")))
-(scratch-setup)
+ (load-theme 'doom-horizon t)
+ (defun scratch-setup ()
+   (load "~/.emacs.d/.quotes.el")
+   (setq initial-scratch-message
+         (concat (nth (random (length quotes)) quotes)
+                 "\n\n\n")))
+ (scratch-setup)
 
-(defun files-startup-screen (file2 &rest files)
-  "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+ (defun files-startup-screen (file2 &rest files)
+   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-  (dotimes (n (length files))
-    (setq index (- (- (length files) n) 1))
-    (switch-to-buffer (find-file (nth index files)))
-    (split-window-right))
+   (dotimes (n (length files))
+     (setq index (- (- (length files) n) 1))
+     (switch-to-buffer (find-file (nth index files)))
+     (split-window-right))
 
-  (switch-to-buffer (find-file file2 )))
+   (switch-to-buffer (find-file file2 )))
 
-(defun agenda-startup-screen ()
-  "Display the weekly org-agenda and all todos."
-  (org-agenda nil "a")
-  (delete-other-windows)
-  (split-window-right)
-  (switch-to-buffer "*scratch*"))
+ (defun agenda-startup-screen ()
+   "Display the weekly org-agenda and all todos."
+   (org-agenda nil "a")
+   (delete-other-windows)
+;   (split-window-right)
+ ;  (switch-to-buffer-other-window "*scratch*")
+   )
 
-(defun emacs-startup-screen ()
+
+ (defun emacs-startup-screen ()
 
 
-                                        ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-                                        ;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-  (agenda-startup-screen)
-  (right-two-thirds)
-  (balance-windows)
-  )
-(add-hook 'emacs-startup-hook #'emacs-startup-screen)
+                                         ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+                                         ;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+   (agenda-startup-screen)
+   (right-two-thirds)
+   (balance-windows)
+   )
+ (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -271,6 +273,51 @@ apps are not started from a shell."
   (setq company-idle-delay 0
         company-minimum-prefix-length 2)
   :hook (after-init . global-company-mode))
+
+(use-package ispell)
+
+(define-key ctl-x-map "\C-i"
+  #'endless/ispell-word-then-abbrev)
+
+(defun endless/simple-get-word ()
+  (car-safe (save-excursion (ispell-get-word nil))))
+
+(defun endless/ispell-word-then-abbrev (p)
+  "Call `ispell-word', then create an abbrev for it.
+With prefix P, create local abbrev. Otherwise it will
+be global.
+If there's nothing wrong with the word at point, keep
+looking for a typo until the beginning of buffer. You can
+skip typos you don't want to fix with `SPC', and you can
+abort completely with `C-g'."
+  (interactive "P")
+  (let (bef aft)
+    (save-excursion
+      (while (if (setq bef (endless/simple-get-word))
+                 ;; Word was corrected or used quit.
+                 (if (ispell-word nil 'quiet)
+                     nil ; End the loop.
+                   ;; Also end if we reach `bob'.
+                   (not (bobp)))
+               ;; If there's no word at point, keep looking
+               ;; until `bob'.
+               (not (bobp)))
+        (backward-word)
+        (backward-char))
+      (setq aft (endless/simple-get-word)))
+    (if (and aft bef (not (equal aft bef)))
+        (let ((aft (downcase aft))
+              (bef (downcase bef)))
+          (define-abbrev
+            (if p local-abbrev-table global-abbrev-table)
+            bef aft)
+          (message "\"%s\" now expands to \"%s\" %sally"
+                   bef aft (if p "loc" "glob")))
+      (user-error "No typo at or before point"))))
+
+(setq save-abbrevs 'silently)
+(setq-default abbrev-mode t)
+
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (setq ispell-program-name "hunspell")
@@ -657,33 +704,33 @@ apps are not started from a shell."
 (add-hook 'org-mode-hook 'variable-pitch-mode) ; auto enable variable ptich for new buffers
 
 (use-package org-fragtog
-  :hook (org-mode . org-fragtog-mode))
+    :hook (org-mode . org-fragtog-mode))
 
-(use-package org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autosubmarkers t
-        org-appear-autolinks t
-        org-appear-autoentities t
-        org-appear-delay .1
-        org-appear-autokeywords t))
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autosubmarkers t
+          org-appear-autolinks t
+          org-appear-autoentities t
+          org-appear-delay .1
+          org-appear-autokeywords t))
 
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-(setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 
-(use-package tex
-  :straight auctex
-  :defer t
-  :config
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t))
+  (use-package tex
+    :straight auctex
+    :defer t
+    :config
+    (setq TeX-auto-save t)
+    (setq TeX-parse-self t))
 
-(use-package cdlatex
-  :requires texmathp
-  :config
-                                        ;      (setq cdlatex-paired-parens "")
-  :hook (org-mode . turn-on-org-cdlatex)
-    )
+  (use-package cdlatex
+    :requires texmathp
+    :config
+;    (setq cdlatex-paired-parens "")
+       )
+(add-hook 'org-mode-hook #'turn-on-org-cdlatex)
 
 (use-package org-download
   :ensure t
