@@ -21,7 +21,10 @@ apps are not started from a shell."
   (interactive)
   (load-file "~/.emacs.d/init.el"))
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :config
+  (setq all-the-icons-scale-factor 1.1))
+
 (use-package speed-type)
 
                                         ; directories
@@ -44,36 +47,35 @@ apps are not started from a shell."
 (set-register ?l (cons 'file (concat default-directory "learning.org")))
 
 (menu-bar-mode -1)
-   (tool-bar-mode -1)
-   (toggle-scroll-bar -1)
-   (blink-cursor-mode -1)
-   (show-paren-mode 1)
-   (fset 'yes-or-no-p 'y-or-n-p)
-   (global-display-line-numbers-mode)
-   (setq display-line-numbers 'relative
-         line-number-mode t)
-  
-   ; padding
-   (setq header-line-format " "
-         left-margin-width 1
-         right-margin-width 1)
-  
-  ; window settings
-  (window-divider-mode)
-  (when (boundp 'window-divider-mode)
-    (setq window-divider-default-places t
-          window-divider-default-bottom-width 1
-          window-divider-default-right-width 1)
-    (window-divider-mode +1))
-  
-;  (setq org-src-window-setup 'current-window)
-  (use-package spaceline-config
-    :straight (spaceline :host github :repo "TheBB/spaceline" :branch "master")
-    :config
-    (setq spaceline-workspace-numbers-unicode t)
-    (spaceline-toggle-major-mode-on)
-    (spaceline-toggle-column-on)
-    (spaceline-emacs-theme))
+ (tool-bar-mode -1)
+ (toggle-scroll-bar -1)
+ (blink-cursor-mode -1)
+ (show-paren-mode 1)
+ (fset 'yes-or-no-p 'y-or-n-p)
+ (global-display-line-numbers-mode)
+ (setq display-line-numbers 'relative
+       line-number-mode t)
+
+ ; padding
+ (setq header-line-format " "
+       left-margin-width 1
+       right-margin-width 1)
+
+; window settings
+(window-divider-mode)
+(when (boundp 'window-divider-mode)
+  (setq window-divider-default-places t
+        window-divider-default-bottom-width 1
+        window-divider-default-right-width 1)
+  (window-divider-mode +1))
+
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-env-version t
+        doom-modeline-enable-word-count t
+        doom-modeline-buffer-encoding nil
+         ))
 
 (setq frame-resize-pixelwise t
       l (display-monitor-attributes-list)
@@ -134,43 +136,44 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
- (load-theme 'doom-horizon t)
- (defun scratch-setup ()
-   (load "~/.emacs.d/.quotes.el")
-   (setq initial-scratch-message
-         (concat (nth (random (length quotes)) quotes)
-                 "\n\n\n")))
- (scratch-setup)
+  (load-theme 'doom-horizon t)
+  (defun scratch-setup ()
+    (load "~/.emacs.d/.quotes.el")
+    (setq initial-scratch-message
+          (concat (nth (random (length quotes)) quotes)
+                  "\n\n\n")))
+  (scratch-setup)
 
- (defun files-startup-screen (file2 &rest files)
-   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+  (defun files-startup-screen (file2 &rest files)
+    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-   (dotimes (n (length files))
-     (setq index (- (- (length files) n) 1))
-     (switch-to-buffer (find-file (nth index files)))
-     (split-window-right))
+    (dotimes (n (length files))
+      (setq index (- (- (length files) n) 1))
+      (switch-to-buffer (find-file (nth index files)))
+      (split-window-right))
 
-   (switch-to-buffer (find-file file2 )))
+    (switch-to-buffer (find-file file2 )))
 
- (defun agenda-startup-screen ()
-   "Display the weekly org-agenda and all todos."
-   (org-agenda nil "a")
-   (delete-other-windows)
-;   (split-window-right)
- ;  (switch-to-buffer-other-window "*scratch*")
-   )
-
-
- (defun emacs-startup-screen ()
+  (defun agenda-startup-screen ()
+    "Display the weekly org-agenda and all todos."
+    (org-agenda nil "a")
+    (delete-other-windows)
+ ;   (split-window-right)
+  ;  (switch-to-buffer-other-window "*scratch*")
+    )
 
 
-                                         ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-                                         ;      (files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-   (agenda-startup-screen)
-   (right-two-thirds)
-   (balance-windows)
-   )
- (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+  (defun emacs-startup-screen ()
+
+
+                                          ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+    (files-startup-screen "~/code/quick/test.py")
+    ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+;    (agenda-startup-screen)
+    (right-two-thirds)
+    (balance-windows)
+    )
+  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -187,6 +190,7 @@ apps are not started from a shell."
     (global-disable-mouse-mode))
 
   (use-package no-spam
+    :disabled
     :config
     (no-spam-add-repeat-delay next-line 10
                               previous-line 10
@@ -432,64 +436,61 @@ abort completely with `C-g'."
         ("C-S-m" . pipe_R_operator))
   )
 
-(use-package python
-    :mode ("\\.py\\'" . python-mode)
-    :config
-    (setq python-shell-interpreter "python3"))
-
 (use-package elpy
-  :after python
-  :init
-  ;; Truncate long line in inferior mode
-  (add-hook 'inferior-python-mode-hook (lambda () (setq truncate-lines t)))
-  ;; Enable company
-  (add-hook 'python-mode-hook 'company-mode)
-  (add-hook 'inferior-python-mode-hook 'company-mode)
-  ;; Enable highlight indentation
-  (add-hook 'highlight-indentation-mode-hook
-            'highlight-indentation-current-column-mode)
-  ;; Enable elpy
-  (elpy-enable)
-  :config
-  ;; Do not enable elpy flymake for now
-  (remove-hook 'elpy-modules 'elpy-module-flymake)
-  (remove-hook 'elpy-modules 'elpy-module-highlight-indentation)
+    :init
+    (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+    :bind (:map elpy-mode-map
 
-  (setq elpy-rpc-python-command "python3"
-        elpy-rpc-backend "rope" ; completion backend
-  )
-  ;; Function: send block to elpy: bound to C-c C-c
-  (defun forward-block (&optional n)
-    (interactive "p")
-    (let ((n (if (null n) 1 n)))
-      (search-forward-regexp "\n[\t\n ]*\n+" nil "NOERROR" n)))
+                ("<M-left>" . nil)
+                ("<M-right>" . nil)
+                ("<M-S-left>" . elpy-nav-indent-shift-left)
+                ("<M-S-right>" . elpy-nav-indent-shift-right)
+                ("M-." . elpy-goto-definition)
+                ("M-," . pop-tag-mark))
+    :config
+    (setq elpy-rpc-backend "jedi")
+    (add-hook 'elpy-mode-hook (lambda ()
+                          (add-hook 'before-save-hook
+                                    'elpy-format-code nil t)))
+    )
 
-  (defun elpy-shell-send-current-block ()
-    (interactive)
-    (beginning-of-line)
-    "Send current block to Python shell."
-    (push-mark)
-    (forward-block)
-    (elpy-shell-send-region-or-buffer)
-    (display-buffer (process-buffer (elpy-shell-get-or-create-process))
-                    nil
-                    'visible))
+  (use-package python
+    :mode ("\\.py" . python-mode)
+    :config
+    (setq python-indent-offset 4
+          python-indent-guess-indent-offset nil
+          python-shell-completion-native-enable nil)
+    (elpy-enable))   
 
-  ;; Font-lock
-  (add-hook 'python-mode-hook
-            '(lambda()
-               (font-lock-add-keywords
-                nil
-                '(("\\<\\([_A-Za-z0-9]*\\)(" 1
-                   font-lock-function-name-face) ; highlight function names
-                  ))))
+  (use-package pyenv-mode
+    :init
+    (add-to-list 'exec-path "~/.pyenv/shims")
+    (setenv "WORKON_HOME" "~/.pyenv/versions/")
+    :config
+    (pyenv-mode)
+    :bind
+    ("C-x p e" . pyenv-activate-current-project))
 
-  :bind (:map python-mode-map
-         ("C-c <RET>" . elpy-shell-send-region-or-buffer)
-         ("C-c C-c" . elpy-send-current-block)))
+(defun pyenv-activate-current-project ()
+  "Automatically activates pyenv version if .python-version file exists."
+  (interactive)
+  (let ((python-version-directory (locate-dominating-file (buffer-file-name) ".python-version")))
+    (if python-version-directory
+        (let* ((pyenv-version-path (f-expand ".python-version" python-version-directory))
+               (pyenv-current-version (s-trim (f-read-text pyenv-version-path 'utf-8))))
+          (pyenv-mode-set pyenv-current-version)
+          (message (concat "Setting virtualenv to " pyenv-current-version))))))
 
-(use-package pipenv
-  :hook (python-mode . pipenv-mode))
+  (defvar pyenv-current-version nil nil)
+
+(defun pyenv-init()
+  "Initialize pyenv's current version to the global one."
+  (let ((global-pyenv (replace-regexp-in-string "\n" "" (shell-command-to-string "pyenv global"))))
+    (message (concat "Setting pyenv version to " global-pyenv))
+    (pyenv-mode-set global-pyenv)
+    (setq pyenv-current-version global-pyenv)))
+
+(add-hook 'after-init-hook 'pyenv-init)
 
 (setq gdb-many-windows t
       gdb-use-separate-io-buffer t)
@@ -650,7 +651,7 @@ abort completely with `C-g'."
          'org-document-info-keyword))
   (mapc ;; This sets the fonts to a smaller size
    (lambda (face)
-     (set-face-attribute face nil :height 0.8))
+     (set-face-attribute face nil :height 0.85))
    (list 'org-document-info-keyword
          'org-block-begin-line
          'org-block-end-line
@@ -658,6 +659,8 @@ abort completely with `C-g'."
          'org-drawer
          'org-property-value
          'minibuffer-prompt
+         'mode-line
+         'mode-line-inactive
          ))
     (setq color-theme (nth pick-color color-schemes))
   (set-face-attribute 'org-code nil
@@ -696,7 +699,6 @@ abort completely with `C-g'."
                       :height 1.3)
   (set-face-attribute 'org-ellipsis nil
                       :foreground "#3256A8" :underline nil)
-
   )
 
 (add-hook 'org-mode-hook 'my/style-org)
