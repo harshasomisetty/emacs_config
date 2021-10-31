@@ -94,7 +94,7 @@ apps are not started from a shell."
 
 (defun right-two-thirds ()
   (interactive)
-  (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
+  (set-frame-position (selected-frame) (- (/ max-frame-width 3) 10) 0)
   (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
 
 (defun right-one-thirds ()
@@ -136,44 +136,45 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
-  (load-theme 'doom-horizon t)
-  (defun scratch-setup ()
-    (load "~/.emacs.d/.quotes.el")
-    (setq initial-scratch-message
-          (concat (nth (random (length quotes)) quotes)
-                  "\n\n\n")))
-  (scratch-setup)
+    (load-theme 'doom-horizon t)
+    (defun scratch-setup ()
+      (load "~/.emacs.d/.quotes.el")
+      (setq initial-scratch-message
+            (concat (nth (random (length quotes)) quotes)
+                    "\n\n\n")))
+    (scratch-setup)
 
-  (defun files-startup-screen (file2 &rest files)
-    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+    (defun files-startup-screen (file2 &rest files)
+      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-    (dotimes (n (length files))
-      (setq index (- (- (length files) n) 1))
-      (switch-to-buffer (find-file (nth index files)))
-      (split-window-right))
+      (dotimes (n (length files))
+        (setq index (- (- (length files) n) 1))
+        (switch-to-buffer (find-file (nth index files)))
+        (split-window-right))
 
-    (switch-to-buffer (find-file file2 )))
+      (switch-to-buffer (find-file file2 )))
 
-  (defun agenda-startup-screen ()
-    "Display the weekly org-agenda and all todos."
-    (org-agenda nil "a")
-    (delete-other-windows)
- ;   (split-window-right)
-  ;  (switch-to-buffer-other-window "*scratch*")
-    )
-
-
-  (defun emacs-startup-screen ()
+    (defun agenda-startup-screen ()
+      "Display the weekly org-agenda and all todos."
+      (org-agenda nil "a")
+      (delete-other-windows)
+   ;   (split-window-right)
+    ;  (switch-to-buffer-other-window "*scratch*")
+      )
 
 
-                                          ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-    (files-startup-screen "~/code/quick/test.py")
-    ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-;    (agenda-startup-screen)
-    (right-two-thirds)
-    (balance-windows)
-    )
-  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+    (defun emacs-startup-screen ()
+
+
+                                            ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+;      (files-startup-screen "~/code/twitter_blog/explore.py")
+      (files-startup-screen "~/code/guttenberg/server/app.js")        
+      ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+;      (agenda-startup-screen)
+      (right-two-thirds)
+      (balance-windows)
+      )
+    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -368,6 +369,31 @@ abort completely with `C-g'."
 (define-key c-mode-map (kbd "C-c C-/") 'uncomment-region)
    (use-package clang-format)
 
+(setq gdb-many-windows t
+      gdb-use-separate-io-buffer t)
+
+(advice-add 'gdb-setup-windows :after
+            (lambda () (set-window-dedicated-p (selected-window) t)))
+
+
+(defconst gud-window-register 123456)
+
+(defun gud-quit ()
+  (interactive)
+  (gud-basic-call "quit"))
+
+(add-hook 'gud-mode-hook
+          (lambda ()
+            (gud-tooltip-mode)
+            (window-configuration-to-register gud-window-register)
+            (local-set-key (kbd "C-q") 'gud-quit)))
+
+(advice-add 'gud-sentinel :after
+            (lambda (proc msg)
+              (when (memq (process-status proc) '(signal exit))
+                (jump-to-register gud-window-register)
+                (bury-buffer))))
+
 (use-package ess-site
   :straight ess
   :config
@@ -448,7 +474,7 @@ abort completely with `C-g'."
                 ("M-." . elpy-goto-definition)
                 ("M-," . pop-tag-mark))
     :config
-    (setq elpy-rpc-backend "jedi")
+    (setq elpy-rpc-virtualenv-path 'current)
     (add-hook 'elpy-mode-hook (lambda ()
                           (add-hook 'before-save-hook
                                     'elpy-format-code nil t)))
@@ -492,30 +518,119 @@ abort completely with `C-g'."
 
 (add-hook 'after-init-hook 'pyenv-init)
 
-(setq gdb-many-windows t
-      gdb-use-separate-io-buffer t)
+(use-package js2-mode
+    :init
+    (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+    :hook
+    (js2-mode . js2-imenu-extras-mode))
 
-(advice-add 'gdb-setup-windows :after
-            (lambda () (set-window-dedicated-p (selected-window) t)))
+  (use-package js2-refactor
+    :init
+    (add-hook 'js2-mode-hook #'js2-refactor-mode)
+    :config
+    (js2r-add-keybindings-with-prefix "C-c C-r")
+    (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
 
+    ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
+    ;; unbind it.
+    (define-key js-mode-map (kbd "M-.") nil)
 
-(defconst gud-window-register 123456)
+    (add-hook 'js2-mode-hook (lambda ()
+       (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
-(defun gud-quit ()
+  (use-package xref-js2)
+
+  ; autoformatting
+  (use-package prettier-js
+    :init
+    (add-hook 'js2-mode-hook 'prettier-js-mode))
+
+;      (add-hook 'elpy-mode-hook (lambda ()
+ ;                           (add-hook 'before-save-hook
+  ;                                    'elpy-format-code nil t)))
+
+(use-package tide
+  :after (typescript-mode company flycheck)
+  :config
+  (setq company-tooltip-align-annotations t)
+  :hook
+  ((typescript-mode . tide-setup)
+       (typescript-mode . tide-hl-identifier-mode)
+       (before-save . tide-format-before-save)))
+
+(use-package dockerfile-mode
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+
+(use-package web-mode
+  :mode
+  (
+   ".twig$"
+   ".html?$"
+   ".hbs$"
+   ".vue$"
+   ".blade.php$"
+   )
+  :config
+  (setq
+   web-mode-markup-indent-offset 2
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
+   web-mode-style-padding 2
+   web-mode-script-padding 2
+   web-mode-enable-auto-closing t
+   web-mode-enable-auto-opening t
+   web-mode-enable-auto-pairing t
+   web-mode-enable-auto-indentation t)
+
+  ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
+  ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
+  (dolist (alist web-mode-engines-auto-pairs)
+    (setcdr alist
+            (cl-loop for pair in (cdr alist)
+                     unless (string-match-p "^[a-z-]" (cdr pair))
+                     collect (cons (car pair)
+                                   (string-trim-right (cdr pair)
+                                                      "\\(?:>\\|]\\|}\\)+\\'")))))
+  )
+
+;; (defun gf/web-mode-toggle-markup-offset ()
+;;   "Switch between 2 and 4 spaces for markup indentation"
+;;   (interactive)
+;;   (if (eq web-mode-markup-indent-offset 2)
+;;       (setq web-mode-markup-indent-offset 4)
+;;     (setq web-mode-markup-indent-offset 2))
+;;   (message (format "Set markup indendation to %s spaces" web-mode-markup-indent-offset))
+;;   (web-mode))
+
+(defun gf/toggle-php-web-mode ()
+  "Switch between php-mode and web-mode for the current buffer."
   (interactive)
-  (gud-basic-call "quit"))
+  (if (equal (symbol-name (buffer-local-value 'major-mode (current-buffer))) "web-mode")
+      (php-mode)
+    (web-mode)))
 
-(add-hook 'gud-mode-hook
-          (lambda ()
-            (gud-tooltip-mode)
-            (window-configuration-to-register gud-window-register)
-            (local-set-key (kbd "C-q") 'gud-quit)))
+(defun gf/web-maybe-activate-lsp ()
+  "Maybe activate language server protocol for the current buffer."
+  (if (equal (gf/filename-extension (buffer-file-name)) "vue")
+      (lsp-vue-mmm-enable)))
 
-(advice-add 'gud-sentinel :after
-            (lambda (proc msg)
-              (when (memq (process-status proc) '(signal exit))
-                (jump-to-register gud-window-register)
-                (bury-buffer))))
+;; (when (not (version< emacs-version "25.1"))
+;;   (use-package lsp-vue
+;;     :after web-mode
+;;     :config
+;;         (add-hook 'web-mode-hook #'gf/web-maybe-activate-lsp)))
+
+(provide 'setup-web-mode)
+
+(use-package emmet-mode
+:commands emmet-mode
+:hook
+(web-mode html-mode))
 
 (setq remote-file-name-inhibit-cache nil)
 (setq vc-ignore-dir-regexp
@@ -569,6 +684,12 @@ abort completely with `C-g'."
         helm-autoresize-min-height 20
         helm-autoresize-mode 1)
   (bind-keys ("C-x C-f" . helm-find-files)))
+
+(use-package projectile
+  :config
+  (projectile-mode +1)
+  :bind-keymap
+  ("C-c p" . projectile-command-map))
 
 (use-package magit)
 
