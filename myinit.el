@@ -136,45 +136,45 @@ apps are not started from a shell."
 
 (setq inhibit-startup-screen t)
 
-    (load-theme 'doom-horizon t)
-    (defun scratch-setup ()
-      (load "~/.emacs.d/.quotes.el")
-      (setq initial-scratch-message
-            (concat (nth (random (length quotes)) quotes)
-                    "\n\n\n")))
-    (scratch-setup)
+      (load-theme 'doom-horizon t)
+      (defun scratch-setup ()
+        (load "~/.emacs.d/.quotes.el")
+        (setq initial-scratch-message
+              (concat (nth (random (length quotes)) quotes)
+                      "\n\n\n")))
+      (scratch-setup)
 
-    (defun files-startup-screen (file2 &rest files)
-      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+      (defun files-startup-screen (file2 &rest files)
+        "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
-      (dotimes (n (length files))
-        (setq index (- (- (length files) n) 1))
-        (switch-to-buffer (find-file (nth index files)))
-        (split-window-right))
+        (dotimes (n (length files))
+          (setq index (- (- (length files) n) 1))
+          (switch-to-buffer (find-file (nth index files)))
+          (split-window-right))
 
-      (switch-to-buffer (find-file file2 )))
+        (switch-to-buffer (find-file file2 )))
 
-    (defun agenda-startup-screen ()
-      "Display the weekly org-agenda and all todos."
-      (org-agenda nil "a")
-      (delete-other-windows)
-   ;   (split-window-right)
-    ;  (switch-to-buffer-other-window "*scratch*")
-      )
-
-
-    (defun emacs-startup-screen ()
+      (defun agenda-startup-screen ()
+        "Display the weekly org-agenda and all todos."
+        (org-agenda nil "a")
+        (delete-other-windows)
+     ;   (split-window-right)
+      ;  (switch-to-buffer-other-window "*scratch*")
+        )
 
 
-                                            ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-;      (files-startup-screen "~/code/twitter_blog/explore.py")
-      (files-startup-screen "~/code/guttenberg/server/app.js")        
-      ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-;      (agenda-startup-screen)
-      (right-two-thirds)
-      (balance-windows)
-      )
-    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+      (defun emacs-startup-screen ()
+
+
+                                              ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+        (files-startup-screen "~/code/twit_blog/downloadData.py")
+  ;        (files-startup-screen "~/code/exercises/README.md")        
+        ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+;       (agenda-startup-screen)
+        (right-two-thirds)
+        (balance-windows)
+        )
+      (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 
 (use-package avy
     :bind ("C-;" . avy-goto-word-1))
@@ -219,6 +219,15 @@ apps are not started from a shell."
   (setq insert-directory-program "gls" dired-use-ls-dired t
         dired-listing-switches "-agho --group-directories-first"))
 
+(use-package dired-plus
+  :disabled
+  :straight
+  (:host github :repo "emacsmirror/dired-plus" :branch "main" :files ("*.el"))
+  :custom
+  (diredp-toggle-find-file-reuse-dir t))
+
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
 (use-package dired-subtree :ensure t
   :after dired
   :config
@@ -227,6 +236,10 @@ apps are not started from a shell."
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-quick-sort
+  :config
+  (dired-quick-sort-setup))
 
 (use-package dired-hide-dotfiles
   :hook (dired-mode . dired-hide-dotfiles-mode)
@@ -489,11 +502,17 @@ abort completely with `C-g'."
     (elpy-enable))   
 
   (use-package pyenv-mode
+    :disabled
     :init
     (add-to-list 'exec-path "~/.pyenv/shims")
     (setenv "WORKON_HOME" "~/.pyenv/versions/")
     :config
     (pyenv-mode)
+    (setq pyenv-mode-map
+          (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c C-m") 'pyenv-mode-set)
+            (define-key map (kbd "C-c C-u") 'pyenv-mode-unset)
+            map))
     :bind
     ("C-x p e" . pyenv-activate-current-project))
 
@@ -529,7 +548,7 @@ abort completely with `C-g'."
     (add-hook 'js2-mode-hook #'js2-refactor-mode)
     :config
     (js2r-add-keybindings-with-prefix "C-c C-r")
-    (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
+
 
     ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
     ;; unbind it.
@@ -691,7 +710,12 @@ abort completely with `C-g'."
   :bind-keymap
   ("C-c p" . projectile-command-map))
 
-(use-package magit)
+(use-package magit
+  :bind
+  ("C-x g" . magit-status)
+  :config
+  (with-eval-after-load 'magit-mode
+    (add-hook 'after-save-hook 'magit-after-save-refresh-status t)))
 
 (use-package smudge)
 

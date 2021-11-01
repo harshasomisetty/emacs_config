@@ -7,6 +7,7 @@
     ("beautifuul" "beautiful" nil :count 1)
     ("calcualte" "calculate" nil :count 4)
     ("embarce" "embrace" nil :count 0)
+    ("functin" "function" nil :count 0)
     ("mongodb" "mongodb" nil :count 0)
     ("probabiliyt" "probability" nil :count 0)
     ("probabily" "probability" nil :count 0)

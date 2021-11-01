@@ -1,1 +1,1 @@
-("~/.emacs.d/" "~/code/Artha/")
+("~/Dropbox/org/" "~/code/checkra_website/" "~/code/twit_blog/" "~/.emacs.d/" "~/code/Artha/")
