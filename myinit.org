@@ -154,6 +154,7 @@
 *** Startup
 #+BEGIN_SRC emacs-lisp
         (setq inhibit-startup-screen t)
+
   
         (load-theme 'doom-horizon t)
         (defun scratch-setup ()
@@ -162,17 +163,15 @@
                 (concat (nth (random (length quotes)) quotes)
                         "\n\n\n")))
         (scratch-setup)
-  
         (defun files-startup-screen (file2 &rest files)
           "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-  
+    
           (dotimes (n (length files))
             (setq index (- (- (length files) n) 1))
             (switch-to-buffer (find-file (nth index files)))
             (split-window-right))
-  
           (switch-to-buffer (find-file file2 )))
-  
+    
         (defun agenda-startup-screen ()
           "Display the weekly org-agenda and all todos."
           (org-agenda nil "a")
@@ -180,21 +179,20 @@
        ;   (split-window-right)
         ;  (switch-to-buffer-other-window "*scratch*")
           )
-  
-  
+    
         (defun emacs-startup-screen ()
-  
-  
+    
+    
                                                 ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+    ;      (files-startup-screen "~/code/twitter_blog/explore.py")
           (files-startup-screen "~/code/twit_blog/downloadData.py")
-    ;        (files-startup-screen "~/code/exercises/README.md")        
+  ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
           ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-  ;       (agenda-startup-screen)
+    ;      (agenda-startup-screen)
           (right-two-thirds)
           (balance-windows)
           )
         (add-hook 'emacs-startup-hook #'emacs-startup-screen)
-  
 #+END_SRC
 
 ** Navigation
@@ -566,6 +564,11 @@
               map))
       :bind
       ("C-x p e" . pyenv-activate-current-project))
+  (setq pyenv-mode-map
+        (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "C-c C-m") 'pyenv-mode-set)
+          (define-key map (kbd "C-c C-u") 'pyenv-mode-unset)
+          map))
   
   (defun pyenv-activate-current-project ()
     "Automatically activates pyenv version if .python-version file exists."
@@ -602,8 +605,6 @@
       (add-hook 'js2-mode-hook #'js2-refactor-mode)
       :config
       (js2r-add-keybindings-with-prefix "C-c C-r")
-
-    
       ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
       ;; unbind it.
       (define-key js-mode-map (kbd "M-.") nil)
@@ -653,6 +654,7 @@
     (
      ".twig$"
      ".html?$"
+     ".js$"
      ".hbs$"
      ".vue$"
      ".blade.php$"
@@ -789,13 +791,10 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
-    :bind
-    ("C-x g" . magit-status)
     :config
     (with-eval-after-load 'magit-mode
       (add-hook 'after-save-hook 'magit-after-save-refresh-status t)))
- #+END_SRC
-
+#+end_src
 ** Spotify Smudge
 #+begin_src emacs-lisp
   (use-package smudge)
