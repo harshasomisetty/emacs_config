@@ -154,7 +154,7 @@
 *** Startup
 #+BEGIN_SRC emacs-lisp
         (setq inhibit-startup-screen t)
-
+  
   
         (load-theme 'doom-horizon t)
         (defun scratch-setup ()
@@ -165,13 +165,13 @@
         (scratch-setup)
         (defun files-startup-screen (file2 &rest files)
           "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-    
+  
           (dotimes (n (length files))
             (setq index (- (- (length files) n) 1))
             (switch-to-buffer (find-file (nth index files)))
             (split-window-right))
           (switch-to-buffer (find-file file2 )))
-    
+  
         (defun agenda-startup-screen ()
           "Display the weekly org-agenda and all todos."
           (org-agenda nil "a")
@@ -179,13 +179,14 @@
        ;   (split-window-right)
         ;  (switch-to-buffer-other-window "*scratch*")
           )
-    
+  
         (defun emacs-startup-screen ()
-    
-    
+  
+  
                                                 ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
     ;      (files-startup-screen "~/code/twitter_blog/explore.py")
-          (files-startup-screen "~/code/twit_blog/README.org")
+          ;; (files-startup-screen "~/code/twit_blog/README.org")
+          (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
   ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
           ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
     ;      (agenda-startup-screen)
@@ -290,37 +291,84 @@
       :safe 'stringp
       :group 'deft))
     #+end_src
+*** Which key
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 1))
+
+#+end_src
 ** Editing
 #+BEGIN_SRC emacs-lisp
-  (require 'org-tempo)
-  ;; Move cursor to end of line, new line and indent
-  (global-set-key (kbd "<C-return>") (lambda ()
-                                       (interactive)
-                                       (end-of-line)
-                                       (newline-and-indent)))
-  
-  ;; Move cursor to previous line, new line, indent
-  (global-set-key (kbd "<C-S-return>") (lambda ()
+    (require 'org-tempo)
+    ;; Move cursor to end of line, new line and indent
+    (global-set-key (kbd "<C-return>") (lambda ()
                                          (interactive)
-                                         (previous-line)
                                          (end-of-line)
-                                         (newline-and-indent)
-                                         ))
-  (require 'subr-x)
-  (use-package yasnippet
-    :config
-    (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-    (yas-global-mode 1)
-    )
-(setq create-lockfiles nil)  
-  (use-package company
-    :disabled t
-    :config
-    (setq company-idle-delay 0
-          company-minimum-prefix-length 2)
-    :hook (after-init . global-company-mode))
-
+                                         (newline-and-indent)))
+  
+    ;; Move cursor to previous line, new line, indent
+    (global-set-key (kbd "<C-S-return>") (lambda ()
+                                           (interactive)
+                                           (previous-line)
+                                           (end-of-line)
+                                           (newline-and-indent)
+                                           ))
+    (require 'subr-x)
+    (use-package yasnippet
+      :config
+      (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+      (yas-global-mode 1)
+      )
+  (setq create-lockfiles nil)
+  
 #+END_SRC
+*** Company
+#+begin_src emacs-lisp
+    (use-package company
+      :config
+      (global-company-mode)
+      :bind
+      ("C-c C-c" . company-complete)
+  )
+#+end_src
+*** Ivy and Counsel
+#+begin_src emacs-lisp
+    (use-package ivy
+      :disabled
+      :diminish
+      :bind (("C-s" . swiper)
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done)
+           ("C-l" . ivy-alt-done)
+           ("C-j" . ivy-next-line)
+           ("C-k" . ivy-previous-line)
+           :map ivy-switch-buffer-map
+           ("C-k" . ivy-previous-line)
+           ("C-l" . ivy-done)
+           ("C-d" . ivy-switch-buffer-kill)
+           :map ivy-reverse-i-search-map
+           ("C-k" . ivy-previous-line)
+           ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
+  
+  
+  
+  (use-package counsel
+    :disabled
+    :bind (("C-M-j" . 'counsel-switch-buffer)
+           :map minibuffer-local-map
+           ("C-r" . 'counsel-minibuffer-history))
+    :config
+    (counsel-mode 1))
+  (use-package ivy-rich
+    :disabled
+  :init
+  (ivy-rich-mode 1))
+#+end_src
 *** Spelling
 [[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 #+begin_src emacs-lisp
@@ -402,10 +450,6 @@
     (not (member lang '("C" "R" "python" "emacs-lisp"))))
   
   (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
-#+end_src
-*** LSP mode
-#+begin_src emacs-lisp
-  (use-package lsp-mode)
 #+end_src
 *** Languages
 **** C
@@ -562,9 +606,6 @@
     :config
     (pyenv-mode)
     (defvar pyenv-current-version nil nil)
-    (add-hook 'pyenv-mode-hook
-              (lambda()
-                (define-key pyenv-mode-map (kbd "C-c C-u") nil)))
     )
   
   
@@ -592,40 +633,28 @@
 #+end_src
 **** Javascript
 #+begin_src emacs-lisp
-    (use-package js2-mode
-      :init
-      (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-      :config
-      (setq-default tab-width 2)
-      :hook
-      (js2-mode . js2-imenu-extras-mode))
+  (use-package js2-mode
+    :init
+    (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+    :config
+    (setq-default js2-basic-offset 2)
+    :hook
+    (js2-mode . js2-imenu-extras-mode))
   
-    (use-package js2-refactor
-      :init
-      (add-hook 'js2-mode-hook #'js2-refactor-mode)
-      :config
-      (js2r-add-keybindings-with-prefix "C-c C-r")
-      ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
-      ;; unbind it.
-      (define-key js-mode-map (kbd "M-.") nil)
-  
-      (add-hook 'js2-mode-hook (lambda ()
-         (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
-  
-    (use-package xref-js2)
-  
+  (use-package rjsx-mode
+    :init
+    (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
+
     ; autoformatting
-    (use-package prettier-js
-      :init
-      (add-hook 'js2-mode-hook 'prettier-js-mode))
+  (use-package prettier-js
+    :init
+    (add-hook 'js2-mode-hook 'prettier-js-mode))
   
-  ;      (add-hook 'elpy-mode-hook (lambda ()
-   ;                           (add-hook 'before-save-hook
-    ;                                    'elpy-format-code nil t)))    
-#+end_src
+ #+end_src
 ***** TypeScript
 #+begin_src emacs-lisp
   (use-package tide
+    :disabled
     :after (typescript-mode company flycheck)
     :config
     (setq company-tooltip-align-annotations t)
@@ -664,10 +693,10 @@
      ".vue$"
      ".blade.php$"
      )
+    :hook ((web-mode . company-mode))
     :config
-    (setq indent-tabs-mode nil
-      js-indent-level 2)
     (setq
+     indent-tabs-mode nil
      web-mode-markup-indent-offset 2
      web-mode-css-indent-offset 2
      web-mode-code-indent-offset 2
@@ -676,56 +705,30 @@
      web-mode-enable-auto-closing t
      web-mode-enable-auto-opening t
      web-mode-enable-auto-pairing t
-     web-mode-enable-auto-indentation t)
+     web-mode-enable-auto-indentation t))
   
-    ;; Let smartparens handle auto closing brackets, e.g. {{ }} or {% %}
-    ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/web/%2Bhtml.el#L56
-    (dolist (alist web-mode-engines-auto-pairs)
-      (setcdr alist
-              (cl-loop for pair in (cdr alist)
-                       unless (string-match-p "^[a-z-]" (cdr pair))
-                       collect (cons (car pair)
-                                     (string-trim-right (cdr pair)
-                                                        "\\(?:>\\|]\\|}\\)+\\'"))))))
   
-  (eval-after-load "web-mode"
-  '(setq web-mode-enable-auto-expanding t))
-  ;; (defun gf/web-mode-toggle-markup-offset ()
-  ;;   "Switch between 2 and 4 spaces for markup indentation"
-  ;;   (interactive)
-  ;;   (if (eq web-mode-markup-indent-offset 2)
-  ;;       (setq web-mode-markup-indent-offset 4)
-  ;;     (setq web-mode-markup-indent-offset 2))
-  ;;   (message (format "Set markup indendation to %s spaces" web-mode-markup-indent-offset))
-  ;;   (web-mode))
-  
-  (defun gf/toggle-php-web-mode ()
-    "Switch between php-mode and web-mode for the current buffer."
-    (interactive)
-    (if (equal (symbol-name (buffer-local-value 'major-mode (current-buffer))) "web-mode")
-        (php-mode)
-      (web-mode)))
-  
-  (defun gf/web-maybe-activate-lsp ()
-    "Maybe activate language server protocol for the current buffer."
-    (if (equal (gf/filename-extension (buffer-file-name)) "vue")
-        (lsp-vue-mmm-enable)))
-  
-  ;; (when (not (version< emacs-version "25.1"))
-  ;;   (use-package lsp-vue
-  ;;     :after web-mode
-  ;;     :config
-  ;;         (add-hook 'web-mode-hook #'gf/web-maybe-activate-lsp)))
-  
-  (provide 'setup-web-mode)
  #+end_src
 **** Tailwind
 #+begin_src emacs-lisp
-(straight-use-package
- '(lsp-tailwindcss :type git :host github :repo "merrickluo/lsp-tailwindcss"))
+  (use-package lsp-tailwindcss
+    :disabled
+    :straight
+    (:host github :repo "merrickluo/lsp-tailwindcss" :branch "master" :files ("*.el"))
+    :config
+    (setq lsp-tailwindcss-add-on-mode t))
   
 #+end_src
 
+*** LSP mode
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :commands (lsp lsp-deffered)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :config
+    (lsp-enable-which-key-integration t))
+#+end_src
 *** Tramp
 #+BEGIN_SRC emacs-lisp 
   (setq remote-file-name-inhibit-cache nil)
