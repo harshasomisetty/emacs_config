@@ -20,3 +20,4 @@ archive.org
 .quotes.el
 quelpa/*
 projectile-bookmarks.eld
+/myinit.el

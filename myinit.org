@@ -185,7 +185,7 @@
     
                                                 ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
     ;      (files-startup-screen "~/code/twitter_blog/explore.py")
-          (files-startup-screen "~/code/twit_blog/downloadData.py")
+          (files-startup-screen "~/code/twit_blog/README.org")
   ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
           ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
     ;      (agenda-startup-screen)
@@ -312,7 +312,7 @@
     (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
     (yas-global-mode 1)
     )
-  
+(setq create-lockfiles nil)  
   (use-package company
     :disabled t
     :config
@@ -402,6 +402,10 @@
     (not (member lang '("C" "R" "python" "emacs-lisp"))))
   
   (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+#+end_src
+*** LSP mode
+#+begin_src emacs-lisp
+  (use-package lsp-mode)
 #+end_src
 *** Languages
 **** C
@@ -524,51 +528,45 @@
 **** Python
 
 #+begin_src emacs-lisp
-    (use-package elpy
-      :init
-      (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-      :bind (:map elpy-mode-map
+  (use-package elpy
+    :init
+    (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+    :bind (:map elpy-mode-map
+                ("<M-left>" . nil)
+                ("<M-right>" . nil)
+                ("<M-S-left>" . elpy-nav-indent-shift-left)
+                ("<M-S-right>" . elpy-nav-indent-shift-right)
+                ("M-." . elpy-goto-definition)
+                ("M-," . pop-tag-mark))
+    :config
+    (setq elpy-rpc-virtualenv-path 'current)
+    (add-hook 'elpy-mode-hook (lambda ()
+                                (add-hook 'before-save-hook
+                                          'elpy-format-code nil t))))
   
-                  ("<M-left>" . nil)
-                  ("<M-right>" . nil)
-                  ("<M-S-left>" . elpy-nav-indent-shift-left)
-                  ("<M-S-right>" . elpy-nav-indent-shift-right)
-                  ("M-." . elpy-goto-definition)
-                  ("M-," . pop-tag-mark))
-      :config
-      (setq elpy-rpc-virtualenv-path 'current)
-      (add-hook 'elpy-mode-hook (lambda ()
-                            (add-hook 'before-save-hook
-                                      'elpy-format-code nil t)))
-      )
   
-    (use-package python
-      :mode ("\\.py" . python-mode)
-      :config
-      (setq python-indent-offset 4
-            python-indent-guess-indent-offset nil
-            python-shell-completion-native-enable nil)
-      (elpy-enable))   
+  (use-package python
+    :mode ("\\.py" . python-mode)
+    :config
+    (setq python-indent-offset 4
+          python-indent-guess-indent-offset nil
+          python-shell-completion-native-enable nil)
+    (elpy-enable))
   
-    (use-package pyenv-mode
-      :disabled
-      :init
-      (add-to-list 'exec-path "~/.pyenv/shims")
-      (setenv "WORKON_HOME" "~/.pyenv/versions/")
-      :config
-      (pyenv-mode)
-      (setq pyenv-mode-map
-            (let ((map (make-sparse-keymap)))
-              (define-key map (kbd "C-c C-m") 'pyenv-mode-set)
-              (define-key map (kbd "C-c C-u") 'pyenv-mode-unset)
-              map))
-      :bind
-      ("C-x p e" . pyenv-activate-current-project))
-  (setq pyenv-mode-map
-        (let ((map (make-sparse-keymap)))
-          (define-key map (kbd "C-c C-m") 'pyenv-mode-set)
-          (define-key map (kbd "C-c C-u") 'pyenv-mode-unset)
-          map))
+  (use-package pyenv-mode
+    :init
+    (add-to-list 'exec-path "~/.pyenv/shims")
+    (setenv "WORKON_HOME" "~/.pyenv/versions/")
+    :bind
+    ("C-x p e" . pyenv-activate-current-project)
+    :config
+    (pyenv-mode)
+    (defvar pyenv-current-version nil nil)
+    (add-hook 'pyenv-mode-hook
+              (lambda()
+                (define-key pyenv-mode-map (kbd "C-c C-u") nil)))
+    )
+  
   
   (defun pyenv-activate-current-project ()
     "Automatically activates pyenv version if .python-version file exists."
@@ -580,7 +578,7 @@
             (pyenv-mode-set pyenv-current-version)
             (message (concat "Setting virtualenv to " pyenv-current-version))))))
   
-    (defvar pyenv-current-version nil nil)
+  
   
   (defun pyenv-init()
     "Initialize pyenv's current version to the global one."
@@ -597,9 +595,11 @@
     (use-package js2-mode
       :init
       (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+      :config
+      (setq-default tab-width 2)
       :hook
       (js2-mode . js2-imenu-extras-mode))
-    
+  
     (use-package js2-refactor
       :init
       (add-hook 'js2-mode-hook #'js2-refactor-mode)
@@ -608,12 +608,12 @@
       ;; js-mode (which js2 is based on) binds "M-." which conflicts with xref, so
       ;; unbind it.
       (define-key js-mode-map (kbd "M-.") nil)
-    
+  
       (add-hook 'js2-mode-hook (lambda ()
          (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
-    
+  
     (use-package xref-js2)
-    
+  
     ; autoformatting
     (use-package prettier-js
       :init
@@ -641,6 +641,12 @@
     :config
     (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 #+end_src
+**** Env
+#+begin_src emacs-lisp
+  (use-package dotenv-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
+#+end_src
 **** Yaml
 #+begin_src emacs-lisp
   (use-package yaml-mode
@@ -654,12 +660,13 @@
     (
      ".twig$"
      ".html?$"
-     ".js$"
      ".hbs$"
      ".vue$"
      ".blade.php$"
      )
     :config
+    (setq indent-tabs-mode nil
+      js-indent-level 2)
     (setq
      web-mode-markup-indent-offset 2
      web-mode-css-indent-offset 2
@@ -679,9 +686,10 @@
                        unless (string-match-p "^[a-z-]" (cdr pair))
                        collect (cons (car pair)
                                      (string-trim-right (cdr pair)
-                                                        "\\(?:>\\|]\\|}\\)+\\'")))))
-    )
+                                                        "\\(?:>\\|]\\|}\\)+\\'"))))))
   
+  (eval-after-load "web-mode"
+  '(setq web-mode-enable-auto-expanding t))
   ;; (defun gf/web-mode-toggle-markup-offset ()
   ;;   "Switch between 2 and 4 spaces for markup indentation"
   ;;   (interactive)
@@ -711,14 +719,13 @@
   
   (provide 'setup-web-mode)
  #+end_src
-**** Emmet
-[[https://github.com/cmack/emacs.d/blob/master/init/init-web.el][source]]
+**** Tailwind
 #+begin_src emacs-lisp
-  (use-package emmet-mode
-  :commands emmet-mode
-  :hook
-  (web-mode html-mode))
+(straight-use-package
+ '(lsp-tailwindcss :type git :host github :repo "merrickluo/lsp-tailwindcss"))
+  
 #+end_src
+
 *** Tramp
 #+BEGIN_SRC emacs-lisp 
   (setq remote-file-name-inhibit-cache nil)
@@ -793,7 +800,9 @@
   (use-package magit
     :config
     (with-eval-after-load 'magit-mode
-      (add-hook 'after-save-hook 'magit-after-save-refresh-status t)))
+      (add-hook 'after-save-hook 'magit-after-save-refresh-status t))
+    :bind
+    ("C-x g" . magit-status))
 #+end_src
 ** Spotify Smudge
 #+begin_src emacs-lisp
