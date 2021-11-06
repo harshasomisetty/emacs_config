@@ -89,7 +89,8 @@
     (setq doom-modeline-env-version t
           doom-modeline-enable-word-count t
           doom-modeline-buffer-encoding nil
-           ))
+           )
+    (display-time-mode))
   
 #+END_SRC
 *** Window Resizing
@@ -662,6 +663,19 @@
     ((typescript-mode . tide-setup)
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save)))
+#+end_src
+**** Rust
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :config
+    (add-hook 'rust-mode-hook
+          (lambda () (setq indent-tabs-mode nil)))
+    (setq rust-format-on-save t)
+    (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
+  
+  (use-package cargo
+    :hook
+    (rust-mode . cargo-minor-mode))
 #+end_src
 *** Modes
 **** Docker
