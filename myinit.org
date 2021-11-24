@@ -154,47 +154,47 @@
 #+end_src
 *** Startup
 #+BEGIN_SRC emacs-lisp
-        (setq inhibit-startup-screen t)
-  
-  
-        (load-theme 'doom-horizon t)
-        (defun scratch-setup ()
-          (load "~/.emacs.d/.quotes.el")
-          (setq initial-scratch-message
-                (concat (nth (random (length quotes)) quotes)
-                        "\n\n\n")))
-        (scratch-setup)
-        (defun files-startup-screen (file2 &rest files)
-          "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-  
-          (dotimes (n (length files))
-            (setq index (- (- (length files) n) 1))
-            (switch-to-buffer (find-file (nth index files)))
-            (split-window-right))
-          (switch-to-buffer (find-file file2 )))
-  
-        (defun agenda-startup-screen ()
-          "Display the weekly org-agenda and all todos."
-          (org-agenda nil "a")
-          (delete-other-windows)
-       ;   (split-window-right)
-        ;  (switch-to-buffer-other-window "*scratch*")
-          )
-  
-        (defun emacs-startup-screen ()
-  
-  
-                                                ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-    ;      (files-startup-screen "~/code/twitter_blog/explore.py")
-          ;; (files-startup-screen "~/code/twit_blog/README.org")
-          (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
-  ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
-          ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-    ;      (agenda-startup-screen)
-          (right-two-thirds)
-          (balance-windows)
-          )
-        (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+          (setq inhibit-startup-screen t)
+    
+    
+          (load-theme 'doom-horizon t)
+          (defun scratch-setup ()
+            (load "~/.emacs.d/.quotes.el")
+            (setq initial-scratch-message
+                  (concat (nth (random (length quotes)) quotes)
+                          "\n\n\n")))
+          (scratch-setup)
+          (defun files-startup-screen (file2 &rest files)
+            "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+    
+            (dotimes (n (length files))
+              (setq index (- (- (length files) n) 1))
+              (switch-to-buffer (find-file (nth index files)))
+              (split-window-right))
+            (switch-to-buffer (find-file file2 )))
+    
+          (defun agenda-startup-screen ()
+            "Display the weekly org-agenda and all todos."
+            (org-agenda nil "a")
+            (delete-other-windows)
+         ;   (split-window-right)
+          ;  (switch-to-buffer-other-window "*scratch*")
+            )
+    
+          (defun emacs-startup-screen ()
+    
+    
+                                                  ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+      ;      (files-startup-screen "~/code/twitter_blog/explore.py")
+  ;           (files-startup-screen "~/code/twit_blog/README.org")
+            (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
+   ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
+            ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+;            (agenda-startup-screen)
+            (right-two-thirds)
+            (balance-windows)
+            )
+          (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 #+END_SRC
 
 ** Navigation
@@ -317,6 +317,15 @@
                                            (end-of-line)
                                            (newline-and-indent)
                                            ))
+  
+  (defun delete-line-no-kill ()
+  (interactive)
+  (delete-region
+   (point)
+   (save-excursion (move-end-of-line 1) (point)))
+  (delete-char 1)
+)
+  (global-set-key (kbd "C-S-k") 'delete-line-no-kill)
     (require 'subr-x)
     (use-package yasnippet
       :config
@@ -443,6 +452,7 @@
     (python . t)
     (C . t)
     (R . t)
+    (gnuplot . t)
     ))
   
   (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
@@ -451,6 +461,19 @@
     (not (member lang '("C" "R" "python" "emacs-lisp"))))
   
   (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+#+end_src
+*** LSP mode
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (lsp-mode . lsp-enable-which-key-integration))
+    :commands (lsp lsp-deffered))
+  
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  
+  
 #+end_src
 *** Languages
 **** C
@@ -654,15 +677,11 @@
  #+end_src
 ***** TypeScript
 #+begin_src emacs-lisp
-  (use-package tide
-    :disabled
-    :after (typescript-mode company flycheck)
+  (use-package typescript-mode
+    :mode "\\.ts\\'"
+    :hook (typescript-mode . lsp-deffered)
     :config
-    (setq company-tooltip-align-annotations t)
-    :hook
-    ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
+    (setq typescript-indent-level 2))
 #+end_src
 **** Rust
 #+begin_src emacs-lisp
@@ -726,7 +745,6 @@
 **** Tailwind
 #+begin_src emacs-lisp
   (use-package lsp-tailwindcss
-    :disabled
     :straight
     (:host github :repo "merrickluo/lsp-tailwindcss" :branch "master" :files ("*.el"))
     :config
@@ -734,15 +752,6 @@
   
 #+end_src
 
-*** LSP mode
-#+begin_src emacs-lisp
-  (use-package lsp-mode
-    :commands (lsp lsp-deffered)
-    :init
-    (setq lsp-keymap-prefix "C-c l")
-    :config
-    (lsp-enable-which-key-integration t))
-#+end_src
 *** Tramp
 #+BEGIN_SRC emacs-lisp 
   (setq remote-file-name-inhibit-cache nil)
@@ -821,20 +830,19 @@
     :bind
     ("C-x g" . magit-status))
 #+end_src
-** Spotify Smudge
-#+begin_src emacs-lisp
-  (use-package smudge)
-#+end_src
+
 * Org-mode
 ** Init
-
+[[http://gewhere.github.io/gnuplot-orgmode][source for org plotting]]
 #+BEGIN_SRC emacs-lisp
   
   (use-package org)
   (use-package org-contrib)
   (defun org-clocking-buffer (&rest _))
   (org-reload)
- 
+  (use-package gnuplot)
+  (global-set-key "\M-\C-g" 'org-plot/gnuplot)
+  
 #+END_SRC
 
 ** Formatting
