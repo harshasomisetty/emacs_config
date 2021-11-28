@@ -64,12 +64,17 @@
    (blink-cursor-mode -1)
    (show-paren-mode 1)
    (fset 'yes-or-no-p 'y-or-n-p)
-   ;; (global-display-line-numbers-mode)
-
-   ;; (setq display-line-numbers 'relative
-   ;;       line-number-mode t)
+   (setq display-line-numbers-type 'relative)
   
-   ;; ;padding
+  (defun single-buffer-line-numbers()
+    (global-display-line-numbers-mode -1)
+  
+    (display-line-numbers-mode))
+  
+  (add-hook 'buffer-list-update-hook 'single-buffer-line-numbers)
+  
+  
+   ;padding
    (setq header-line-format " "
          left-margin-width 1
          right-margin-width 1
