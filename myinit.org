@@ -109,12 +109,13 @@
   (defun left-one-thirds ()
     (interactive)
     (set-frame-position (selected-frame) 0 0)
-    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 34) max-frame-height t))
   
   (defun right-two-thirds ()
     (interactive)
-    (set-frame-position (selected-frame) (- (/ max-frame-width 3) 10) 0)
-    (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 2 (/ max-frame-width 3)) 30) max-frame-height t)
+    (set-frame-position (selected-frame) (- (- (/ max-frame-width 3) 10) -10) 0))
+  
   
   (defun right-one-thirds ()
     (interactive)
@@ -124,7 +125,7 @@
   (defun center-third ()
     (interactive)
     (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
-    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 3)) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 30)  max-frame-height t))
   
   (defun left-half ()
     (interactive)
@@ -451,8 +452,9 @@
     (R . t)
     (gnuplot . t)
     ))
+  (setq org-confirm-babel-evaluate nil)
   
-
+  
   
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
   (add-hook 'org-mode-hook 'org-display-inline-images)   
