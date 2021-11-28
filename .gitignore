@@ -25,3 +25,5 @@ projectile-bookmarks.eld
 /.cache/
 /request/
 /url/
+*.cache
+eshell

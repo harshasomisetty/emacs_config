@@ -64,11 +64,12 @@
    (blink-cursor-mode -1)
    (show-paren-mode 1)
    (fset 'yes-or-no-p 'y-or-n-p)
-   (global-display-line-numbers-mode)
-   (setq display-line-numbers 'relative
-         line-number-mode t)
+   ;; (global-display-line-numbers-mode)
+
+   ;; (setq display-line-numbers 'relative
+   ;;       line-number-mode t)
   
-   ; padding
+   ;; ;padding
    (setq header-line-format " "
          left-margin-width 1
          right-margin-width 1
@@ -154,59 +155,73 @@
 #+end_src
 *** Startup
 #+BEGIN_SRC emacs-lisp
-          (setq inhibit-startup-screen t)
+  (setq inhibit-startup-screen t)
+  
+  
+  (load-theme 'doom-horizon t)
+  (defun scratch-setup ()
+    (load "~/.emacs.d/.quotes.el")
+    (setq initial-scratch-message
+          (concat (nth (random (length quotes)) quotes)
+                  "\n\n\n")))
+  (scratch-setup)
+  (defun files-startup-screen (file2 &rest files)
+    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+    
+    (dotimes (n (length files))
+      (setq index (- (- (length files) n) 1))
+      (switch-to-buffer (find-file (nth index files)))
+      (split-window-right))
+    (switch-to-buffer (find-file file2 )))
+  
+  (defun agenda-startup-screen ()
+    "Display the weekly org-agenda and all todos."
+    (org-agenda nil "a")
+    (delete-other-windows)
+                                          ;   (split-window-right)
+                                          ;  (switch-to-buffer-other-window "*scratch*")
+    )
+  
+  (defun emacs-startup-screen ()
     
     
-          (load-theme 'doom-horizon t)
-          (defun scratch-setup ()
-            (load "~/.emacs.d/.quotes.el")
-            (setq initial-scratch-message
-                  (concat (nth (random (length quotes)) quotes)
-                          "\n\n\n")))
-          (scratch-setup)
-          (defun files-startup-screen (file2 &rest files)
-            "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-    
-            (dotimes (n (length files))
-              (setq index (- (- (length files) n) 1))
-              (switch-to-buffer (find-file (nth index files)))
-              (split-window-right))
-            (switch-to-buffer (find-file file2 )))
-    
-          (defun agenda-startup-screen ()
-            "Display the weekly org-agenda and all todos."
-            (org-agenda nil "a")
-            (delete-other-windows)
-         ;   (split-window-right)
-          ;  (switch-to-buffer-other-window "*scratch*")
-            )
-    
-          (defun emacs-startup-screen ()
-    
-    
-                                                  ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-      ;      (files-startup-screen "~/code/twitter_blog/explore.py")
-  ;           (files-startup-screen "~/code/twit_blog/README.org")
-            (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
-   ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
-            ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-;            (agenda-startup-screen)
-            (right-two-thirds)
-            (balance-windows)
-            )
-          (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+                                          ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
+                                          ;      (files-startup-screen "~/code/twitter_blog/explore.py")
+                                          ;           (files-startup-screen "~/code/twit_blog/README.org")
+    (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
+                                          ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
+                                          ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
+                                          ;            (agenda-startup-screen)
+    (right-two-thirds)
+    (balance-windows)
+    )
+  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 #+END_SRC
+*** PDF Tool
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :bind (:map pdf-view-mode-map
+                ("C-s" . isearch-forward))
+    :config
+    (setq pdf-view-display-size 'fit-page)
+    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
+  (pdf-tools-install)
+#+end_src
 
 ** Navigation
 
 #+BEGIN_SRC emacs-lisp
+    (global-unset-key (kbd "M-g g"))
+
     (use-package avy
-      :bind ("C-;" . avy-goto-word-1))
+      :bind (("C-;" . avy-goto-char)
+             ("C-'" . avy-goto-char-2)
+             ("M-g g" . avy-goto-line)))
   
     (use-package ace-window
       :bind ("C-x o" . ace-window)
       :config
-      (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+      (setq aw-keys '(?a ?s ?d ?f ?h ?z ?x ?c ?v))
       (setq aw-scope 'frame)
       )
   
@@ -215,12 +230,12 @@
       (global-disable-mouse-mode))
   
     (use-package no-spam
-      :disabled
       :config
-      (no-spam-add-repeat-delay next-line 10
-                                previous-line 10
-                                forward-char 10
-                                backward-char 10)
+      (setq no-spam-default-repeat-delay 10)
+      (no-spam-add-repeat-delay (next-line 
+                                previous-line 
+                                forward-char 
+                                backward-char))
       (no-spam-mode))
   
     (defun my-split-vertical ()
@@ -301,38 +316,65 @@
     (setq which-key-idle-delay 1))
 
 #+end_src
+*** Helm
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :bind
+    ("M-x" . helm-M-x)
+    ("C-x C-f" . helm-find-files)
+    ("M-y" . helm-show-kill-ring)
+    ("C-x b" . helm-mini)        
+    (:map helm-command-map
+          ("<tab>" . helm-execute-persistent-action)
+          ("C-i" . helm-execite-persistent-action)
+          ("C-z" . helm-select-action))
+    :config
+    (require 'helm-config)
+    (helm-mode 1)
+    (setq helm-split-window-inside-p t
+          helm-move-to-line-cycle-in-source t
+          helm-autoresize-max-height 0
+          helm-autoresize-min-height 20
+          helm-autoresize-mode 1))
+  #+END_SRC
+*** Perspective
+#+begin_src emacs-lisp
+  (use-package perspective)
+#+end_src
 ** Editing
 #+BEGIN_SRC emacs-lisp
-    (require 'org-tempo)
-    ;; Move cursor to end of line, new line and indent
-    (global-set-key (kbd "<C-return>") (lambda ()
-                                         (interactive)
-                                         (end-of-line)
-                                         (newline-and-indent)))
-  
-    ;; Move cursor to previous line, new line, indent
-    (global-set-key (kbd "<C-S-return>") (lambda ()
+      (require 'org-tempo)
+      ;; Move cursor to end of line, new line and indent
+      (global-set-key (kbd "<C-return>") (lambda ()
                                            (interactive)
-                                           (previous-line)
                                            (end-of-line)
-                                           (newline-and-indent)
-                                           ))
+                                           (newline-and-indent)))
   
-  (defun delete-line-no-kill ()
-  (interactive)
-  (delete-region
-   (point)
-   (save-excursion (move-end-of-line 1) (point)))
-  (delete-char 1)
-)
-  (global-set-key (kbd "C-S-k") 'delete-line-no-kill)
-    (require 'subr-x)
-    (use-package yasnippet
-      :config
-      (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-      (yas-global-mode 1)
-      )
-  (setq create-lockfiles nil)
+      ;; Move cursor to previous line, new line, indent
+      (global-set-key (kbd "<C-S-return>") (lambda ()
+                                             (interactive)
+                                             (previous-line)
+                                             (end-of-line)
+                                             (newline-and-indent)
+                                             ))
+  
+    (defun delete-line-no-kill ()
+    (interactive)
+    (delete-region
+     (point)
+     (save-excursion (move-end-of-line 1) (point)))
+    (delete-char 1)
+  )
+    (global-set-key (kbd "C-S-k") 'delete-line-no-kill)
+  
+      (require 'subr-x)
+      (use-package yasnippet
+        :config
+        (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+        (yas-global-mode 1)
+        )
+  
+    (setq create-lockfiles nil)
   
 #+END_SRC
 *** Company
@@ -343,41 +385,6 @@
       :bind
       ("C-c C-c" . company-complete)
   )
-#+end_src
-*** Ivy and Counsel
-#+begin_src emacs-lisp
-    (use-package ivy
-      :disabled
-      :diminish
-      :bind (("C-s" . swiper)
-           :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)
-           ("C-l" . ivy-alt-done)
-           ("C-j" . ivy-next-line)
-           ("C-k" . ivy-previous-line)
-           :map ivy-switch-buffer-map
-           ("C-k" . ivy-previous-line)
-           ("C-l" . ivy-done)
-           ("C-d" . ivy-switch-buffer-kill)
-           :map ivy-reverse-i-search-map
-           ("C-k" . ivy-previous-line)
-           ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (ivy-mode 1))
-  
-  
-  
-  (use-package counsel
-    :disabled
-    :bind (("C-M-j" . 'counsel-switch-buffer)
-           :map minibuffer-local-map
-           ("C-r" . 'counsel-minibuffer-history))
-    :config
-    (counsel-mode 1))
-  (use-package ivy-rich
-    :disabled
-  :init
-  (ivy-rich-mode 1))
 #+end_src
 *** Spelling
 [[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
@@ -431,17 +438,7 @@
   (setq ispell-program-name "hunspell")
   (setq ispell-local-dictionary "en_US")
 #+end_src
-** Viewing
-*** PDF Tool
-#+begin_src emacs-lisp
-  (use-package pdf-tools
-    :bind (:map pdf-view-mode-map
-                ("C-s" . isearch-forward))
-    :config
-    (setq pdf-view-display-size 'fit-page)
-    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
-  (pdf-tools-install)
-#+end_src
+
 ** Coding
 *** Babel
 #+begin_src emacs-lisp 
@@ -455,12 +452,11 @@
     (gnuplot . t)
     ))
   
-  (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
+
   
-  (defun my-org-confirm-babel-evaluate (lang body)
-    (not (member lang '("C" "R" "python" "emacs-lisp"))))
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+  (add-hook 'org-mode-hook 'org-display-inline-images)   
   
-  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 #+end_src
 *** LSP mode
 #+begin_src emacs-lisp
@@ -528,16 +524,13 @@
   (use-package ess-site
     :straight ess
     :config
-    ;; Execute screen options after initialize process
-    (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
-  
-    (setq ess-use-ido nil ; use helm
+      (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
+      (setq ess-use-ido nil ; use helm
           ess-eval-visibly 'nowait ; don't hang with R
           ess-smart-S-assign-key nil ; unbind ess-insert-align
-          ) ; use helm
-    )
+          ))
   
-  
+  (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save") 
   (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
   
   (use-package ess-r-mode
@@ -722,6 +715,7 @@
     (
      ".twig$"
      ".html?$"
+     ".css$"
      ".hbs$"
      ".vue$"
      ".blade.php$"
@@ -789,38 +783,46 @@
       (push (cons "\\*shell\\*" display-buffer--same-window-action) display-buffer-alist)
       )
 #+end_src
-* Extensions
-** Helm
-#+BEGIN_SRC emacs-lisp
-  (use-package helm
-    :bind
-    ("M-x" . helm-M-x)
-    ("C-x C-f" . helm-find-files)
-    ("M-y" . helm-show-kill-ring)
-    ("C-x b" . helm-mini)        
-    (:map helm-command-map
-          ("<tab>" . helm-execute-persistent-action)
-          ("C-i" . helm-execite-persistent-action)
-          ("C-z" . helm-select-action))
-    :config
-    (require 'helm-config)
-    (helm-mode 1)
-    (setq helm-split-window-inside-p t
-          helm-move-to-line-cycle-in-source t
-          helm-autoresize-max-height 0
-          helm-autoresize-min-height 20
-          helm-autoresize-mode 1)
-    (bind-keys ("C-x C-f" . helm-find-files)))
-  #+END_SRC
-** Projectile
+
+*** Projectile
+
 #+begin_src emacs-lisp
-  (use-package projectile
-    :config
-    (projectile-mode +1)
-    :bind-keymap
-    ("C-c p" . projectile-command-map))
+   (use-package projectile
+     :config
+     (projectile-global-mode)
+
+     (setq projectile-completion-system 'helm
+	   projectile-indexing-method 'alien
+	   projectile-sort-order 'recently-active
+	   projectile-enable-caching t
+	   projectile-switch-project-action 'helm-projectile
+	   projectile-find-file 'helm-projectile-find-file
+	   )
+     (helm-projectile-on)
+     :bind-keymap
+     ("C-c p" . projectile-command-map))
+  (setq projectile-globally-ignored-directories '(".idea"
+						 ".vscode"
+						 ".ensime_cache"
+						 ".eunit"
+						 ".git"
+						 ".hg"
+						 ".fslckout" 
+						 "_FOSSIL_"
+						 ".bzr"
+						 "_darcs"
+						 ".tox"
+						 ".svn"
+						 "node_modules"
+						 ".stack-work"
+						 ".ccls-cache"
+						 ".cache"
+						 ".clangd"))
+
+
+   (use-package helm-ag)
 #+end_src
-** Magit
+*** Magit
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
@@ -1083,7 +1085,7 @@
           org-capture-templates
           `(("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1))
           )
-    
+  
     (org-agenda-align-tags)
     )
   (set-register ?g (cons 'file  "~/org/gtd.org"))
@@ -1122,7 +1124,8 @@
   (with-eval-after-load 'org
     (bind-key "C-c a" #'org-agenda global-map)
     (bind-key "C-c c" #'org-capture ))
-  
+  (unbind-key "C-'" org-mode-map)
+
 #+END_SRC
 
 *** Habits
