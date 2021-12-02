@@ -159,67 +159,68 @@
 
 *** Startup
 #+BEGIN_SRC emacs-lisp
+
   (setq inhibit-startup-screen t)
-  
-  (load-theme 'doom-horizon t)
-  (defun scratch-setup ()
-    (load "~/.emacs.d/.quotes.el")
-    (setq initial-scratch-message
-          (concat (nth (random (length quotes)) quotes)
-                  "\n\n\n")))
-  
-  (defun files-startup-screen (file2 &rest files)
-    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-  
-    (dotimes (n (length files))
-      (setq index (- (- (length files) n) 1))
-      (switch-to-buffer (find-file (nth index files)))
-      (split-window-right))
-    (switch-to-buffer (find-file file2 )))
-  
-  (defun agenda-startup-screen ()
-    "Display the weekly org-agenda and all todos."
-    (org-agenda nil "a")
-    (delete-other-windows)
-    (split-window-right)
-    (switch-to-buffer-other-window "*scratch*")
-    )
-  
-  (setq screens_file "~/.emacs.d/.screens_file.el")
-  (load-file screens_file)
-  
-  (defun emacs-startup-screen ()
-    "startup screen config"
-    (if (and (eq (boundp 'screens_list) t) (> (length screens_list) 1))
-        (apply 'files-startup-screen screens_list)
-        (scratch-setup))
-  
-    (right-two-thirds)
-    (balance-windows))
     
-  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+    (load-theme 'doom-horizon t)
+    (defun scratch-setup ()
+      (load "~/.emacs.d/.quotes.el")
+      (setq initial-scratch-message
+            (concat (nth (random (length quotes)) quotes)
+                    "\n\n\n")))
     
-  (defun set-screens-list ()
-   "Inserts path as string "
-   (interactive)
-   (push (read-file-name "Pick F to Open: " ) screens_list))
-  
-  (defun reset-screens-list ()
-    (interactive)
-    (setq screens_list '()))
-  
-  (defun save-screen-var ()
-    (interactive)
-    (with-temp-buffer
-      (setq s2 (let (value) (dolist (elt screens_list value)
-                              (setq value (cons (prin1-to-string elt) value)))))
-  
-      (insert (concat "(setq screens_list '(" (join " " s2) "))"))
-      (write-region (point-min) (point-max) screens_file)))
-  
-  (when (not (memq 'save-screen-var kill-emacs-hook))
-    (add-hook 'kill-emacs-hook 'save-screen-var))
-  
+    (defun files-startup-screen (file2 &rest files)
+      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+    
+      (dotimes (n (length files))
+        (setq index (- (- (length files) n) 1))
+        (switch-to-buffer (find-file (nth index files)))
+        (split-window-right))
+      (switch-to-buffer (find-file file2 )))
+    
+    (defun agenda-startup-screen ()
+      "Display the weekly org-agenda and all todos."
+      (org-agenda nil "a")
+      (delete-other-windows)
+      (split-window-right)
+      (switch-to-buffer-other-window "*scratch*")
+      )
+    
+    (setq screens_file "~/.emacs.d/.screens_file.el")
+    (load-file screens_file)
+    
+    (defun emacs-startup-screen ()
+      "startup screen config"
+      (if (and (eq (boundp 'screens_list) t) (> (length screens_list) 1))
+          (apply 'files-startup-screen screens_list)
+          (scratch-setup))
+    
+      (right-two-thirds)
+      (balance-windows))
+      
+    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+      
+    (defun set-screens-list ()
+     "Inserts path as string "
+     (interactive)
+     (push (read-file-name "Pick F to Open: " ) screens_list))
+    
+    (defun reset-screens-list ()
+      (interactive)
+      (setq screens_list '()))
+    
+    (defun save-screen-var ()
+      (interactive)
+      (with-temp-buffer
+        (setq s2 (let (value) (dolist (elt screens_list value)
+                                (setq value (cons (prin1-to-string elt) value)))))
+    
+        (insert (concat "(setq screens_list '(" (join " " s2) "))"))
+        (write-region (point-min) (point-max) screens_file)))
+    
+    (when (not (memq 'save-screen-var kill-emacs-hook))
+      (add-hook 'kill-emacs-hook 'save-screen-var))
+    
 #+END_SRC
 *** PDF Tool
 #+begin_src emacs-lisp
