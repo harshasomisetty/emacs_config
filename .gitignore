@@ -27,3 +27,4 @@ projectile-bookmarks.eld
 /url/
 *.cache
 eshell
+.screens_file.el
