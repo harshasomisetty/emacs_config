@@ -1,0 +1,1 @@
+(setq screen_list '("~/.emacs.d/myinit.org" "~/.emacs.d/.screens.eld"))

@@ -58,45 +58,39 @@
 ** Display
 #+BEGIN_SRC emacs-lisp
   
-   (menu-bar-mode -1)
-   (tool-bar-mode -1)
-   (toggle-scroll-bar -1)
-   (blink-cursor-mode -1)
-   (show-paren-mode 1)
-   (fset 'yes-or-no-p 'y-or-n-p)
-   (setq display-line-numbers-type 'relative)
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (toggle-scroll-bar -1)
+    (blink-cursor-mode -1)
+    (show-paren-mode 1)
+    (fset 'yes-or-no-p 'y-or-n-p)
+    (setq display-line-numbers-type 'relative)
   
-  (defun single-buffer-line-numbers()
-    (global-display-line-numbers-mode -1)
+
   
-    (display-line-numbers-mode))
+    ;padding
+    (setq header-line-format " "
+          left-margin-width 1
+          right-margin-width 1
+          split-height-threshold 80
+          split-window-threshold 160)
   
-  (add-hook 'buffer-list-update-hook 'single-buffer-line-numbers)
+   ; window settings
+   (window-divider-mode)
+   (when (boundp 'window-divider-mode)
+     (setq window-divider-default-places t
+           window-divider-default-bottom-width 1
+           window-divider-default-right-width 1)
+     (window-divider-mode +1))
   
-  
-   ;padding
-   (setq header-line-format " "
-         left-margin-width 1
-         right-margin-width 1
-         split-height-threshold 80
-         split-window-threshold 160)
-  
-  ; window settings
-  (window-divider-mode)
-  (when (boundp 'window-divider-mode)
-    (setq window-divider-default-places t
-          window-divider-default-bottom-width 1
-          window-divider-default-right-width 1)
-    (window-divider-mode +1))
-  
-  (use-package doom-modeline
-    :hook (after-init . doom-modeline-mode)
-    :config
-    (setq doom-modeline-env-version t
-          doom-modeline-enable-word-count t
-          doom-modeline-buffer-encoding nil
-           )
-    (display-time-mode))
+   (use-package doom-modeline
+     :hook (after-init . doom-modeline-mode)
+     :config
+     (setq doom-modeline-env-version t
+           doom-modeline-enable-word-count t
+           doom-modeline-buffer-encoding nil
+            )
+     (display-time-mode))
   
 #+END_SRC
 *** Window Resizing
@@ -161,47 +155,58 @@
 #+end_src
 *** Startup
 #+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-screen t)
-  
-  
-  (load-theme 'doom-horizon t)
-  (defun scratch-setup ()
-    (load "~/.emacs.d/.quotes.el")
-    (setq initial-scratch-message
-          (concat (nth (random (length quotes)) quotes)
-                  "\n\n\n")))
-  (scratch-setup)
-  (defun files-startup-screen (file2 &rest files)
-    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-    
-    (dotimes (n (length files))
-      (setq index (- (- (length files) n) 1))
-      (switch-to-buffer (find-file (nth index files)))
-      (split-window-right))
-    (switch-to-buffer (find-file file2 )))
-  
-  (defun agenda-startup-screen ()
-    "Display the weekly org-agenda and all todos."
-    (org-agenda nil "a")
-    (delete-other-windows)
-                                          ;   (split-window-right)
-                                          ;  (switch-to-buffer-other-window "*scratch*")
-    )
-  
-  (defun emacs-startup-screen ()
-    
-    
-                                          ;    (files-startup-screen "~/org/literature/DOE.org" "~/.emacs.d/myinit.org")
-                                          ;      (files-startup-screen "~/code/twitter_blog/explore.py")
-                                          ;           (files-startup-screen "~/code/twit_blog/README.org")
-    (files-startup-screen "~/code/twit_blog/frontend/src/App.js")
-                                          ;        (files-startup-screen "~/code/guttenberg/server/app.js")        
-                                          ;(files-startup-screen "~/org/sem/OS/hw2/benchmarks/test.c"  "~/org/sem/OS/hw2/mypthread.c" "~/org/sem/OS/hw2/mypthread.h")
-                                          ;            (agenda-startup-screen)
-    (right-two-thirds)
-    (balance-windows)
-    )
-  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+	(setq inhibit-startup-screen t)
+
+	(load-theme 'doom-horizon t)
+	(defun scratch-setup ()
+	  (load "~/.emacs.d/.quotes.el")
+	  (setq initial-scratch-message
+		(concat (nth (random (length quotes)) quotes)
+			"\n\n\n")))
+	(scratch-setup)
+	(defun files-startup-screen (file2 &rest files)
+	  "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+
+	  (dotimes (n (length files))
+	    (setq index (- (- (length files) n) 1))
+	    (switch-to-buffer (find-file (nth index files)))
+	    (split-window-right))
+	  (switch-to-buffer (find-file file2 )))
+
+	(defun agenda-startup-screen ()
+	  "Display the weekly org-agenda and all todos."
+	  (org-agenda nil "a")
+	  (delete-other-windows)
+						;   (split-window-right)
+						;  (switch-to-buffer-other-window "*scratch*")
+	  )
+
+      (setq screen_list '())
+      (load-file "~/.emacs.d/.screens.eld")
+	(defun emacs-startup-screen ()
+	  "startup screen config"
+	(if (> (length screen_list) 1)
+		(apply 'files-startup-screen screen_list)
+		 (scratch-setup))
+
+	  (right-two-thirds)
+	  (balance-windows)
+	  )
+	(add-hook 'emacs-startup-hook #'emacs-startup-screen)
+
+
+      (defun save-screen-var ()
+	"Saves my projects in my home folder."
+	(interactive)
+	(with-temp-buffer
+	  (insert (prin1-to-string screen_list))
+	  (write-region (point-min)
+			(point-max)
+			"~/.emacs.d/.screens.eld")))
+
+
+  ;    (when (not (memq 'save-screen-var kill-emacs-hook))
+   ;     (add-hook 'kill-emacs-hook 'save-screen-var))
 #+END_SRC
 *** PDF Tool
 #+begin_src emacs-lisp
@@ -217,12 +222,12 @@
 ** Navigation
 
 #+BEGIN_SRC emacs-lisp
-    (global-unset-key (kbd "M-g g"))
+    (global-unset-key (kbd "M-g M-g"))
 
     (use-package avy
       :bind (("C-;" . avy-goto-char)
              ("C-'" . avy-goto-char-2)
-             ("M-g g" . avy-goto-line)))
+             ("M-g M-g" . avy-goto-line)))
   
     (use-package ace-window
       :bind ("C-x o" . ace-window)
@@ -363,6 +368,11 @@
                                              (end-of-line)
                                              (newline-and-indent)
                                              ))
+  
+  (use-package autopair
+    :config
+    (autopair-global-mode))
+  
   
     (defun delete-line-no-kill ()
     (interactive)
@@ -714,6 +724,11 @@
   (use-package yaml-mode
     :config
     (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+#+end_src
+**** Json
+#+begin_src emacs-lisp
+  (use-package json-mode)
+  
 #+end_src
 **** Webmode
 #+begin_src emacs-lisp
@@ -1357,4 +1372,22 @@
     (load-theme 'doom-horizon t)
     (my/style-org))
     (global-set-key (kbd "C-c u") #'ungrind)
+#+end_src
+** Epub
+#+begin_src emacs-lisp
+  (use-package nov
+    :config
+    (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+    (defun my-nov-font-setup ()
+      (face-remap-add-relative 'variable-pitch :family "Liberation Serif"
+                               :height 1.0))
+    ;; (add-hook 'nov-mode-hook 'my-nov-font-setup)
+    (setq nov-text-width t)
+    (setq visual-fill-column-center-text t)
+    (add-hook 'nov-mode-hook 'visual-line-mode)
+    (add-hook 'nov-mode-hook 'visual-fill-column-mode)
+    (setq nov-text-width 80)
+    )
+  
+  
 #+end_src
