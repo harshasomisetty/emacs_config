@@ -28,3 +28,4 @@ projectile-bookmarks.eld
 *.cache
 eshell
 .screens_file.el
+*secrets*

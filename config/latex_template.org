@@ -2,8 +2,7 @@
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
 #+OPTIONS: toc:nil num:nil
 #+STARTUP: latexpreview
-#+STARTUP: content
-
+#+STARTUP: showall
 #+LATEX_HEADER: \usepackage[T1]{fontenc}
 #+LATEX_HEADER: \usepackage[AUTO]{inputenc}
 #+LATEX_HEADER: \usepackage{graphicx}

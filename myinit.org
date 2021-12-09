@@ -49,7 +49,7 @@
         ring-bell-function 'ignore)
   
   (defun join (sep lst)
-   (mapconcat 'identity lst sep))
+    (mapconcat 'identity lst sep))
   
   (set-exec-path-from-shell-PATH)  
   
@@ -61,39 +61,43 @@
 ** Display
 #+BEGIN_SRC emacs-lisp
   
-    (menu-bar-mode -1)
-    (tool-bar-mode -1)
-    (toggle-scroll-bar -1)
-    (blink-cursor-mode -1)
-    (show-paren-mode 1)
-    (fset 'yes-or-no-p 'y-or-n-p)
-    (setq display-line-numbers-type 'relative)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1)
+  (blink-cursor-mode -1)
+  (show-paren-mode 1)
+  (fset 'yes-or-no-p 'y-or-n-p)
+  (setq display-line-numbers-type 'relative)
   
-
   
-    ;padding
-    (setq header-line-format " "
-          left-margin-width 1
-          right-margin-width 1
-          split-height-threshold 80
-          split-window-threshold 160)
   
-   ; window settings
-   (window-divider-mode)
-   (when (boundp 'window-divider-mode)
-     (setq window-divider-default-places t
-           window-divider-default-bottom-width 1
-           window-divider-default-right-width 1)
-     (window-divider-mode +1))
+                                          ;padding
+  (setq header-line-format " "
+        left-margin-width 1
+        right-margin-width 1
+        split-height-threshold 80
+        split-window-threshold 160)
   
-   (use-package doom-modeline
-     :hook (after-init . doom-modeline-mode)
-     :config
-     (setq doom-modeline-env-version t
-           doom-modeline-enable-word-count t
-           doom-modeline-buffer-encoding nil
-            )
-     (display-time-mode))
+                                          ; window settings
+  (window-divider-mode)
+  (when (boundp 'window-divider-mode)
+    (setq window-divider-default-places t
+          window-divider-default-bottom-width 1
+          window-divider-default-right-width 1)
+    (window-divider-mode +1))
+  
+  (use-package doom-modeline
+    :hook (after-init . doom-modeline-mode)
+    :config
+    (setq doom-modeline-env-version t
+          doom-modeline-enable-word-count t
+          doom-modeline-buffer-encoding nil
+          )
+    (display-time-mode))
+  
+  (use-package anzu
+    :config
+    (global-anzu-mode +1))
   
 #+END_SRC
 *** Window Resizing
@@ -115,7 +119,7 @@
   
   (defun right-two-thirds ()
     (interactive)
-    (set-frame-size (selected-frame) (- (* 2 (/ max-frame-width 3)) 30) max-frame-height t)
+    (set-frame-size (selected-frame) (- (* 2 (/ max-frame-width 3)) 17) max-frame-height t)
     (set-frame-position (selected-frame) (- (- (/ max-frame-width 3) 10) -10) 0))
   
   
@@ -127,7 +131,7 @@
   (defun center-third ()
     (interactive)
     (set-frame-position (selected-frame) (/ max-frame-width 3) 0)
-    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 30)  max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 20)  max-frame-height t))
   
   (defun left-half ()
     (interactive)
@@ -161,66 +165,66 @@
 #+BEGIN_SRC emacs-lisp
 
   (setq inhibit-startup-screen t)
-    
-    (load-theme 'doom-horizon t)
-    (defun scratch-setup ()
-      (load "~/.emacs.d/.quotes.el")
-      (setq initial-scratch-message
-            (concat (nth (random (length quotes)) quotes)
-                    "\n\n\n")))
-    
-    (defun files-startup-screen (file2 &rest files)
-      "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-    
-      (dotimes (n (length files))
-        (setq index (- (- (length files) n) 1))
-        (switch-to-buffer (find-file (nth index files)))
-        (split-window-right))
-      (switch-to-buffer (find-file file2 )))
-    
-    (defun agenda-startup-screen ()
-      "Display the weekly org-agenda and all todos."
-      (org-agenda nil "a")
-      (delete-other-windows)
-      (split-window-right)
-      (switch-to-buffer-other-window "*scratch*")
-      )
-    
-    (setq screens_file "~/.emacs.d/.screens_file.el")
-    (load-file screens_file)
-    
-    (defun emacs-startup-screen ()
-      "startup screen config"
-      (if (and (eq (boundp 'screens_list) t) (> (length screens_list) 1))
-          (apply 'files-startup-screen screens_list)
-          (scratch-setup))
-    
-      (right-two-thirds)
-      (balance-windows))
-      
-    (add-hook 'emacs-startup-hook #'emacs-startup-screen)
-      
-    (defun set-screens-list ()
-     "Inserts path as string "
-     (interactive)
-     (push (read-file-name "Pick F to Open: " ) screens_list))
-    
-    (defun reset-screens-list ()
-      (interactive)
-      (setq screens_list '()))
-    
-    (defun save-screen-var ()
-      (interactive)
-      (with-temp-buffer
-        (setq s2 (let (value) (dolist (elt screens_list value)
-                                (setq value (cons (prin1-to-string elt) value)))))
-    
-        (insert (concat "(setq screens_list '(" (join " " s2) "))"))
-        (write-region (point-min) (point-max) screens_file)))
-    
-    (when (not (memq 'save-screen-var kill-emacs-hook))
-      (add-hook 'kill-emacs-hook 'save-screen-var))
-    
+
+  (load-theme 'doom-horizon t)
+  (defun scratch-setup ()
+    (load "~/.emacs.d/config/quotes.el")
+    (setq initial-scratch-message
+	  (concat (nth (random (length quotes)) quotes)
+		  "\n\n\n")))
+  (scratch-setup)    
+  (defun files-startup-screen (file2 &rest files)
+    "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+
+    (dotimes (n (length files))
+      (setq index (- (- (length files) n) 1))
+      (switch-to-buffer (find-file (nth index files)))
+      (split-window-right))
+    (switch-to-buffer (find-file file2 )))
+
+  (defun agenda-startup-screen ()
+    "Display the weekly org-agenda and all todos."
+    (org-agenda nil "a")
+    (delete-other-windows)
+    (split-window-right)
+    (switch-to-buffer-other-window "*scratch*")
+    )
+
+  (setq screens_file "~/.emacs.d/config/screens_file.el")
+  (load-file screens_file)
+
+
+  (defun emacs-startup-screen ()
+    "startup screen config"
+    (when (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
+      (apply 'files-startup-screen screens_list))
+
+    (right-two-thirds)
+    (balance-windows))
+
+  (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+
+  (defun set-screens-list ()
+    "Inserts path as string "
+    (interactive)
+    (push (read-file-name "Pick F to Open: " ) screens_list))
+
+  (defun reset-screens-list ()
+    (interactive)
+    (setq screens_list '()))
+
+  (defun save-screen-var ()
+    (interactive)
+    (with-temp-buffer
+      (setq s2 (let (value) (dolist (elt screens_list value)
+			      (setq value (cons (prin1-to-string elt) value)))))
+
+      (insert (concat "(setq screens_list '(" (join " " s2) "))"))
+      (write-region (point-min) (point-max) screens_file)))
+
+  (when (not (memq 'save-screen-var kill-emacs-hook))
+    (add-hook 'kill-emacs-hook 'save-screen-var))
+
 #+END_SRC
 *** PDF Tool
 #+begin_src emacs-lisp
@@ -236,42 +240,42 @@
 ** Navigation
 
 #+BEGIN_SRC emacs-lisp
-    (global-unset-key (kbd "M-g M-g"))
-
-    (use-package avy
-      :bind (("C-;" . avy-goto-char)
-             ("C-'" . avy-goto-char-2)
-             ("M-g M-g" . avy-goto-line)))
+  (global-unset-key (kbd "M-g M-g"))
   
-    (use-package ace-window
-      :bind ("C-x o" . ace-window)
-      :config
-      (setq aw-keys '(?a ?s ?d ?f ?h ?z ?x ?c ?v))
-      (setq aw-scope 'frame)
-      )
+  (use-package avy
+    :bind (("C-;" . avy-goto-char)
+           ("C-'" . avy-goto-char-2)
+           ("M-g M-g" . avy-goto-line)))
   
-    (use-package disable-mouse
-      :config
-      (global-disable-mouse-mode))
+  (use-package ace-window
+    :bind ("C-x o" . ace-window)
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?h ?z ?x ?c ?v))
+    (setq aw-scope 'frame)
+    )
   
-    (use-package no-spam
-      :config
-      (setq no-spam-default-repeat-delay 10)
-      (no-spam-add-repeat-delay (next-line 
-                                previous-line 
-                                forward-char 
-                                backward-char))
-      (no-spam-mode))
+  (use-package disable-mouse
+    :config
+    (global-disable-mouse-mode))
   
-    (defun my-split-vertical ()
-      (interactive)
-      (split-window-vertically)
-      (other-window 1))
+  (use-package no-spam
+    :config
+    (setq no-spam-default-repeat-delay 10)
+    (no-spam-add-repeat-delay (next-line 
+                               previous-line 
+                               forward-char 
+                               backward-char))
+    (no-spam-mode))
+  
+  (defun my-split-vertical ()
+    (interactive)
+    (split-window-vertically)
+    (other-window 1))
   
   (defun my-split-horizontal ()
-      (interactive)
-      (split-window-horizontally)
-      (other-window 1))
+    (interactive)
+    (split-window-horizontally)
+    (other-window 1))
   
   (global-set-key (kbd "C-x 2") 'my-split-vertical)
   (global-set-key (kbd "C-x 3") 'my-split-horizontal)
@@ -310,7 +314,7 @@
   (use-package dired-hide-dotfiles
     :hook (dired-mode . dired-hide-dotfiles-mode)
     :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode))
-  #+end_src
+#+end_src
 *** Deft
 #+begin_src emacs-lisp
   (use-package deft
@@ -331,7 +335,7 @@
       :type 'regexp
       :safe 'stringp
       :group 'deft))
-    #+end_src
+#+end_src
 *** Which key
 #+begin_src emacs-lisp
   (use-package which-key
@@ -339,7 +343,7 @@
     :diminish which-key-mode
     :config
     (setq which-key-idle-delay 1))
-
+  
 #+end_src
 *** Helm
 #+BEGIN_SRC emacs-lisp
@@ -361,60 +365,60 @@
           helm-autoresize-max-height 0
           helm-autoresize-min-height 20
           helm-autoresize-mode 1))
-  #+END_SRC
+#+END_SRC
 *** Perspective
 #+begin_src emacs-lisp
   (use-package perspective)
 #+end_src
 ** Editing
 #+BEGIN_SRC emacs-lisp
-      (require 'org-tempo)
-      ;; Move cursor to end of line, new line and indent
-      (global-set-key (kbd "<C-return>") (lambda ()
-                                           (interactive)
-                                           (end-of-line)
-                                           (newline-and-indent)))
+  (require 'org-tempo)
+  ;; Move cursor to end of line, new line and indent
+  (global-set-key (kbd "<C-return>") (lambda ()
+                                       (interactive)
+                                       (end-of-line)
+                                       (newline-and-indent)))
   
-      ;; Move cursor to previous line, new line, indent
-      (global-set-key (kbd "<C-S-return>") (lambda ()
-                                             (interactive)
-                                             (previous-line)
-                                             (end-of-line)
-                                             (newline-and-indent)
-                                             ))
+  ;; Move cursor to previous line, new line, indent
+  (global-set-key (kbd "<C-S-return>") (lambda ()
+                                         (interactive)
+                                         (previous-line)
+                                         (end-of-line)
+                                         (newline-and-indent)
+                                         ))
   
   (use-package autopair
     :config
     (autopair-global-mode))
   
   
-    (defun delete-line-no-kill ()
+  (defun delete-line-no-kill ()
     (interactive)
     (delete-region
      (point)
      (save-excursion (move-end-of-line 1) (point)))
     (delete-char 1)
-  )
-    (global-set-key (kbd "C-S-k") 'delete-line-no-kill)
+    )
+  (global-set-key (kbd "C-S-k") 'delete-line-no-kill)
   
-      (require 'subr-x)
-      (use-package yasnippet
-        :config
-        (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-        (yas-global-mode 1)
-        )
+  (require 'subr-x)
+  (use-package yasnippet
+    :config
+    (setq yas-snippet-dirs '("~/.emacs.d/config/snippets"))
+    (yas-global-mode 1)
+    )
   
-    (setq create-lockfiles nil)
+  (setq create-lockfiles nil)
   
 #+END_SRC
 *** Company
 #+begin_src emacs-lisp
-    (use-package company
-      :config
-      (global-company-mode)
-      :bind
-      ("C-c C-c" . company-complete)
-  )
+  (use-package company
+    :config
+    (global-company-mode)
+    :bind
+    ("C-c C-c" . company-complete)
+    )
 #+end_src
 *** Spelling
 [[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
@@ -475,12 +479,12 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '(
-    (emacs-lisp . t)
-    (python . t)
-    (C . t)
-    (R . t)
-    (gnuplot . t)
-    ))
+     (emacs-lisp . t)
+     (python . t)
+     (C . t)
+     (R . t)
+     (gnuplot . t)
+     ))
   (setq org-confirm-babel-evaluate nil)
   
   
@@ -507,20 +511,20 @@
 #+begin_src emacs-lisp
   (setq-default c-basic-offset 4)
   (define-key c-mode-map (kbd "C-c m") #'compile)  
-        (defun execute-c-program ()
-          (interactive)
-          (save-buffer)
-          (defvar foo)
-          (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-          (shell)
-          (kill-new foo)
-          (org-yank)
-        )
+  (defun execute-c-program ()
+    (interactive)
+    (save-buffer)
+    (defvar foo)
+    (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
+    (shell)
+    (kill-new foo)
+    (org-yank)
+    )
   
-     (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
-     (define-key c-mode-map (kbd "C-c g") #'gdb)
+  (define-key c-mode-map (kbd "C-c r") 'execute-c-program)
+  (define-key c-mode-map (kbd "C-c g") #'gdb)
   (define-key c-mode-map (kbd "C-c C-/") 'uncomment-region)
-     (use-package clang-format)
+  (use-package clang-format)
 #+end_src
 
 ***** GDB
@@ -555,8 +559,8 @@
   (use-package ess-site
     :straight ess
     :config
-      (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
-      (setq ess-use-ido nil ; use helm
+    (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
+    (setq ess-use-ido nil ; use helm
           ess-eval-visibly 'nowait ; don't hang with R
           ess-smart-S-assign-key nil ; unbind ess-insert-align
           ))
@@ -692,13 +696,13 @@
   (use-package rjsx-mode
     :init
     (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
-
-    ; autoformatting
+  
+                                          ; autoformatting
   (use-package prettier-js
     :init
     (add-hook 'js2-mode-hook 'prettier-js-mode))
   
- #+end_src
+#+end_src
 ***** TypeScript
 #+begin_src emacs-lisp
   (use-package typescript-mode
@@ -712,7 +716,7 @@
   (use-package rust-mode
     :config
     (add-hook 'rust-mode-hook
-          (lambda () (setq indent-tabs-mode nil)))
+              (lambda () (setq indent-tabs-mode nil)))
     (setq rust-format-on-save t)
     (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
   
@@ -744,6 +748,23 @@
   (use-package json-mode)
   
 #+end_src
+**** CSV
+#+begin_src emacs-lisp
+  (defun testfn ()
+    (interactive)
+    (csv-align-mode t)
+    (toggle-truncate-lines 1)
+    (csv-header-line t)
+    )
+  
+  (use-package csv-mode
+    :mode (".tsv" ".csv" ".tabular" ".vcf")
+    :custom
+    (csv-comment-start "##")
+    :hook
+    (csv-mode . (lambda ()
+                  (run-at-time 0 nil 'testfn))))
+#+end_src
 **** Webmode
 #+begin_src emacs-lisp
   (use-package web-mode
@@ -771,7 +792,7 @@
      web-mode-enable-auto-indentation t))
   
   
- #+end_src
+#+end_src
 **** Tailwind
 #+begin_src emacs-lisp
   (use-package lsp-tailwindcss
@@ -787,79 +808,83 @@
   (setq remote-file-name-inhibit-cache nil)
   (setq vc-ignore-dir-regexp
         (format "%s\\|%s"
-                      vc-ignore-dir-regexp
-                      tramp-file-name-regexp))
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
   (put 'temporary-file-directory 'standard-value
        (list temporary-file-directory))
   
-  (set-register ?s (cons 'file "/ssh:hs884@ilab1.cs.rutgers.edu:"))
-
+  (set-register ?s (cons 'file "/ssh:hs884@kill.cs.rutgers.edu:"))
+  
   (add-hook
-     'c-mode-hook
-     (lambda () (when (file-remote-p default-directory) (company-mode -1))))
-  #+END_SRC
+   'c-mode-hook
+   (lambda () (when (file-remote-p default-directory) (company-mode -1))))
+#+END_SRC
 *** shell
 #+begin_src emacs-lisp
-    (use-package term
-      :config
-      (setq explicit-shell-file-name "zsh"
-            term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  (use-package term
+    :config
+    (setq explicit-shell-file-name "zsh"
+          term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
   
-    (use-package bash-completion
-      :config
-      (bash-completion-setup))
+  (use-package bash-completion
+    :config
+    (bash-completion-setup))
   
-    (use-package shell-pop
-      :init
-      (setq shell-pop-universal-key "C-t"
-            shell-pop-window-position "bottom"
-  ;          shell-pop-shell-type "terminal"
-            shell-pop-cleanup-buffer-at-process-exit t
-            shell-pop-window-size 30)
-      (push (cons "\\*shell\\*" display-buffer--same-window-action) display-buffer-alist)
-      )
+  (use-package shell-pop
+    :init
+    (setq shell-pop-universal-key "C-t"
+          shell-pop-window-position "bottom"
+                                          ;          shell-pop-shell-type "terminal"
+          shell-pop-cleanup-buffer-at-process-exit t
+          shell-pop-window-size 30)
+    (push (cons "\\*shell\\*" display-buffer--same-window-action) display-buffer-alist)
+    )
 #+end_src
 
 *** Projectile
 
 #+begin_src emacs-lisp
-   (use-package projectile
-     :config
-     (projectile-global-mode)
-
-     (setq projectile-completion-system 'helm
-	   projectile-indexing-method 'alien
-	   projectile-sort-order 'recently-active
-	   projectile-enable-caching t
-	   projectile-switch-project-action 'helm-projectile
-	   projectile-find-file 'helm-projectile-find-file
-	   )
-     (helm-projectile-on)
-     :bind-keymap
-     ("C-c p" . projectile-command-map))
+  (use-package projectile
+    :config
+    (projectile-global-mode)
+  
+    (setq projectile-completion-system 'helm
+          projectile-indexing-method 'alien
+          projectile-sort-order 'recently-active
+          projectile-enable-caching t
+          projectile-switch-project-action 'helm-projectile
+          projectile-find-file 'helm-projectile-find-file
+          )
+  
+  
+    (setq projectile-project-search-path '("~/org/" "~/code/"))
+  
+    (helm-projectile-on)
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    ("s-p" . projectile-command-map))
   (setq projectile-globally-ignored-directories '(".idea"
-						 ".vscode"
-						 ".ensime_cache"
-						 ".eunit"
-						 ".git"
-						 ".hg"
-						 ".fslckout" 
-						 "_FOSSIL_"
-						 ".bzr"
-						 "_darcs"
-						 ".tox"
-						 ".svn"
-						 "node_modules"
-						 ".stack-work"
-						 ".ccls-cache"
-						 ".cache"
-						 ".clangd"))
-
-
-   (use-package helm-ag)
+                                                  ".vscode"
+                                                  ".ensime_cache"
+                                                  ".eunit"
+                                                  ".git"
+                                                  ".hg"
+                                                  ".fslckout" 
+                                                  "_FOSSIL_"
+                                                  ".bzr"
+                                                  "_darcs"
+                                                  ".tox"
+                                                  ".svn"
+                                                  "node_modules"
+                                                  ".stack-work"
+                                                  ".ccls-cache"
+                                                  ".cache"
+                                                  ".clangd"))
+  
+  
+  (use-package helm-ag)
 #+end_src
 *** Magit
-
 #+BEGIN_SRC emacs-lisp
   (use-package magit
     :config
@@ -885,7 +910,7 @@
 
 ** Formatting
 *** Looks
-  g insp from [[https://hugocisneros.com/org-config/][here]]
+g insp from [[https://hugocisneros.com/org-config/][here]]
 **** Gen
 #+begin_src emacs-lisp
   (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
@@ -910,7 +935,7 @@
   
   (use-package valign
     :config
-     (setq valign-fancy-bar t)
+    (setq valign-fancy-bar t)
     :hook ((org-mode) . valign-mode))
   
   (use-package org-visual-outline
@@ -977,7 +1002,7 @@
            'mode-line
            'mode-line-inactive
            ))
-      (setq color-theme (nth pick-color color-schemes))
+    (setq color-theme (nth pick-color color-schemes))
     (set-face-attribute 'org-code nil
                         :inherit '(shadow fixed-pitch)
                         :height .8)
@@ -1023,34 +1048,49 @@
 
 *** Latex
 #+BEGIN_SRC emacs-lisp
-    (use-package org-fragtog
-      :hook (org-mode . org-fragtog-mode))
-    
-    (use-package org-appear
-      :hook (org-mode . org-appear-mode)
-      :config
-      (setq org-appear-autosubmarkers t
-            org-appear-autolinks t
-            org-appear-autoentities t
-            org-appear-delay .1
-            org-appear-autokeywords t))
-    
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-    (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
-    
-    (use-package tex
-      :straight auctex
-      :defer t
-      :config
-      (setq TeX-auto-save t)
-      (setq TeX-parse-self t))
-    
-    (use-package cdlatex
-      :requires texmathp
-      :config
-  ;    (setq cdlatex-paired-parens "")
-         )
-  (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
+  (use-package org-fragtog
+    :hook (org-mode . org-fragtog-mode))
+  
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autosubmarkers t
+          org-appear-autolinks t
+          org-appear-autoentities t
+          org-appear-delay .1
+          org-appear-autokeywords t))
+  
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  
+  
+  (use-package tex
+    :straight auctex
+    :defer t
+    :config
+    (setq TeX-auto-save t
+          TeX-parse-self t)
+  
+    (add-hook 'LaTeX-mode-hook 'add-my-latex-environments)
+    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  
+    (defun add-my-latex-environments ()
+      (LaTeX-add-environments
+       '("align*" LaTeX-env-label)
+       '("align" LaTeX-env-label)
+       '("equation*" LaTeX-env-label)))
+    )
+  
+  
+  
+  (use-package cdlatex
+    :requires texmathp
+    :config
+    (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
+    (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
+                                          ;    (setq cdlatex-paired-parens "")
+    )
+  
 #+END_SRC
 *** Images
 #+begin_src emacs-lisp
@@ -1139,15 +1179,15 @@
                    :priority "A"
                    )
             (:order-multi ( (:name "DOE"
-                                    :tag "DOE")
-                             (:name "CStats"
-                                    :tag "CStats")
-                             (:name "MStats"
-                                    :tag "MStats")
-                             (:name "Networking"
-                                    :tag "Networking")
-                             (:name "OS"
-                                    :tag "OS")))
+                                   :tag "DOE")
+                            (:name "CStats"
+                                   :tag "CStats")
+                            (:name "MStats"
+                                   :tag "MStats")
+                            (:name "Networking"
+                                   :tag "Networking")
+                            (:name "OS"
+                                   :tag "OS")))
             (:name "Habits"
                    :habit t
                    :tag "Habits")
@@ -1161,7 +1201,7 @@
     (bind-key "C-c a" #'org-agenda global-map)
     (bind-key "C-c c" #'org-capture ))
   (unbind-key "C-'" org-mode-map)
-
+  
 #+END_SRC
 
 *** Habits
@@ -1211,7 +1251,7 @@
         org-clock-persist t
         org-clock-in-resume t
         org-clock-persist-query-resume nil)
-        
+  
 #+end_src
 *** Journal
 #+BEGIN_SRC emacs-lisp
@@ -1250,7 +1290,7 @@
   (defun insert-created-date (&rest ignore)
     (insert (concat
              "\n* Gratitude\n"
-               )))
+             )))
   
   (add-hook 'org-journal-after-header-create-hook
             #'insert-created-date)
@@ -1265,48 +1305,48 @@
                '("j" "Journal entry" plain (function org-journal-find-location)
                  "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
                  :jump-to-captured t :immediate-finish t))
-    #+END_SRC
+#+END_SRC
 ** Literature
 *** Roam
 
 #+BEGIN_SRC emacs-lisp
-      (use-package org-roam
-        :init
-        (setq org-roam-v2-ack t) ; stops warning message
-        :demand t
-        :custom
-        (org-roam-directory "~/org/roam/")
-        (org-roam-completion-everywhere t)
-        (org-roam-capture-templates '(
-                                      ("d" "default" plain
-                                       "\n\n* %?"
-                                       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
-                                       :unnarrowed t)
-                                      ("t" "Term/Definition" plain
-                                       "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
-                                       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
-                                       :unnarrowed t)
+  (use-package org-roam
+    :init
+    (setq org-roam-v2-ack t) ; stops warning message
+    :demand t
+    :custom
+    (org-roam-directory "~/org/roam/")
+    (org-roam-completion-everywhere t)
+    (org-roam-capture-templates '(
+                                  ("d" "default" plain
+                                   "\n\n* %?"
+                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                   :unnarrowed t)
+                                  ("t" "Term/Definition" plain
+                                   "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
+                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                   :unnarrowed t)
   
-                                      ))
-        :config
-        (org-roam-setup)
-        (org-roam-db-autosync-mode)
-        :bind (("C-c n f" . org-roam-node-find)
-               ("C-c n g" . org-roam-graph)
-               ("C-c n r" . org-roam-node-random)		    
-               (:map org-mode-map
-                     (("C-c n i" . org-roam-node-insert)
-                      ("C-c n o" . org-id-get-create)
-                      ("C-c n t" . org-roam-tag-add)
-                      ("C-c n a" . org-roam-alias-add)
-                      ("C-M-i" . completion-at-point)
-                      ("C-c n l" . org-roam-buffer-toggle)
-                      ("C-c n I" . org-roam-node-insert-immediate)))))
-      (require 'org-roam)
-      (cl-defmethod org-roam-node-directories ((node org-roam-node))
-      (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
-          (format "(%s)" (car (f-split dirs)))
-        ""))
+                                  ))
+    :config
+    (org-roam-setup)
+    (org-roam-db-autosync-mode)
+    :bind (("C-c n f" . org-roam-node-find)
+           ("C-c n g" . org-roam-graph)
+           ("C-c n r" . org-roam-node-random)		    
+           (:map org-mode-map
+                 (("C-c n i" . org-roam-node-insert)
+                  ("C-c n o" . org-id-get-create)
+                  ("C-c n t" . org-roam-tag-add)
+                  ("C-c n a" . org-roam-alias-add)
+                  ("C-M-i" . completion-at-point)
+                  ("C-c n l" . org-roam-buffer-toggle)
+                  ("C-c n I" . org-roam-node-insert-immediate)))))
+  (require 'org-roam)
+  (cl-defmethod org-roam-node-directories ((node org-roam-node))
+    (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
+        (format "(%s)" (car (f-split dirs)))
+      ""))
   
   (defun org-roam-node-insert-immediate (arg &rest args)
     (interactive "P")
@@ -1315,27 +1355,27 @@
                                                     '(:immediate-finish t)))))
       (apply #'org-roam-node-insert args)))
   
-    (cl-defmethod org-roam-node-backlinkscount ((node org-roam-node))
-      (let* ((count (caar (org-roam-db-query
-                           [:select (funcall count source)
-                                    :from links
-                                    :where (= dest $s1)
-                                    :and (= type "id")]
-                           (org-roam-node-id node)))))
-        (format "[%d]" count)))
+  (cl-defmethod org-roam-node-backlinkscount ((node org-roam-node))
+    (let* ((count (caar (org-roam-db-query
+                         [:select (funcall count source)
+                                  :from links
+                                  :where (= dest $s1)
+                                  :and (= type "id")]
+                         (org-roam-node-id node)))))
+      (format "[%d]" count)))
   
-    (cl-defmethod org-roam-node-directories ((node org-roam-node))
+  (cl-defmethod org-roam-node-directories ((node org-roam-node))
     (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
         (format "(%s)" (string-join (f-split dirs) "/"))
       ""))
   
-    (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
-    (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
-  #+END_SRC
+  (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
+  (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
+#+END_SRC
 **** roam ui
 #+begin_src emacs-lisp
   (use-package org-roam-ui
-  :straight
+    :straight
     (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
     :after org-roam
     :config
@@ -1362,7 +1402,7 @@
   
   (defun my/no-op (&rest args))
   (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
-  #+end_src
+#+end_src
 *** BibTex
 *** Publish
 * Other
@@ -1372,7 +1412,7 @@
     (interactive)
     (setq pick-color 1)
     (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
-                       " | sudo -S ~/bin/grind"))
+                           " | sudo -S ~/bin/grind"))
     (load-theme 'doom-acario-dark  t)
     (my/style-org))
   
@@ -1385,7 +1425,7 @@
                            " | sudo -S ~/bin/ungrind"))
     (load-theme 'doom-horizon t)
     (my/style-org))
-    (global-set-key (kbd "C-c u") #'ungrind)
+  (global-set-key (kbd "C-c u") #'ungrind)
 #+end_src
 ** Epub
 #+begin_src emacs-lisp
