@@ -1,1 +1,1 @@
-(setq screens_list '())
+(setq screens_list '("/Users/harshasomisetty/.emacs.d/myinit.org" "/Users/harshasomisetty/Dropbox/org/school/Fall21/DOE/hw/hw6/doehw6.org"))

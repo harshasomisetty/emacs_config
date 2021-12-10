@@ -1038,48 +1038,55 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
 
 *** Latex
 #+BEGIN_SRC emacs-lisp
-  (use-package org-fragtog
-    :hook (org-mode . org-fragtog-mode))
+     (use-package org-fragtog
+       :hook (org-mode . org-fragtog-mode))
   
-  (use-package org-appear
-    :hook (org-mode . org-appear-mode)
-    :config
-    (setq org-appear-autosubmarkers t
-          org-appear-autolinks t
-          org-appear-autoentities t
-          org-appear-delay .1
-          org-appear-autokeywords t))
+     (use-package org-appear
+       :hook (org-mode . org-appear-mode)
+       :config
+       (setq org-appear-autosubmarkers t
+             org-appear-autolinks t
+             org-appear-autoentities t
+             org-appear-delay .1
+             org-appear-autokeywords t))
   
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
-  
-  
-  (use-package tex
-    :straight auctex
-    :defer t
-    :config
-    (setq TeX-auto-save t
-          TeX-parse-self t)
-  
-    (add-hook 'LaTeX-mode-hook 'add-my-latex-environments)
-    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  
-    (defun add-my-latex-environments ()
-      (LaTeX-add-environments
-       '("align*" LaTeX-env-label)
-       '("align" LaTeX-env-label)
-       '("equation*" LaTeX-env-label)))
-    )
+     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+     (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
   
   
+     (use-package tex
+       :straight auctex
+       :defer t
+       :config
+       (setq TeX-auto-save t
+             TeX-parse-self t)
   
-  (use-package cdlatex
-    :requires texmathp
-    :config
-    (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
-    (add-hook 'org-mode-hook #'turn-on-org-cdlatex)
-                                          ;    (setq cdlatex-paired-parens "")
-    )
+       (add-hook 'LaTeX-mode-hook 'add-my-latex-environments)
+       (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  
+       (defun add-my-latex-environments ()
+         (LaTeX-add-environments
+          '("align*" LaTeX-env-label)
+          '("align" LaTeX-env-label)
+          '("equation*" LaTeX-env-label)))
+       )
+  
+  (add-to-list 'org-latex-packages-alist
+               '("" "tikz" t))
+  
+  (eval-after-load "preview"
+    '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
+  
+  (setq org-latex-create-formula-image-program 'imagemagick)
+  
+     (use-package cdlatex
+       ;; :requires texmathp
+       :config
+       (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
+       (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
+  
+                                             ;    (setq cdlatex-paired-parens "")
+       )
   
 #+END_SRC
 *** Images
