@@ -226,16 +226,6 @@
     (add-hook 'kill-emacs-hook 'save-screen-var))
 
 #+END_SRC
-*** PDF Tool
-#+begin_src emacs-lisp
-  (use-package pdf-tools
-    :bind (:map pdf-view-mode-map
-                ("C-s" . isearch-forward))
-    :config
-    (setq pdf-view-display-size 'fit-page)
-    :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
-  (pdf-tools-install)
-#+end_src
 
 ** Navigation
 
@@ -1387,10 +1377,6 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   
 #+end_src
 *** Noter
-:PROPERTIES:
-:NOTER_DOCUMENT: ../org/school/DOE/lectures/Lecture 4-CRD model perspective.pdf
-:ID:       CBCBF2AC-CD79-46D4-A468-9EBEE49EC20E
-:END:
 #+begin_src emacs-lisp
   (use-package org-noter
     :bind ("C-c o" . org-noter)
@@ -1444,4 +1430,29 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
     )
   
   
+#+end_src
+
+** PDF Tool
+#+begin_src emacs-lisp
+          (use-package pdf-tools
+            :bind (:map pdf-view-mode-map
+                        ("C-s" . isearch-forward))
+            :config
+      
+            (setq pdf-view-display-size 'fit-page)
+            (defun pdf-view-next-page-mouse (&optional n)
+              (interactive "@p")
+              (pdf-view-goto-page (+ (pdf-view-current-page)
+                                     (or n 1))))
+            (add-hook 'my-major-mode-hook (lambda () (disable-mouse-mode -1)))
+            :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
+          (pdf-tools-install)
+          (define-key pdf-view-mode-map (kbd "<mouse-5>") 'pdf-view-next-page-mouse
+      
+      )
+      
+     (use-package pdfgrep
+       :config
+       (pdfgrep-mode))
+
 #+end_src
