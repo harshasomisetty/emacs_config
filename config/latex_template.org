@@ -7,15 +7,9 @@
 #+LATEX_HEADER: \usepackage[AUTO]{inputenc}
 #+LATEX_HEADER: \usepackage{graphicx}
 #+LATEX_HEADER: \usepackage{tikz}
-% #+LATEX_HEADER: \usepackage{tikzpicture}
-% #+LaTeX_HEADER: \usetikzlibrary{shapes,arrows,automata,quotes}
+
 #+LATEX_HEADER: \usepackage{amsmath, amsthm, amssymb}
 #+LATEX_HEADER: \usepackage[table, xcdraw]{xcolor}
-
-% Colorizing links in a nicer way.
-#+LATEX_HEADER: \definecolor{bblue}{HTML}{0645AD}
-#+LATEX_HEADER: \usepackage[colorlinks]{hyperref}
-#+LATEX_HEADER: \hypersetup{colorlinks, linkcolor=blue, urlcolor=bblue}
 
 #+LATEX_HEADER: \usepackage{listings} % Code highlighting
 #+LaTeX_HEADER: \usepackage{indentfirst}
@@ -23,4 +17,14 @@
 % List spacing
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \setlist{itemsep=-2pt} % or \setlist{noitemsep} to leave space around whole list
+
+% bibliography
+#+LATEX_HEADER: \usepackage{apacite}
+#+LATEX_HEADER: \usepackage[backend=biber, style=alphabetic, sorting=nyt]{biblatex}
+#+LATEX_HEADER: \addbibresource{~/org/literature/refs.bib}
+
+
+% Colorizing links in a nicer way.
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=black,citecolor=blue}
 

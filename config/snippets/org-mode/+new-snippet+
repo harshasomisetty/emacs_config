@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: biblio
+# key: biblio
+# --
+
+\newpage
+\printbibliography

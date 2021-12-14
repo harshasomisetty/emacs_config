@@ -244,9 +244,12 @@
     (setq aw-scope 'frame)
     )
   
-  (use-package disable-mouse
-    :config
-    (global-disable-mouse-mode))
+  ;; (use-package disable-mouse
+  ;;   )
+  ;; (
+   ;; disable-mouse-mode 1)
+  
+  (setq sentence-end-double-space nil)
   
   (use-package no-spam
     :config
@@ -471,6 +474,7 @@
    '(
      (emacs-lisp . t)
      (python . t)
+     (latex . t)
      (C . t)
      (R . t)
      (gnuplot . t)
@@ -1038,94 +1042,102 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
 
 *** Latex
 #+BEGIN_SRC emacs-lisp
-     (use-package org-fragtog
-       :hook (org-mode . org-fragtog-mode))
+        (use-package org-fragtog
+          :hook (org-mode . org-fragtog-mode))
   
-     (use-package org-appear
-       :hook (org-mode . org-appear-mode)
-       :config
-       (setq org-appear-autosubmarkers t
-             org-appear-autolinks t
-             org-appear-autoentities t
-             org-appear-delay .1
-             org-appear-autokeywords t))
+        (use-package org-appear
+          :hook (org-mode . org-appear-mode)
+          :config
+          (setq org-appear-autosubmarkers t
+                org-appear-autolinks t
+                org-appear-autoentities t
+                org-appear-delay .1
+                org-appear-autokeywords t))
   
-     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-     (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+        (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+        (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  
+        (use-package tex
+          :straight auctex
+          :defer t
+          :config
+          (setq TeX-auto-save t
+                TeX-parse-self t)
+  
+          (add-hook 'LaTeX-mode-hook 'add-my-latex-environments)
+          (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  
+          (defun add-my-latex-environments ()
+            (LaTeX-add-environments
+             '("align*" LaTeX-env-label)
+             '("align" LaTeX-env-label)
+             '("equation*" LaTeX-env-label)))
+          )
+  
+   (use-package helm-bibtex
+     :config
+     ;; In the lines below I point helm-bibtex to my default library file.
+     (setq bibtex-completion-bibliography '("~/org/literature/refs.bib")
+           )
+     (add-hook 'bibtex-mode-hook 'flyspell-mode)
+     :hook (Tex . (lambda () (define-key Tex-mode-map "\C-ch" 'helm-bibtex))))
+  
+   ;; Set up org-ref stuff
+   (use-package org-ref
+     :config
+     ;; Again, we can set the default library
+     (setq org-ref-default-bibliography "~/org/literature/refs.bib"
+           org-ref-insert-link-function 'org-ref-insert-link-hydra/body
+           org-ref-insert-cite-function 'org-ref-cite-insert-helm
+           org-ref-insert-label-function 'org-ref-insert-label-link
+           org-ref-insert-ref-function 'org-ref-insert-ref-link
+           org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))
+             )
+     :bind (("C-c r c" . org-ref-indert-cite-function)
+            ("C-c r r" . org-ref-indert-ref-function)
+            ("C-c r l" . org-ref-indert-label-function)))
   
   
-     (use-package tex
-       :straight auctex
-       :defer t
-       :config
-       (setq TeX-auto-save t
-             TeX-parse-self t)
+  ;; (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+  ;; (
+  (setq org-latex-pdf-process (list "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))  
   
-       (add-hook 'LaTeX-mode-hook 'add-my-latex-environments)
-       (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   
-       (defun add-my-latex-environments ()
-         (LaTeX-add-environments
-          '("align*" LaTeX-env-label)
-          '("align" LaTeX-env-label)
-          '("equation*" LaTeX-env-label)))
-       )
+     (add-to-list 'org-latex-packages-alist
+                  '("" "tikz" t))
   
-  (add-to-list 'org-latex-packages-alist
-               '("" "tikz" t))
+     (eval-after-load "preview"
+       '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
   
-  (eval-after-load "preview"
-    '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
+     (setq org-latex-create-formula-image-program 'imagemagick)
   
-  (setq org-latex-create-formula-image-program 'imagemagick)
+        (use-package cdlatex
+          ;; :requires texmathp
+          :config
+          (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
+          (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
   
-     (use-package cdlatex
-       ;; :requires texmathp
-       :config
-       (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
-       (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
-  
-                                             ;    (setq cdlatex-paired-parens "")
-       )
+                                                ;    (setq cdlatex-paired-parens "")
+          )
   
 #+END_SRC
 *** Images
+
 #+begin_src emacs-lisp
-  
-  (use-package org-download
-    :ensure t
-    :hook (dired-mode . org-download-enable)
-    :config
-    ;; add support to dired
-    (setq-default org-download-image-dir "~/Pictures/emacs-pics")
-    )
-  
-  
-  (defun ros ()
-    (interactive)
-    (if buffer-file-name
-        (progn
-          (message "Waiting for region selection with mouse...")
-          (let ((filename
-                 (concat "./"
-                         (file-name-nondirectory buffer-file-name)
-                         "_"
-                         (format-time-string "%Y%m%d_%H%M%S")
-                         ".png")))
-            (if (executable-find "scrot")
-                (call-process "scrot" nil nil nil "-s" filename)
-              (call-process "screencapture" nil nil nil "-s" filename))
-            (insert (concat "[[" filename "]]"))
-            (org-display-inline-images t t)
-            )
-          (message "File created and linked...")
-          )
-      (message "You're in a not saved buffer! Save it first!")
+    
+    (use-package org-download
+      :ensure t
+      :hook (dired-mode . org-download-enable)
+      :bind (("C-c s s" . org-download-screenshot)
+             ("C-c s c" . org-download-clipboard))
+      :config
+    
+      (setq-default org-download-image-dir "~/Pictures/emacs-pics")
+      (setq org-download-screenshot-method "screencapture -i %s")
       )
-    )
-  
-  (global-set-key (kbd "C-c r") #'ros)
+    
 #+end_src
+
 ** Life
 *** Agenda
 #+BEGIN_SRC emacs-lisp
@@ -1328,6 +1340,11 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
     :config
     (org-roam-setup)
     (org-roam-db-autosync-mode)
+    (setq org-roam-mode-section-functions
+      (list #'org-roam-backlinks-section
+            #'org-roam-reflinks-section
+            ;; #'org-roam-unlinked-references-section
+            ))
     :bind (("C-c n f" . org-roam-node-find)
            ("C-c n g" . org-roam-graph)
            ("C-c n r" . org-roam-node-random)		    
@@ -1441,25 +1458,80 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
 
 ** PDF Tool
 #+begin_src emacs-lisp
-          (use-package pdf-tools
-            :bind (:map pdf-view-mode-map
-                        ("C-s" . isearch-forward))
-            :config
-      
-            (setq pdf-view-display-size 'fit-page)
-            (defun pdf-view-next-page-mouse (&optional n)
-              (interactive "@p")
-              (pdf-view-goto-page (+ (pdf-view-current-page)
-                                     (or n 1))))
-            (add-hook 'my-major-mode-hook (lambda () (disable-mouse-mode -1)))
-            :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
-          (pdf-tools-install)
-          (define-key pdf-view-mode-map (kbd "<mouse-5>") 'pdf-view-next-page-mouse
-      
+  (defun my/save-buffer-no-args ()
+    "Save buffer ignoring arguments"
+    (save-buffer))
+  (use-package pdf-tools
+      :bind (:map pdf-view-mode-map
+                  ("C-s" . isearch-forward))
+      :config
+  
+      (setq pdf-view-display-size 'fit-height
+            pdf-annot-activate-created-annotations t)
+  
+      (add-hook 'pdf-view-mode-hook (lambda () (pdf-view-fit-height-to-window)))
+      (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+      (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+      (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
+  
+      (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
+       (with-eval-after-load "pdf-annot"
+         (define-key pdf-annot-edit-contents-minor-mode-map (kbd "<return>") 'pdf-annot-edit-contents-commit)
+         (define-key pdf-annot-edit-contents-minor-mode-map (kbd "<S-return>") 'newline)
+         ;; save after adding comment
+         (advice-add 'pdf-annot-edit-contents-commit :after 'my/save-buffer-no-args))
+      :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
+  
+  
+    (pdf-tools-install)
+    (define-key pdf-view-mode-map (kbd "<mouse-5>") 'pdf-view-next-page-mouse
+  
       )
-      
-     (use-package pdfgrep
-       :config
-       (pdfgrep-mode))
-
+    (defun pdf-view--rotate (&optional counterclockwise-p page-p)
+      "Rotate PDF 90 degrees.  Requires pdftk to work.\n"
+      ;; error out when pdftk is not installed
+      (if (null (executable-find "pdftk"))
+          (error "Rotation requires pdftk")
+        ;; only rotate in pdf-view-mode
+        (when (eq major-mode 'pdf-view-mode)
+          (let* ((rotate (if counterclockwise-p "left" "right"))
+                 (file   (format "\"%s\"" (pdf-view-buffer-file-name)))
+                 (page   (pdf-view-current-page))
+                 (pages  (cond ((not page-p)                        ; whole doc?
+                                (format "1-end%s" rotate))
+                               ((= page 1)                          ; first page?
+                                (format "%d%s %d-end"
+                                        page rotate (1+ page)))
+                               ((= page (pdf-info-number-of-pages)) ; last page?
+                                (format "1-%d %d%s"
+                                        (1- page) page rotate))
+                               (t                                   ; interior page?
+                                (format "1-%d %d%s %d-end"
+                                        (1- page) page rotate (1+ page))))))
+            ;; empty string if it worked
+            (if (string= "" (shell-command-to-string
+                             (format (concat "pdftk %s cat %s "
+                                             "output %s.NEW "
+                                             "&& mv %s.NEW %s")
+                                     file pages file file file)))
+                (pdf-view-revert-buffer nil t)
+              (error "Rotation error!"))))))
+  
+    (defun pdf-view-rotate-clockwise (&optional arg)
+      "Rotate PDF page 90 degrees clockwise.  With prefix ARG, rotate
+    entire document."
+      (interactive "P")
+      (pdf-view--rotate nil (not arg)))
+  
+    (defun pdf-view-rotate-counterclockwise (&optional arg)
+      "Rotate PDF page 90 degrees counterclockwise.  With prefix ARG,
+    rotate entire document."
+      (interactive "P")
+      (pdf-view--rotate :counterclockwise (not arg)))
+  
+    (define-key pdf-view-mode-map (kbd "R") 'pdf-view-rotate-clockwise)
+    (use-package pdfgrep
+      :config
+      (pdfgrep-mode))
+  
 #+end_src

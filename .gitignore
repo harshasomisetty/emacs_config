@@ -30,3 +30,4 @@ eshell
 .screens_file.el
 *secrets*
 *screens_file.el
+*.png
