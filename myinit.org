@@ -1074,28 +1074,6 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
              '("equation*" LaTeX-env-label)))
           )
   
-   (use-package helm-bibtex
-     :config
-     ;; In the lines below I point helm-bibtex to my default library file.
-     (setq bibtex-completion-bibliography '("~/org/literature/refs.bib")
-           )
-     (add-hook 'bibtex-mode-hook 'flyspell-mode)
-     :hook (Tex . (lambda () (define-key Tex-mode-map "\C-ch" 'helm-bibtex))))
-  
-   ;; Set up org-ref stuff
-   (use-package org-ref
-     :config
-     ;; Again, we can set the default library
-     (setq org-ref-default-bibliography "~/org/literature/refs.bib"
-           org-ref-insert-link-function 'org-ref-insert-link-hydra/body
-           org-ref-insert-cite-function 'org-ref-cite-insert-helm
-           org-ref-insert-label-function 'org-ref-insert-label-link
-           org-ref-insert-ref-function 'org-ref-insert-ref-link
-           org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))
-             )
-     :bind (("C-c r c" . org-ref-indert-cite-function)
-            ("C-c r r" . org-ref-indert-ref-function)
-            ("C-c r l" . org-ref-indert-label-function)))
   
   
   ;; (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
@@ -1107,7 +1085,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
                   '("" "tikz" t))
   
      (eval-after-load "preview"
-       '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
+      '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
   
      (setq org-latex-create-formula-image-program 'imagemagick)
   
@@ -1116,8 +1094,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
           :config
           (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
           (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
-  
-                                                ;    (setq cdlatex-paired-parens "")
+                                                 ;    (setq cdlatex-paired-parens "")
           )
   
 #+END_SRC
@@ -1315,8 +1292,14 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
                  "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
                  :jump-to-captured t :immediate-finish t))
 #+END_SRC
-** Literature
-*** Roam
+* Literature
+current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
+tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the source
+currently I have roam capture templates that capture facts and papers (going to eventually incorporate books and podcasts etc)
+
+so workflow itself is reading through papers, use capture template and org noter to take notes and write a final summary
+bibtex to cite
+** Roam
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
@@ -1331,11 +1314,10 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
                                    "\n\n* %?"
                                    :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
                                    :unnarrowed t)
-                                  ("t" "Term/Definition" plain
-                                   "\n\n* Definition\n** %?\n* Understanding\n** \n* Prerequisites\n* References\n"
-                                   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                  ("t" "Fact" plain
+                                   "\n\n* %?"
+                                   :if-new (file+head "facts/%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
                                    :unnarrowed t)
-  
                                   ))
     :config
     (org-roam-setup)
@@ -1356,6 +1338,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
                   ("C-M-i" . completion-at-point)
                   ("C-c n l" . org-roam-buffer-toggle)
                   ("C-c n I" . org-roam-node-insert-immediate)))))
+  
   (require 'org-roam)
   (cl-defmethod org-roam-node-directories ((node org-roam-node))
     (if-let ((dirs (file-name-directory (file-relative-name (org-roam-node-file node) org-roam-directory))))
@@ -1383,10 +1366,11 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
         (format "(%s)" (string-join (f-split dirs) "/"))
       ""))
   
+  
   (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
   (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
 #+END_SRC
-**** roam ui
+*** roam ui
 #+begin_src emacs-lisp
   (use-package org-roam-ui
     :straight
@@ -1400,7 +1384,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   
   
 #+end_src
-*** Noter
+** Noter
 #+begin_src emacs-lisp
   (use-package org-noter
     :bind ("C-c o" . org-noter)
@@ -1413,29 +1397,54 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   (defun my/no-op (&rest args))
   (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
 #+end_src
-*** BibTex
-*** Publish
-* Other
-** Grind mode
+** Bibtex
 #+begin_src emacs-lisp
-  (defun grind()
-    (interactive)
-    (setq pick-color 1)
-    (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
-                           " | sudo -S ~/bin/grind"))
-    (load-theme 'doom-acario-dark  t)
-    (my/style-org))
+   (use-package helm-bibtex
+     :config
+     ;; In the lines below I point helm-bibtex to my default library file.
+     (setq bibtex-completion-bibliography '("~/org/refs.bib")
+           bibtex-completion-library-path '("~/org/papers")
+           bibtex-completion-notes-path "~/org/roam/papers"
+           bibtex-completion-pdf-field "File"
+           )
+     (setq bibtex-completion-pdf-open-function
+           (lambda (fpath)
+             (call-process "open" nil 0 nil fpath)))
+     (add-hook 'bibtex-mode-hook 'flyspell-mode)
+     :hook (Tex . (lambda () (define-key Tex-mode-map "\C-ch" 'helm-bibtex))))
   
-  (global-set-key (kbd "C-c g") #'grind)
+   ;; Set up org-ref stuff
+   (use-package org-ref
+     ;; :disabled
+     :requires helm-bibtex
+     :config
+     ;; Again, we can set the default library
+     (setq org-ref-insert-cite-function 'org-ref-cite-insert-helm
+           org-ref-insert-label-function 'org-ref-insert-label-link
+           org-ref-insert-ref-function 'org-ref-insert-ref-link
+             )
+     :bind (("C-c r c" . org-ref-cite-insert-helm)
+            ("C-c r r" . org-ref-insert-ref-link)
+            ("C-c r l" . org-ref-insert-label-link)))
   
-  (defun ungrind()
-    (interactive)
-    (setq pick-color 0)
-    (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
-                           " | sudo -S ~/bin/ungrind"))
-    (load-theme 'doom-horizon t)
-    (my/style-org))
-  (global-set-key (kbd "C-c u") #'ungrind)
+  (use-package org-roam-bibtex
+  
+    :after org-roam
+    :config
+    (require 'org-ref)
+    )
+  (setq orb-preformat-keywords
+      '("citekey" "title" "url" "author-or-editor" "keywords" "file")
+      orb-process-file-keyword t
+      orb-attached-file-extensions '("pdf"))
+  
+  (add-to-list 'org-roam-capture-templates
+               '("p" "paper" plain
+                 (file "~/.emacs.d/templates/biblio.org")
+                 :target
+                 (file+head "papers/${citekey}.org" "#+title: ${title}\n")))
+  
+  (org-roam-bibtex-mode)
 #+end_src
 ** Epub
 #+begin_src emacs-lisp
@@ -1455,7 +1464,6 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   
   
 #+end_src
-
 ** PDF Tool
 #+begin_src emacs-lisp
   (defun my/save-buffer-no-args ()
@@ -1534,4 +1542,32 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
       :config
       (pdfgrep-mode))
   
+#+end_src
+* Other
+** Grind mode
+#+begin_src emacs-lisp
+  (defun grind()
+    (interactive)
+    (setq pick-color 1)
+    (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
+                           " | sudo -S ~/bin/grind"))
+    (load-theme 'doom-acario-dark  t)
+    (my/style-org))
+  
+  (global-set-key (kbd "C-c g") #'grind)
+  
+  (defun ungrind()
+    (interactive)
+    (setq pick-color 0)
+    (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
+                           " | sudo -S ~/bin/ungrind"))
+    (load-theme 'doom-horizon t)
+    (my/style-org))
+  (global-set-key (kbd "C-c u") #'ungrind)
+#+end_src
+** Statistics
+#+begin_src emacs-lisp
+  (use-package keyfreq)
+  (keyfreq-mode 1)
+  (keyfreq-autosave-mode 1)
 #+end_src

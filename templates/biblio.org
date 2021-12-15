@@ -1,0 +1,12 @@
+:PROPERTIES:
+:AUTHOR: %^{author-or-editor}
+#+filetags: %^{tags}
+#+title: %^{title}
+:END:
+* Summary
+
+* Notes
+:PROPERTIES:
+:NOTER_DOCUMENT: %^{file}
+:END:
+** %?
