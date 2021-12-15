@@ -1440,7 +1440,7 @@ bibtex to cite
   
   (add-to-list 'org-roam-capture-templates
                '("p" "paper" plain
-                 (file "~/.emacs.d/templates/biblio.org")
+                 (file "~/.emacs.d/config/capture_templates/biblio.org")
                  :target
                  (file+head "papers/${citekey}.org" "#+title: ${title}\n")))
   
