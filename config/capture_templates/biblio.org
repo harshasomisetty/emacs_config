@@ -1,8 +1,7 @@
-:PROPERTIES:
-:AUTHOR: %^{author-or-editor}
 #+filetags: %^{tags}
+#+author: %^{author-or-editor}
 #+title: %^{title}
-:END:
+
 * Summary
 
 * Notes

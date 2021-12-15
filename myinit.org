@@ -1398,34 +1398,53 @@ bibtex to cite
   (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
 #+end_src
 ** Bibtex
+
 #+begin_src emacs-lisp
-   (use-package helm-bibtex
-     :config
-     ;; In the lines below I point helm-bibtex to my default library file.
-     (setq bibtex-completion-bibliography '("~/org/refs.bib")
-           bibtex-completion-library-path '("~/org/papers")
-           bibtex-completion-notes-path "~/org/roam/papers"
-           bibtex-completion-pdf-field "File"
-           )
-     (setq bibtex-completion-pdf-open-function
-           (lambda (fpath)
-             (call-process "open" nil 0 nil fpath)))
-     (add-hook 'bibtex-mode-hook 'flyspell-mode)
-     :hook (Tex . (lambda () (define-key Tex-mode-map "\C-ch" 'helm-bibtex))))
+  (use-package helm-bibtex
+    :config
+    ;; In the lines below I point helm-bibtex to my default library file.
+    (setq bibtex-completion-bibliography '("~/org/refs.bib")
+          bibtex-completion-library-path '("~/org/papers")
+          bibtex-completion-notes-path "~/org/roam/papers"
+          bibtex-completion-pdf-field "File"
+          )
+    (setq bibtex-completion-pdf-open-function
+          (lambda (fpath)
+            (call-process "open" nil 0 nil fpath)))
+    ;; (add-hook 'bibtex-mode-hook 'flyspell-mode)
+    :hook (Tex . (lambda () (define-key Tex-mode-map "\C-ch" 'helm-bibtex))))
   
-   ;; Set up org-ref stuff
-   (use-package org-ref
-     ;; :disabled
-     :requires helm-bibtex
-     :config
-     ;; Again, we can set the default library
-     (setq org-ref-insert-cite-function 'org-ref-cite-insert-helm
-           org-ref-insert-label-function 'org-ref-insert-label-link
-           org-ref-insert-ref-function 'org-ref-insert-ref-link
-             )
-     :bind (("C-c r c" . org-ref-cite-insert-helm)
-            ("C-c r r" . org-ref-insert-ref-link)
-            ("C-c r l" . org-ref-insert-label-link)))
+  (defun insert-line()
+    (dotimes (_ 2)
+      (forward-sexp))
+    (forward-char)
+    (open-line 1))
+  (defun bibtex-add-new-lines()
+    (interactive)
+    (move-beginning-of-line nil)
+    (while (re-search-forward " = " nil t)
+      (replace-match "="))
+    (move-beginning-of-line nil)
+    (re-search-forward ",")
+    (condition-case nil
+        (while (< 3 4)
+          (insert-line))
+      (scan-error nil))
+    ))
+  (add-hook 'bibtex-clean-entry-hook 'bibtex-add-new-lines)
+  ;; Set up org-ref stuff
+  (use-package org-ref
+    ;; :disabled
+    :requires helm-bibtex
+    :config
+    ;; Again, we can set the default library
+    (setq org-ref-insert-cite-function 'org-ref-cite-insert-helm
+          org-ref-insert-label-function 'org-ref-insert-label-link
+          org-ref-insert-ref-function 'org-ref-insert-ref-link
+          )
+    :bind (("C-c r c" . org-ref-cite-insert-helm)
+           ("C-c r r" . org-ref-insert-ref-link)
+           ("C-c r l" . org-ref-insert-label-link)))
   
   (use-package org-roam-bibtex
   
@@ -1434,15 +1453,15 @@ bibtex to cite
     (require 'org-ref)
     )
   (setq orb-preformat-keywords
-      '("citekey" "title" "url" "author-or-editor" "keywords" "file")
-      orb-process-file-keyword t
-      orb-attached-file-extensions '("pdf"))
+        '("citekey" "title" "url" "author-or-editor" "keywords" "file")
+        orb-process-file-keyword t
+        orb-attached-file-extensions '("pdf"))
   
   (add-to-list 'org-roam-capture-templates
                '("p" "paper" plain
                  (file "~/.emacs.d/config/capture_templates/biblio.org")
                  :target
-                 (file+head "papers/${citekey}.org" "#+title: ${title}\n")))
+                 (file "papers/${citekey}.org")))
   
   (org-roam-bibtex-mode)
 #+end_src
