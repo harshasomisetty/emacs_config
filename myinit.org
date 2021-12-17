@@ -161,25 +161,31 @@
 
 *** Startup
 #+BEGIN_SRC emacs-lisp
-
+  
   (setq inhibit-startup-screen t)
-
-  (load-theme 'doom-horizon t)
+  
+  (setq grind-file "~/.emacs.d/config/grind.el")
+  
+  (load-file grind-file)
+  (if (eq grind-on t)
+      (load-theme 'doom-acario-dark t)
+      (load-theme 'doom-horizon t))
+  
   (defun scratch-setup ()
     (load "~/.emacs.d/config/quotes.el")
     (setq initial-scratch-message
-	  (concat (nth (random (length quotes)) quotes)
-		  "\n\n\n")))
+          (concat (nth (random (length quotes)) quotes)
+                  "\n\n\n")))
   (scratch-setup)    
   (defun files-startup-screen (file2 &rest files)
     "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
-
+  
     (dotimes (n (length files))
       (setq index (- (- (length files) n) 1))
       (switch-to-buffer (find-file (nth index files)))
       (split-window-right))
     (switch-to-buffer (find-file file2 )))
-
+  
   (defun agenda-startup-screen ()
     "Display the weekly org-agenda and all todos."
     (org-agenda nil "a")
@@ -187,42 +193,42 @@
     (split-window-right)
     (switch-to-buffer-other-window "*scratch*")
     )
-
+  
   (setq screens_file "~/.emacs.d/config/screens_file.el")
   (load-file screens_file)
-
-
+  
+  
   (defun emacs-startup-screen ()
     "startup screen config"
     (when (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
       (apply 'files-startup-screen screens_list))
-
+  
     (right-two-thirds)
     (balance-windows))
-
+  
   (add-hook 'emacs-startup-hook #'emacs-startup-screen)
-
+  
   (defun set-screens-list ()
     "Inserts path as string "
     (interactive)
     (push (read-file-name "Pick F to Open: " ) screens_list))
-
+  
   (defun reset-screens-list ()
     (interactive)
     (setq screens_list '()))
-
+  
   (defun save-screen-var ()
     (interactive)
     (with-temp-buffer
       (setq s2 (let (value) (dolist (elt screens_list value)
-			      (setq value (cons (prin1-to-string elt) value)))))
-
+                              (setq value (cons (prin1-to-string elt) value)))))
+  
       (insert (concat "(setq screens_list '(" (join " " s2) "))"))
       (write-region (point-min) (point-max) screens_file)))
-
+  
   (when (not (memq 'save-screen-var kill-emacs-hook))
     (add-hook 'kill-emacs-hook 'save-screen-var))
-
+  
 #+END_SRC
 
 ** Navigation
@@ -1570,6 +1576,9 @@ bibtex to cite
     (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
                            " | sudo -S ~/bin/grind"))
     (load-theme 'doom-acario-dark  t)
+    (with-temp-buffer
+      (insert (concat "(setq grind-on t)"))
+      (write-region (point-min) (point-max) grind-file ))
     (my/style-org))
   
   (global-set-key (kbd "C-c g") #'grind)
@@ -1577,9 +1586,13 @@ bibtex to cite
   (defun ungrind()
     (interactive)
     (setq pick-color 0)
+  
     (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
                            " | sudo -S ~/bin/ungrind"))
     (load-theme 'doom-horizon t)
+    (with-temp-buffer
+      (insert (concat "(setq grind-on nil)"))
+      (write-region (point-min) (point-max) grind-file ))
     (my/style-org))
   (global-set-key (kbd "C-c u") #'ungrind)
 #+end_src
