@@ -54,8 +54,6 @@
   (set-exec-path-from-shell-PATH)  
   
   (set-register ?i (cons 'file user-init-file))
-  (set-register ?l (cons 'file (concat default-directory "learning.org")))
-  
 #+END_SRC
 
 ** Display
@@ -1391,13 +1389,14 @@ bibtex to cite
     :config
     (setq org-noter-default-notes-file-name '("notes.org")
           org-noter-notes-search-path '("~/org")
-          org-noter-notes-window-location "Horizontal"
+          org-noter-notes-window-location "Vertical"
           org-noter-separate-notes-from-heading t))
   
   (defun my/no-op (&rest args))
   (advice-add 'org-noter--set-notes-scroll :override 'my/no-op)
 #+end_src
 ** Bibtex
+
 
 #+begin_src emacs-lisp
   (use-package helm-bibtex
@@ -1430,7 +1429,7 @@ bibtex to cite
         (while (< 3 4)
           (insert-line))
       (scan-error nil))
-    ))
+    )
   (add-hook 'bibtex-clean-entry-hook 'bibtex-add-new-lines)
   ;; Set up org-ref stuff
   (use-package org-ref
@@ -1586,7 +1585,12 @@ bibtex to cite
 #+end_src
 ** Statistics
 #+begin_src emacs-lisp
-  (use-package keyfreq)
-  (keyfreq-mode 1)
-  (keyfreq-autosave-mode 1)
+  (use-package keyfreq
+    :config
+    (keyfreq-mode 1)
+    (keyfreq-autosave-mode 1))
+  
+  
+  (use-package esup)
 #+end_src
+

@@ -9,7 +9,6 @@
 #+LATEX_HEADER: \usepackage{tikz}
 
 #+LATEX_HEADER: \usepackage{amsmath, amsthm, amssymb}
-#+LATEX_HEADER: \usepackage[table, xcdraw]{xcolor}
 
 #+LATEX_HEADER: \usepackage{listings} % Code highlighting
 #+LaTeX_HEADER: \usepackage{indentfirst}
@@ -21,7 +20,7 @@
 % bibliography
 #+LATEX_HEADER: \usepackage{apacite}
 #+LATEX_HEADER: \usepackage[backend=biber, style=alphabetic, sorting=nyt]{biblatex}
-#+LATEX_HEADER: \addbibresource{~/org/literature/refs.bib}
+#+LATEX_HEADER: \addbibresource{~/org/refs.bib}
 
 
 % Colorizing links in a nicer way.
