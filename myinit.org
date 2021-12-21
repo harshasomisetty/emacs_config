@@ -108,12 +108,12 @@
   (defun left-two-thirds ()
     (interactive)
     (set-frame-position (selected-frame) 0 0)
-    (set-frame-size (selected-frame) (* 2 (/ max-frame-width 3)) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 2 (/ max-frame-width 3)) 20) max-frame-height t))
   
   (defun left-one-thirds ()
     (interactive)
     (set-frame-position (selected-frame) 0 0)
-    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 34) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 3)) 20) max-frame-height t))
   
   (defun right-two-thirds ()
     (interactive)
@@ -134,7 +134,7 @@
   (defun left-half ()
     (interactive)
     (set-frame-position (selected-frame) 0 0)
-    (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+    (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 2)) 20) max-frame-height t))
   
   (defun right-half ()
     (interactive)
@@ -164,12 +164,7 @@
   
   (setq inhibit-startup-screen t)
   
-  (setq grind-file "~/.emacs.d/config/grind.el")
-  
-  (load-file grind-file)
-  (if (eq grind-on t)
-      (load-theme 'doom-acario-dark t)
-      (load-theme 'doom-horizon t))
+
   
   (defun scratch-setup ()
     (load "~/.emacs.d/config/quotes.el")
@@ -953,6 +948,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   (setq color-schemes (list
                        (col-strip "a21d1d-5497de-8e35b7-ffff5b-56cb7d-df5252-707efa") ; red blue purple study
                        (col-strip "2278bf-e15554-3bb273-507c6d-6e5775-598d91-7768ae") ; blue red green okay
+                       (col-strip "619ff0-3d8ced-2078ec-1569d8-1661c9-1452b6-1246a6-0d2e88") ; blue spectrum
                        ))
   (setq pick-color 0)
   
@@ -1570,31 +1566,51 @@ bibtex to cite
 * Other
 ** Grind mode
 #+begin_src emacs-lisp
+  
+  (defun grind_theme()
+    (interactive)
+    (setq pick-color 2)
+    (load-theme 'doom-acario-dark  t)
+    )
   (defun grind()
     (interactive)
-    (setq pick-color 1)
+  
     (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
                            " | sudo -S ~/bin/grind"))
-    (load-theme 'doom-acario-dark  t)
     (with-temp-buffer
       (insert (concat "(setq grind-on t)"))
       (write-region (point-min) (point-max) grind-file ))
+    (grind_theme)
     (my/style-org))
   
   (global-set-key (kbd "C-c g") #'grind)
   
+  (defun ungrind_theme()
+      (setq pick-color 0)
+      (load-theme 'doom-horizon t)
+    )
+  
   (defun ungrind()
     (interactive)
-    (setq pick-color 0)
+  
   
     (shell-command (concat "echo " (shell-quote-argument (read-passwd "Password? "))
                            " | sudo -S ~/bin/ungrind"))
-    (load-theme 'doom-horizon t)
+  
     (with-temp-buffer
       (insert (concat "(setq grind-on nil)"))
       (write-region (point-min) (point-max) grind-file ))
+  
+    (ungrind_theme)
     (my/style-org))
   (global-set-key (kbd "C-c u") #'ungrind)
+  
+  (setq grind-file "~/.emacs.d/config/grind.el")
+  
+  (load-file grind-file)
+  (if (eq grind-on t)
+      (grind_theme)
+    (ungrind-theme))
 #+end_src
 ** Statistics
 #+begin_src emacs-lisp

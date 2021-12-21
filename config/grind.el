@@ -1,1 +1,1 @@
-(setq grind-on nil)
+(setq grind-on t)
