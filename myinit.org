@@ -225,6 +225,17 @@
     (add-hook 'kill-emacs-hook 'save-screen-var))
   
 #+END_SRC
+*** outline
+#+begin_src emacs-lisp
+  (use-package outshine)
+  
+  (use-package bicycle
+  :after outline
+  :bind (:map outline-minor-mode-map
+              ([C-tab] . bicycle-cycle)
+              ([S-tab] . bicycle-cycle-global)))
+
+#+end_src
 
 ** Navigation
 
@@ -1055,7 +1066,7 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
                 org-appear-autokeywords t))
   
         (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-        (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+        (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex" "tex~" "aux" "idx" "log" "out" "toc" "nav" "bcf" "run" "run.xml" "xml" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
   
         (use-package tex
           :straight auctex
@@ -1242,31 +1253,25 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
 *** Journal
 #+BEGIN_SRC emacs-lisp
   (use-package org-journal
-    :bind (("C-c j" . org-journal-new-entry)  
-           )
-    :custom
-    (org-journal-dir "~/org/journal/")
-    (org-journal-file-format "%Y%m%d")
-    (org-journal-date-format "%e %b %Y (%A)")
-    (setq org-journal-date-prefix "")
-    (setq org-journal-find-file 'find-file)
-    )
+    :config
+    (setq org-journal-dir "~/org/journal/"
+          org-journal-file-format "%Y%m%d"
+          org-journal-date-format "%A, %e %b %Y"
+          org-journal-date-prefix ""
+          org-journal-find-file 'find-file))
   
-  (defun org-journal-find-location ()
-    ;; Open today's journal, but specify a non-nil prefix argument in order to
-    ;; inhibit inserting the heading; org-capture will insert the heading.
-    (org-journal-new-entry t)
-    (unless (eq org-journal-file-type 'daily)
-      (org-narrow-to-subtree))
-    (goto-char (point-max)))
+  (defun org-journal-file-header-func (time)
+    "Custom function to create journal header."
+    (concat
+     (pcase org-journal-file-type
+       (`daily "#+TITLE: "))))
+  
+  (setq org-journal-file-header 'org-journal-file-header-func)
   
   (defun org-journal-save-entry-and-exit()
-    "Simple convenience function.
-        Saves the buffer of the current day's entry and kills the window
-        Similar to org-capture like behavior"
     (interactive)
     (save-buffer)
-    (kill-buffer-and-window))
+    (kill-buffer))
   
   (add-hook 'org-journal-mode-hook
             (lambda ()
@@ -1275,23 +1280,39 @@ g insp from [[https://hugocisneros.com/org-config/][here]]
   
   (defun insert-created-date (&rest ignore)
     (insert (concat
-             "\n* Gratitude\n"
+             "\n* Gratitude"
+             "\n* Goals"             
+             "\n* Moments"
              )))
   
   (add-hook 'org-journal-after-header-create-hook
             #'insert-created-date)
   
+  (global-set-key ;; run this at the beginning of day to generate journal
+   (kbd "C-c J")
+   (lambda ()
+     (interactive)
+     (let ((current-prefix-arg 4)) ;; emulate C-u
+       (call-interactively 'org-journal-new-entry)
+       (org-journal-save-entry-and-exit)
+       (setq entry-path (org-journal--get-entry-path time))
+       )))
   
-  (add-hook 'org-journal-after-entry-create-hook
-            'beginning-of-line
-            'kill-line
-            'end-of-buffer)
+  (setq entry-path (org-journal--get-entry-path))
   
   (add-to-list 'org-capture-templates
-               '("j" "Journal entry" plain (function org-journal-find-location)
-                 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
-                 :jump-to-captured t :immediate-finish t))
+               '("g" "Gratitude entry" entry (file+headline entry-path "Gratitude")
+                 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
+  
+  (add-to-list 'org-capture-templates
+               '("G" "Goal entry" entry (file+headline entry-path "Goals")
+                 "** %^{Title}\n%i%?"))
+  
+  (add-to-list 'org-capture-templates
+               '("j" "Journal entry" entry (file+headline entry-path "Moments")
+                 "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
 #+END_SRC
+*** Calendar
 * Literature
 current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
 tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the source
@@ -1383,6 +1404,16 @@ bibtex to cite
           org-roam-ui-open-on-start t))
   
   
+#+end_src
+*** dailies
+#+begin_src emacs-lisp
+  (setq org-roam-dailies-directory "~/org/roam/daily/")
+  
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d>\n"))))
 #+end_src
 ** Noter
 #+begin_src emacs-lisp
@@ -1567,7 +1598,7 @@ bibtex to cite
 ** Grind mode
 #+begin_src emacs-lisp
   
-  (defun grind_theme()
+  (defun grind-theme()
     (interactive)
     (setq pick-color 2)
     (load-theme 'doom-acario-dark  t)
@@ -1585,7 +1616,7 @@ bibtex to cite
   
   (global-set-key (kbd "C-c g") #'grind)
   
-  (defun ungrind_theme()
+  (defun ungrind-theme()
       (setq pick-color 0)
       (load-theme 'doom-horizon t)
     )
@@ -1609,7 +1640,7 @@ bibtex to cite
   
   (load-file grind-file)
   (if (eq grind-on t)
-      (grind_theme)
+      (grind-theme)
     (ungrind-theme))
 #+end_src
 ** Statistics
