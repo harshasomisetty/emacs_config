@@ -19,8 +19,10 @@
 (setq straight-recipe-repositories '(org-elpa melpa gnu-elpa-mirror el-get emacsmirror-mirror ))
 
 ;;;; metadata
+
 (global-auto-revert-mode 1)
-(outline-minor-mode 1)
+
+
 (require 'package)
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
@@ -68,6 +70,73 @@
 (set-exec-path-from-shell-PATH)  
 
 (set-register ?i (cons 'file user-init-file))
+
+
+;;;;; outline mode
+
+(add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
+(add-hook 'outline-minor-mode-hook 'outshine-mode)
+
+(add-hook 'outline-minor-mode-hook (lambda () (outline-hide-sublevels 9)))
+
+; code from [[http://www.modernemacs.com/post/outline-ivy/][here]]
+
+
+(use-package outshine
+  :init
+  (defvar outline-minor-mode-prefix "\C-c"))
+
+(use-package dash-functional)
+
+; this package doesn't work, gotta figure this out eventually
+(use-package pretty-outlines
+  :straight
+  (:host github :repo "harshasomisetty/pretty-outlines" :branch "main" :files ("*.el"))
+  :hook ((outline-mode       . pretty-outlines-set-display-table)
+         (outline-minor-mode . pretty-outlines-set-display-table)
+         (emacs-lisp-mode . pretty-outlines-add-bullets)
+         (python-mode     . pretty-outlines-add-bullets))
+  :config
+  (setq pretty-outlines-ellipsis " ▼ " ))
+
+(defun -add-font-lock-kwds (FONT-LOCK-ALIST)
+  (font-lock-add-keywords
+   nil (--map (-let (((rgx uni-point) it))
+                `(,rgx (0 (progn
+                            (compose-region (match-beginning 1) (match-end 1)
+                                            ,(concat "\t" (list uni-point)))
+                            nil))))
+              FONT-LOCK-ALIST)))
+
+(defmacro add-font-locks (FONT-LOCK-HOOKS-ALIST)
+  `(--each ,FONT-LOCK-HOOKS-ALIST
+     (-let (((font-locks . mode-hooks) it))
+       (--each mode-hooks
+         (add-hook it (-partial '-add-font-lock-kwds
+                                (symbol-value font-locks)))))))
+
+
+(defconst emacs-outlines-font-lock-alist
+  ;; Outlines
+  '(("\\(^;;;\\) "          ?■)
+    ("\\(^;;;;\\) "         ?○)
+    ("\\(^;;;;;\\) "        ?✸)
+    ("\\(^;;;;;;\\) "        ?✦)
+    ("\\(^;;;;;;;\\) "        ?✧)
+    ("\\(^;;;;;;;;\\) "       ?✿)))
+
+(defconst lisp-outlines-font-lock-alist
+  ;; Outlines
+  '(("\\(^;; \\*\\) "          ?■)
+    ("\\(^;; \\*\\*\\) "       ?○)
+    ("\\(^;; \\*\\*\\*\\) "    ?✸)
+    ("\\(^;; \\*\\*\\*\\*\\) " ?✿)))
+
+
+
+(add-font-locks
+ '((emacs-outlines-font-lock-alist emacs-lisp-mode-hook)
+   (lisp-outlines-font-lock-alist clojure-mode-hook hy-mode-hook)))
 
 
 ;;;; Display
@@ -232,17 +301,6 @@
 
 (when (not (memq 'save-screen-var kill-emacs-hook))
   (add-hook 'kill-emacs-hook 'save-screen-var))
-;;;;; Outline
-(use-package outshine)
-
-(use-package bicycle
-  :after outline
-  :bind (:map outline-minor-mode-map
-              ([C-tab] . bicycle-cycle)
-              ([S-tab] . bicycle-cycle-global)))
-
-
-
 ;;;; Navigation
 (global-unset-key (kbd "M-g M-g"))
 
@@ -481,6 +539,7 @@ abort completely with `C-g'."
                                         ;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 ;;;; Coding
 ;;;;; Babel
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(
@@ -499,15 +558,6 @@ abort completely with `C-g'."
 (add-hook 'org-mode-hook 'org-display-inline-images)   
 
 
-;;;;; LSP mode
-(use-package lsp-mode
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands (lsp lsp-deffered))
-
-(use-package helm-lsp :commands helm-lsp-workspace-symbol)
 
 ;;;;; Languages
 ;;;;;; C
@@ -899,6 +949,7 @@ abort completely with `C-g'."
 
 (add-hook 'org-mode-hook 'org-indent-mode)
 
+
 (setq org-startup-indented t
       org-ellipsis " ▼ " ;; folding symbol
       org-pretty-entities t
@@ -1014,6 +1065,22 @@ abort completely with `C-g'."
                       :height 1.3)
   (set-face-attribute 'org-ellipsis nil
                       :foreground "#3256A8" :underline nil)
+  (set-face-attribute 'outline-1 nil
+                      :height 1.3
+                      :foreground (nth 0 color-theme))
+  (set-face-attribute 'outline-2 nil
+                      :height 1.2
+                      :foreground (nth 1 color-theme))
+  (set-face-attribute 'outline-3 nil
+                      :height 1.1
+                      :foreground (nth 2 color-theme))
+  (set-face-attribute 'outline-4 nil
+                      :height 1.05
+                      :foreground (nth 3 color-theme))
+  (set-face-attribute 'outline-5 nil
+                      :foreground (nth 4 color-theme))
+  (set-face-attribute 'outline-6 nil
+                      :foreground (nth 5 color-theme))
   )
 
 (add-hook 'org-mode-hook 'my/style-org)
