@@ -1286,9 +1286,16 @@ bibtex to cite
                                    :if-new (file+head "facts/%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
                                    :unnarrowed t)
                                   ))
+    (org-roam-dailies-capture-templates
+      '(("d" "default" entry
+         "* %?"
+         :target (file+head "%<%Y-%m-%d>.org"
+                            "#+title: %<%Y-%m-%d>\n"))))
     :config
+    (require 'org-roam-dailies)
     (org-roam-setup)
     (org-roam-db-autosync-mode)
+    (setq org-roam-dailies-directory "~/org/roam/daily/")
     (setq org-roam-mode-section-functions
       (list #'org-roam-backlinks-section
             #'org-roam-reflinks-section
@@ -1304,7 +1311,13 @@ bibtex to cite
                   ("C-c n a" . org-roam-alias-add)
                   ("C-M-i" . completion-at-point)
                   ("C-c n l" . org-roam-buffer-toggle)
-                  ("C-c n I" . org-roam-node-insert-immediate)))))
+                  ("C-c n I" . org-roam-node-insert-immediate))
+            :map org-roam-dailies-map(
+            ("Y" . org-roam-dailies-capture-yesterday)
+            ("T" . org-roam-dailies-capture-tomorrow))))
+  
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map))
   
   (require 'org-roam)
   (cl-defmethod org-roam-node-directories ((node org-roam-node))
@@ -1337,7 +1350,7 @@ bibtex to cite
   (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
   (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
 #+END_SRC
-*** roam ui
+*** Org roam ui
 #+begin_src emacs-lisp
   (use-package org-roam-ui
     :straight
@@ -1349,17 +1362,6 @@ bibtex to cite
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
   
-  
-#+end_src
-*** dailies
-#+begin_src emacs-lisp
-  (setq org-roam-dailies-directory "~/org/roam/daily/")
-  
-  (setq org-roam-dailies-capture-templates
-        '(("d" "default" entry
-           "* %?"
-           :target (file+head "%<%Y-%m-%d>.org"
-                              "#+title: %<%Y-%m-%d>\n"))))
 #+end_src
 ** Noter
 #+begin_src emacs-lisp
