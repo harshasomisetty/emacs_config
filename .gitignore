@@ -32,3 +32,6 @@ eshell
 /speed-type/
 /abbrev_defs
 flycheck_init.el
+/config/gcal.el
+/.org-generic-id-locations
+/org-gcal/

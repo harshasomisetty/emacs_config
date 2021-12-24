@@ -75,9 +75,19 @@
 ;;;;; outline mode
 
 (add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)
-(add-hook 'outline-minor-mode-hook 'outshine-mode)
+(add-hook 'emacs-lisp-mode-hook 'outshine-mode)
 
-(add-hook 'outline-minor-mode-hook (lambda () (outline-hide-sublevels 9)))
+;; (defun init-startup-hook ()
+;;   (when (string= (file-name-nondirectory (buffer-file-name)) "init.el")
+;;     (lambda() (outline-hide-sublevels 6))
+;;     )
+;; )
+
+(add-hook 'outline-minor-mode-hook '(lambda() (outline-hide-sublevels 6)))
+;; (add-to-list 'auto-mode-alist '("\\init.el\\'" . outline-minor-mode))
+;; (add-to-list 'auto-mode-alist '("\\init.el\\'" . outshine-mode))
+
+
 
 ; code from [[http://www.modernemacs.com/post/outline-ivy/][here]]
 
@@ -1174,6 +1184,7 @@ abort completely with `C-g'."
         org-agenda-files '(
                            "~/org/inbox.org"
                            "~/org/gtd.org"
+                           "~/org/call.org"
                            "~/org/habits.org"
                            )
         org-agenda-prefix-format '(
@@ -1340,6 +1351,22 @@ abort completely with `C-g'."
                "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
 
 ;;;;; Calendar
+(load-file "~/.emacs.d/config/gcal.el")
+(use-package org-gcal
+  :config
+  (setq org-gcal-client-id gcal-id
+        org-gcal-client-secret gcal-secret
+        org-gcal-file-alist '(("harshasomisetty7@gmail.com" . "~/org/call.org"))))
+
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync)))
+(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync)))
+
+(add-to-list 'org-capture-templates
+             '("a" "a task" entry (file "~/org/call.org"))
+             "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+
+
+
 ;;; Literature
                                         ;current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
                                         ;tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the sorce
