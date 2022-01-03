@@ -1359,26 +1359,13 @@ abort completely with `C-g'."
              '("j" "Journal entry" entry (file+headline entry-path "Moments")
                "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
 
-;;;;; Calendar
-(load-file "~/.emacs.d/config/gcal.el")
-(use-package org-gcal
-  :config
-  (setq org-gcal-client-id gcal-id
-        org-gcal-client-secret gcal-secret
-        org-gcal-file-alist '(("harshasomisetty7@gmail.com" . "~/org/call.org"))))
-
-(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync)))
-(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync)))
-
-(add-to-list 'org-capture-templates
-             '("a" "a task" entry (file "~/org/call.org"))
-             "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-
-
-
-
-
 ;;;; Publishing
+(use-package ox-hugo
+  :ensure t            ;Auto-install the package from Melpa (optional)
+  :after ox
+  :config
+  (setq org-hugo-base-dir "~/code/roam-notes/"
+        org-hugo-section "posts"))
 ;;; Literature
                                         ;current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
                                         ;tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the sorce
