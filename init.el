@@ -756,7 +756,11 @@ abort completely with `C-g'."
                                         ; autoformatting
 (use-package prettier-js
   :init
-  (add-hook 'js2-mode-hook 'prettier-js-mode))
+  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  :config
+  (setq prettier-js-args '(
+  "--bracket-spacing" "false"
+)))
 
 
 ;;;;;;; TypeScript
@@ -1178,6 +1182,7 @@ abort completely with `C-g'."
         org-agenda-skip-deadline-if-done t
         org-agenda-skip-scheduled-if-done t
         org-log-into-drawer t
+        org-agenda-window-setup 'current-window
         org-agenda-span 4
         org-agenda-start-day "+0d"
         org-archive-location "~/.emacs.d/archive.org::"
@@ -1296,7 +1301,8 @@ abort completely with `C-g'."
         org-journal-file-format "%Y%m%d"
         org-journal-date-format "%A, %e %b %Y"
         org-journal-date-prefix ""
-        org-journal-find-file 'find-file))
+        org-journal-find-file 'find-file)
+  )
 
 (defun org-journal-file-header-func (time)
   "Custom function to create journal header."
@@ -1321,6 +1327,8 @@ abort completely with `C-g'."
            "\n* Gratitude"
            "\n* Goals"             
            "\n* Moments"
+           "\n* Accomplishments"
+           "\n* "
            )))
 
 (add-hook 'org-journal-after-header-create-hook
@@ -1333,14 +1341,15 @@ abort completely with `C-g'."
    (let ((current-prefix-arg 4)) ;; emulate C-u
      (call-interactively 'org-journal-new-entry)
      (org-journal-save-entry-and-exit)
-     (setq entry-path (org-journal--get-entry-path time))
+     (setq entry-path (org-journal--get-entry-path))
      )))
 
 (setq entry-path (org-journal--get-entry-path))
+(set-register ?j (cons 'file entry-path))
 
 (add-to-list 'org-capture-templates
              '("g" "Gratitude entry" entry (file+headline entry-path "Gratitude")
-               "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
+               "** %^{Title}\n%i%?"))
 
 (add-to-list 'org-capture-templates
              '("G" "Goal entry" entry (file+headline entry-path "Goals")
@@ -1367,6 +1376,9 @@ abort completely with `C-g'."
 
 
 
+
+
+;;;; Publishing
 ;;; Literature
                                         ;current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
                                         ;tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the sorce
@@ -1542,6 +1554,8 @@ abort completely with `C-g'."
                (file "~/.emacs.d/config/capture_templates/biblio.org")
                :target
                (file "papers/${citekey}.org")))
+
+
 
 (org-roam-bibtex-mode)
 
