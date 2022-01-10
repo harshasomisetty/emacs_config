@@ -89,7 +89,7 @@
 
 
 
-; code from [[http://www.modernemacs.com/post/outline-ivy/][here]]
+                                        ; code from [[http://www.modernemacs.com/post/outline-ivy/][here]]
 
 
 (use-package outshine
@@ -98,7 +98,7 @@
 
 (use-package dash-functional)
 
-; this package doesn't work, gotta figure this out eventually
+                                        ; this package doesn't work, gotta figure this out eventually
 (use-package pretty-outlines
   :straight
   (:host github :repo "harshasomisetty/pretty-outlines" :branch "main" :files ("*.el"))
@@ -252,14 +252,14 @@
 
 (setq inhibit-startup-screen t)
 
+(load "~/.emacs.d/config/quotes.el")
 
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-footer-messages quotes))
 
-(defun scratch-setup ()
-  (load "~/.emacs.d/config/quotes.el")
-  (setq initial-scratch-message
-        (concat (nth (random (length quotes)) quotes)
-                "\n\n\n")))
-(scratch-setup)    
 (defun files-startup-screen (file2 &rest files)
   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
 
@@ -547,8 +547,10 @@ abort completely with `C-g'."
 (setq ispell-local-dictionary "en_US")
 
                                         ;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
-;;;; Coding
+;;;; Development
+
 ;;;;; Babel
+
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -563,57 +565,131 @@ abort completely with `C-g'."
 (setq org-confirm-babel-evaluate nil)
 
 
-
 (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
 (add-hook 'org-mode-hook 'org-display-inline-images)   
 
 
 
 ;;;;; Languages
-;;;;;; C
-(setq-default c-basic-offset 4)
-(define-key c-mode-map (kbd "C-c m") #'compile)  
-(defun execute-c-program ()
-  (interactive)
-  (save-buffer)
-  (defvar foo)
-  (setq foo (concat "./" (substring  (buffer-name) 0 (- (length (buffer-name)) 2)) ))
-  (shell)
-  (kill-new foo)
-  (org-yank)
+;;;;;; Python
+(use-package elpy
+  :init
+  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+  :bind (:map elpy-mode-map
+              ("<M-left>" . nil)
+              ("<M-right>" . nil)
+              ("<M-S-left>" . elpy-nav-indent-shift-left)
+              ("<M-S-right>" . elpy-nav-indent-shift-right)
+              ("M-." . elpy-goto-definition)
+              ("M-," . pop-tag-mark))
+  :config
+  (setq elpy-rpc-virtualenv-path 'current)
+  (add-hook 'elpy-mode-hook (lambda ()
+                              (add-hook 'before-save-hook
+                                        'elpy-format-code nil t))))
+
+
+(use-package python
+  :mode ("\\.py" . python-mode)
+  :config
+  (setq python-indent-offset 4
+        python-indent-guess-indent-offset nil
+        python-shell-completion-native-enable nil)
+  (elpy-enable))
+
+(use-package pyenv-mode
+  :init
+  (add-to-list 'exec-path "~/.pyenv/shims")
+  (setenv "WORKON_HOME" "~/.pyenv/versions/")
+  :bind
+  ("C-x p e" . pyenv-activate-current-project)
+  :config
+  (pyenv-mode)
+  (defvar pyenv-current-version nil nil)
   )
 
-(define-key c-mode-map (kbd "C-c r") 'execute-c-program)
-(define-key c-mode-map (kbd "C-c g") #'gdb)
-(define-key c-mode-map (kbd "C-c C-/") 'uncomment-region)
-(use-package clang-format)
 
-;;;;;;; GDB
-(setq gdb-many-windows t
-      gdb-use-separate-io-buffer t)
-
-(advice-add 'gdb-setup-windows :after
-            (lambda () (set-window-dedicated-p (selected-window) t)))
-
-
-(defconst gud-window-register 123456)
-
-(defun gud-quit ()
+(defun pyenv-activate-current-project ()
+  "Automatically activates pyenv version if .python-version file exists."
   (interactive)
-  (gud-basic-call "quit"))
+  (let ((python-version-directory (locate-dominating-file (buffer-file-name) ".python-version")))
+    (if python-version-directory
+        (let* ((pyenv-version-path (f-expand ".python-version" python-version-directory))
+               (pyenv-current-version (s-trim (f-read-text pyenv-version-path 'utf-8))))
+          (pyenv-mode-set pyenv-current-version)
+          (message (concat "Setting virtualenv to " pyenv-current-version))))))
 
-(add-hook 'gud-mode-hook
-          (lambda ()
-            (gud-tooltip-mode)
-            (window-configuration-to-register gud-window-register)
-            (local-set-key (kbd "C-q") 'gud-quit)))
 
-(advice-add 'gud-sentinel :after
-            (lambda (proc msg)
-              (when (memq (process-status proc) '(signal exit))
-                (jump-to-register gud-window-register)
-                (bury-buffer)))) 
 
+(defun pyenv-init()
+  "Initialize pyenv's current version to the global one."
+  (let ((global-pyenv (replace-regexp-in-string "\n" "" (shell-command-to-string "pyenv global"))))
+    (message (concat "Setting pyenv version to " global-pyenv))
+    (pyenv-mode-set global-pyenv)
+    (setq pyenv-current-version global-pyenv)))
+
+(add-hook 'after-init-hook 'pyenv-init)
+;;;;;; Rust
+; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
+(use-package project
+  :config
+  (setq project-switch-commands t))
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun rk/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t)))
+;;;;;; Javascript
+(use-package js2-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+  :config
+  (setq-default js2-basic-offset 2)
+  :hook
+  (js2-mode . js2-imenu-extras-mode))
+
+(use-package rjsx-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
+    (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode)))
+
+                                        ; autoformatting
+(use-package prettier-js
+  :init
+  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  :config
+  (setq prettier-js-args '(
+  "--bracket-spacing" "false"
+)))
+
+;;;;;; Typescript
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :config
+  (setq typescript-indent-level 2))
 ;;;;;; ESS and R
 (use-package ess-site
   :straight ess
@@ -680,143 +756,6 @@ abort completely with `C-g'."
         ("C-S-m" . pipe_R_operator))
   )
 
-;;;;;; Python
-(use-package elpy
-  :init
-  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-  :bind (:map elpy-mode-map
-              ("<M-left>" . nil)
-              ("<M-right>" . nil)
-              ("<M-S-left>" . elpy-nav-indent-shift-left)
-              ("<M-S-right>" . elpy-nav-indent-shift-right)
-              ("M-." . elpy-goto-definition)
-              ("M-," . pop-tag-mark))
-  :config
-  (setq elpy-rpc-virtualenv-path 'current)
-  (add-hook 'elpy-mode-hook (lambda ()
-                              (add-hook 'before-save-hook
-                                        'elpy-format-code nil t))))
-
-
-(use-package python
-  :mode ("\\.py" . python-mode)
-  :config
-  (setq python-indent-offset 4
-        python-indent-guess-indent-offset nil
-        python-shell-completion-native-enable nil)
-  (elpy-enable))
-
-(use-package pyenv-mode
-  :init
-  (add-to-list 'exec-path "~/.pyenv/shims")
-  (setenv "WORKON_HOME" "~/.pyenv/versions/")
-  :bind
-  ("C-x p e" . pyenv-activate-current-project)
-  :config
-  (pyenv-mode)
-  (defvar pyenv-current-version nil nil)
-  )
-
-
-(defun pyenv-activate-current-project ()
-  "Automatically activates pyenv version if .python-version file exists."
-  (interactive)
-  (let ((python-version-directory (locate-dominating-file (buffer-file-name) ".python-version")))
-    (if python-version-directory
-        (let* ((pyenv-version-path (f-expand ".python-version" python-version-directory))
-               (pyenv-current-version (s-trim (f-read-text pyenv-version-path 'utf-8))))
-          (pyenv-mode-set pyenv-current-version)
-          (message (concat "Setting virtualenv to " pyenv-current-version))))))
-
-
-
-(defun pyenv-init()
-  "Initialize pyenv's current version to the global one."
-  (let ((global-pyenv (replace-regexp-in-string "\n" "" (shell-command-to-string "pyenv global"))))
-    (message (concat "Setting pyenv version to " global-pyenv))
-    (pyenv-mode-set global-pyenv)
-    (setq pyenv-current-version global-pyenv)))
-
-(add-hook 'after-init-hook 'pyenv-init)
-
-
-;;;;;; Javascript
-(use-package js2-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  :config
-  (setq-default js2-basic-offset 2)
-  :hook
-  (js2-mode . js2-imenu-extras-mode))
-
-(use-package rjsx-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
-
-                                        ; autoformatting
-(use-package prettier-js
-  :init
-  (add-hook 'js2-mode-hook 'prettier-js-mode)
-  :config
-  (setq prettier-js-args '(
-  "--bracket-spacing" "false"
-)))
-
-
-;;;;;;; TypeScript
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deffered)
-  :config
-  (setq typescript-indent-level 2))
-
-;;;;;; Rust
-(use-package rust-mode
-  :config
-  (add-hook 'rust-mode-hook
-            (lambda () (setq indent-tabs-mode nil)))
-  (setq rust-format-on-save t)
-  (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
-
-(use-package cargo
-  :hook
-  (rust-mode . cargo-minor-mode))
-
-;;;;; Modes
-;;;;;; Docker
-(use-package dockerfile-mode
-  :config
-  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
-
-;;;;;; Env
-(use-package dotenv-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
-
-;;;;;; Yaml
-(use-package yaml-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
-
-;;;;;; Json
-(use-package json-mode)
-
-
-;;;;;; CSV
-(defun testfn ()
-  (interactive)
-  (csv-align-mode t)
-  (toggle-truncate-lines 1)
-  (csv-header-line t)
-  )
-
-(use-package csv-mode
-  :mode (".tsv" ".csv" ".tabular" ".vcf")
-  :custom
-  (csv-comment-start "##")
-  :hook
-  (csv-mode . (lambda ()
-                (run-at-time 0 nil 'testfn))))
 
 ;;;;;; Webmode
 (use-package web-mode
@@ -843,14 +782,61 @@ abort completely with `C-g'."
    web-mode-enable-auto-pairing t
    web-mode-enable-auto-indentation t))
 
-
-
-;;;;;; Tailwind
-(use-package lsp-tailwindcss
-  :straight
-  (:host github :repo "merrickluo/lsp-tailwindcss" :branch "master" :files ("*.el"))
+;;;;; LSP Mode
+(use-package lsp-mode
+  :ensure
+  :commands lsp
+  :custom
+  ;; what to use when checking on-save. "check" is default, I prefer clippy
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-rust-analyzer-server-display-inlay-hints t)
   :config
-  (setq lsp-tailwindcss-add-on-mode t))
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  (setq lsp-auto-guess-root t))
+
+(use-package lsp-ui
+  :ensure
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
+
+;; if you are helm user
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+;;;;; Modes
+
+(use-package dockerfile-mode
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
+(use-package dotenv-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
+
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+
+(use-package json-mode)
+(use-package toml-mode :ensure)
+
+(defun testfn ()
+  (interactive)
+  (csv-align-mode t)
+  (toggle-truncate-lines 1)
+  (csv-header-line t)
+  )
+
+(use-package csv-mode
+  :mode (".tsv" ".csv" ".tabular" ".vcf")
+  :custom
+  (csv-comment-start "##")
+  :hook
+  (csv-mode . (lambda ()
+                (run-at-time 0 nil 'testfn))))
+
 
 
 ;;;;; Tramp
@@ -1189,7 +1175,6 @@ abort completely with `C-g'."
         org-agenda-files '(
                            "~/org/inbox.org"
                            "~/org/gtd.org"
-                           "~/org/call.org"
                            "~/org/habits.org"
                            )
         org-agenda-prefix-format '(
@@ -1364,8 +1349,20 @@ abort completely with `C-g'."
   :ensure t            ;Auto-install the package from Melpa (optional)
   :after ox
   :config
-  (setq org-hugo-base-dir "~/code/roam-notes/"
-        org-hugo-section "posts"))
+  (setq org-hugo-base-dir "~/code/roam-notes"
+        org-hugo-section "notes"))
+(defun replace-in-string (what with in)
+  (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
+
+(defun zeeros/fix-doc-path (path)
+  (replace-regexp-in-string ".*\/" "" (replace-in-string "Dropbox/org/roam/" ""  (replace-in-string "../" "" path))))
+
+(advice-add 'org-export-resolve-id-link :filter-return #'zeeros/fix-doc-path)
+
+(require 'find-lisp)
+(setq org-id-extra-files (find-lisp-find-files "~/org/roam/" "\.org$"))
+
+
 ;;; Literature
                                         ;current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
                                         ;tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the sorce
@@ -1383,7 +1380,7 @@ abort completely with `C-g'."
   (org-roam-capture-templates '(
                                 ("d" "default" plain
                                  "\n\n* %?"
-                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
                                  :unnarrowed t)
                                 ("t" "Fact" plain
                                  "\n\n* %?"
@@ -1422,6 +1419,8 @@ abort completely with `C-g'."
 
   :bind-keymap
   ("C-c n d" . org-roam-dailies-map))
+
+
 
 (require 'org-roam)
 (cl-defmethod org-roam-node-directories ((node org-roam-node))
@@ -1694,7 +1693,16 @@ abort completely with `C-g'."
   :config
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
-
-
-(use-package esup)
-
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   '("/Users/harshasomisetty/org/inbox.org" "/Users/harshasomisetty/org/gtd.org" "/Users/harshasomisetty/org/habits.org")))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
