@@ -1,0 +1,8 @@
+# key: f
+# name: function
+# --
+function ${1:name}(${args}) {
+    $0
+}
+
+export default $1;

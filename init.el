@@ -258,7 +258,11 @@
   :ensure t
   :config
   (dashboard-setup-startup-hook)
-  (setq dashboard-footer-messages quotes))
+  (setq dashboard-footer-messages quotes
+        dashboard-items '((recents  . 5)
+                          (projects . 5)
+                          (agenda . 5)
+                          )))
 
 (defun files-startup-screen (file2 &rest files)
   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
@@ -286,7 +290,7 @@
   (when (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
     (apply 'files-startup-screen screens_list))
 
-  (right-two-thirds)
+  (full-screen)
   (balance-windows))
 
 (add-hook 'emacs-startup-hook #'emacs-startup-screen)
@@ -571,6 +575,8 @@ abort completely with `C-g'."
 
 
 ;;;;; Languages
+;;;;;; C
+(use-package clang-format)
 ;;;;;; Python
 (use-package elpy
   :init
@@ -630,7 +636,7 @@ abort completely with `C-g'."
 
 (add-hook 'after-init-hook 'pyenv-init)
 ;;;;;; Rust
-; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
+                                        ; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
 (use-package project
   :config
   (setq project-switch-commands t))
@@ -671,10 +677,18 @@ abort completely with `C-g'."
   :hook
   (js2-mode . js2-imenu-extras-mode))
 
+(use-package typescript-mode
+  :mode (("\\.ts\\'" . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode))
+  :config
+  (setq typescript-indent-level 2))
+
 (use-package rjsx-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
-    (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode)))
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . rjsx-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . rjsx-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode)))
 
                                         ; autoformatting
 (use-package prettier-js
@@ -682,14 +696,11 @@ abort completely with `C-g'."
   (add-hook 'js2-mode-hook 'prettier-js-mode)
   :config
   (setq prettier-js-args '(
-  "--bracket-spacing" "false"
-)))
+                           "--bracket-spacing" "false"
+                           )))
 
 ;;;;;; Typescript
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :config
-  (setq typescript-indent-level 2))
+
 ;;;;;; ESS and R
 (use-package ess-site
   :straight ess
@@ -783,26 +794,66 @@ abort completely with `C-g'."
    web-mode-enable-auto-indentation t))
 
 ;;;;; LSP Mode
+
+(use-package helm-lsp
+  :ensure t
+  :after (lsp-mode)
+  :commands (helm-lsp-workspace-symbol)
+  :init (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+
 (use-package lsp-mode
-  :ensure
+  :ensure t
   :commands lsp
-  :custom
-  ;; what to use when checking on-save. "check" is default, I prefer clippy
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-rust-analyzer-server-display-inlay-hints t)
+  :init
+  (setq lsp-auto-guess-root t
+        lsp-log-io nil
+        lsp-enable-indentation t
+        lsp-enable-imenu t
+        lsp-prefer-flymake nil
+        lsp-rust-analyzer-cargo-watch-command "clippy"
+        lsp-eldoc-render-all t
+        lsp-rust-analyzer-server-display-inlay-hints t)
+
   :config
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-  (setq lsp-auto-guess-root t))
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+
+
+
+(defun dotfiles--lsp-deferred-if-supported ()
+  "Run `lsp-deferred' if it's a supported mode."
+  (unless (derived-mode-p 'emacs-lisp-mode)
+    (lsp-deferred)))
+
+(add-hook 'prog-mode-hook #'dotfiles--lsp-deferred-if-supported)
 
 (use-package lsp-ui
   :ensure
   :commands lsp-ui-mode
-  :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
+  :config
+  (setq lsp-ui-peek-always-show t
+        lsp-ui-doc-use-webkit nil
+         lsp-ui-doc-header nil
+         lsp-ui-doc-delay 0.2
+         lsp-ui-doc-include-signature t
+         lsp-ui-doc-alignment 'at-point
+         lsp-ui-doc-use-childframe nil
+         lsp-ui-doc-border (face-foreground 'default)
+         lsp-ui-peek-enable t
+         lsp-ui-peek-show-directory t
+         lsp-ui-sideline-update-mode 'line
+         lsp-ui-sideline-enable t
+         lsp-ui-sideline-show-code-actions t
+         lsp-ui-sideline-show-hover nil
+         lsp-ui-sideline-ignore-duplicate t))
 
+
+;;;;;; Tailwind
+(use-package lsp-tailwindcss
+  :straight
+  (:host github :repo "merrickluo/lsp-tailwindcss" :branch "master" :files ("*.el"))
+  :config
+  (setq lsp-tailwindcss-add-on-mode t))
 ;; if you are helm user
 (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 ;;;;; Modes
@@ -1453,6 +1504,9 @@ abort completely with `C-g'."
 (setq org-roam-node-display-template "${directories:10} ${title:100} ${tags:10} ${backlinkscount:6}")
 (set-register ?n (cons 'file "~/org/roam/roam_directory.org"))
 
+(use-package org-randomnote
+  :ensure t)
+
 ;;;;;; Org roam ui
 (use-package org-roam-ui
   :straight
@@ -1520,9 +1574,9 @@ abort completely with `C-g'."
         org-ref-insert-label-function 'org-ref-insert-label-link
         org-ref-insert-ref-function 'org-ref-insert-ref-link
         )
-  :bind (("C-c r c" . org-ref-cite-insert-helm)
-         ("C-c r r" . org-ref-insert-ref-link)
-         ("C-c r l" . org-ref-insert-label-link)))
+  (global-set-key (kbd "C-c r c") 'org-ref-cite-insert-helm)
+  (global-set-key (kbd "C-c r r") 'org-ref-insert-ref-link)
+  (global-set-key (kbd "C-c r l") 'org-ref-insert-label-link))
 
 (use-package org-roam-bibtex
 
