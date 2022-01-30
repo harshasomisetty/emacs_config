@@ -18,6 +18,10 @@
 (setq straight-use-package-by-default t)
 (setq straight-recipe-repositories '(org-elpa melpa gnu-elpa-mirror el-get emacsmirror-mirror ))
 
+(setq mac-option-modifier 'meta
+      mac-pass-command-to-system nil
+      mac-command-modifier 'super)
+
 ;;;; metadata
 
 (global-auto-revert-mode 1)
@@ -40,17 +44,10 @@
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
-(defun reload-config ()
-  (interactive)
-  (load-file "~/.emacs.d/init.el"))
-
 (use-package all-the-icons
   :config
   (setq all-the-icons-scale-factor 1.1))
 
-(use-package speed-type)
-
-                                        ; directories
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
       user-init-file "~/.emacs.d/init.el"
       default-directory "~/org/"  
@@ -236,14 +233,14 @@
   (set-frame-position (selected-frame) 0 0)
   (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
 
-(global-set-key (kbd "C-c w e") 'left-two-thirds)
-(global-set-key (kbd "C-c w d") 'left-one-thirds)
-(global-set-key (kbd "C-c w t") 'right-two-thirds)
-(global-set-key (kbd "C-c w g") 'right-one-thirds)
-(global-set-key (kbd "C-c w <left>") 'left-half)
-(global-set-key (kbd "C-c w <right>") 'right-half)
-(global-set-key (kbd "C-c w f") 'center-third)
-(global-set-key (kbd "C-c w <return>") 'full-screen)
+;; (global-set-key (kbd "C-c w e") 'left-two-thirds)
+;; (global-set-key (kbd "C-c w d") 'left-one-thirds)
+;; (global-set-key (kbd "C-c w t") 'right-two-thirds)
+;; (global-set-key (kbd "C-c w g") 'right-one-thirds)
+;; (global-set-key (kbd "C-c w <left>") 'left-half)
+;; (global-set-key (kbd "C-c w <right>") 'right-half)
+;; (global-set-key (kbd "C-c w f") 'center-third)
+;; (global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (use-package transpose-frame
   :bind ("C-x 4 4" . transpose-frame))
@@ -282,6 +279,8 @@
   )
 
 (setq screens_file "~/.emacs.d/config/screens_file.el")
+;; (write-region "(setq screens_list \'\(\))" nil screens_file)
+(write-region "(setq screens_list '\(\"\"))" nil screens_file)
 (load-file screens_file)
 
 
@@ -294,27 +293,28 @@
   (balance-windows))
 
 (add-hook 'emacs-startup-hook #'emacs-startup-screen)
-
-(defun set-screens-list ()
-  "Inserts path as string "
-  (interactive)
-  (push (read-file-name "Pick F to Open: " ) screens_list))
-
-(defun reset-screens-list ()
-  (interactive)
-  (setq screens_list '()))
-
 (defun save-screen-var ()
   (interactive)
   (with-temp-buffer
     (setq s2 (let (value) (dolist (elt screens_list value)
                             (setq value (cons (prin1-to-string elt) value)))))
-
     (insert (concat "(setq screens_list '(" (join " " s2) "))"))
-    (write-region (point-min) (point-max) screens_file)))
+    (write-region (point-min) (point-max) screens_file))
+  (save-buffer))
 
-(when (not (memq 'save-screen-var kill-emacs-hook))
-  (add-hook 'kill-emacs-hook 'save-screen-var))
+(defun set-screens-list ()
+  "Inserts path as string "
+  (interactive)
+  (push (read-file-name "Pick F to Open: " ) screens_list)
+  (save-screen-var))
+
+(defun reset-screens-list ()
+  (interactive)
+  (setq screens_list '())
+  (save-screen-var))
+
+
+
 ;;;; Navigation
 (global-unset-key (kbd "M-g M-g"))
 
@@ -346,19 +346,6 @@
                              backward-char))
   (no-spam-mode))
 
-(defun my-split-vertical ()
-  (interactive)
-  (split-window-vertically)
-  (other-window 1))
-
-(defun my-split-horizontal ()
-  (interactive)
-  (split-window-horizontally)
-  (other-window 1))
-
-(global-set-key (kbd "C-x 2") 'my-split-vertical)
-(global-set-key (kbd "C-x 3") 'my-split-horizontal)
-
 ;;;;; Dired
 
 (use-package dired
@@ -367,15 +354,6 @@
   :config
   (setq insert-directory-program "gls" dired-use-ls-dired t
         dired-listing-switches "-agho --group-directories-first"))
-
-(use-package dired-plus
-  :disabled
-  :straight
-  (:host github :repo "emacsmirror/dired-plus" :branch "main" :files ("*.el"))
-  :custom
-  (diredp-toggle-find-file-reuse-dir t))
-
-(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 (use-package dired-subtree :ensure t
   :after dired
@@ -413,13 +391,6 @@
     :type 'regexp
     :safe 'stringp
     :group 'deft))
-
-
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
 
 ;;;;; Which key
 (use-package which-key
@@ -503,8 +474,15 @@
 ;;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 (use-package ispell)
 
-(define-key ctl-x-map "\C-i"
-  #'endless/ispell-word-then-abbrev)
+
+(setq ispell-program-name "hunspell"
+      ispell-local-dictionary "en_US")
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
+(setq save-abbrevs 'silently)
+(setq-default abbrev-mode t)
+
 
 (defun endless/simple-get-word ()
   (car-safe (save-excursion (ispell-get-word nil))))
@@ -541,14 +519,13 @@ abort completely with `C-g'."
           (message "\"%s\" now expands to \"%s\" %sally"
                    bef aft (if p "loc" "glob")))
       (user-error "No typo at or before point"))))
+(define-key ctl-x-map "\C-i"
+  #'endless/ispell-word-then-abbrev)
 
-(setq save-abbrevs 'silently)
-(setq-default abbrev-mode t)
 
 
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(setq ispell-program-name "hunspell")
-(setq ispell-local-dictionary "en_US")
+
+
 
                                         ;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 ;;;; Development
@@ -578,41 +555,22 @@ abort completely with `C-g'."
 ;;;;;; C
 (use-package clang-format)
 ;;;;;; Python
-(use-package elpy
-  :init
-  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-  :bind (:map elpy-mode-map
-              ("<M-left>" . nil)
-              ("<M-right>" . nil)
-              ("<M-S-left>" . elpy-nav-indent-shift-left)
-              ("<M-S-right>" . elpy-nav-indent-shift-right)
-              ("M-." . elpy-goto-definition)
-              ("M-," . pop-tag-mark))
-  :config
-  (setq elpy-rpc-virtualenv-path 'current)
-  (add-hook 'elpy-mode-hook (lambda ()
-                              (add-hook 'before-save-hook
-                                        'elpy-format-code nil t))))
-
 
 (use-package python
   :mode ("\\.py" . python-mode)
   :config
   (setq python-indent-offset 4
         python-indent-guess-indent-offset nil
-        python-shell-completion-native-enable nil)
-  (elpy-enable))
+        python-shell-completion-native-enable nil))
 
 (use-package pyenv-mode
   :init
   (add-to-list 'exec-path "~/.pyenv/shims")
   (setenv "WORKON_HOME" "~/.pyenv/versions/")
-  :bind
-  ("C-x p e" . pyenv-activate-current-project)
   :config
   (pyenv-mode)
-  (defvar pyenv-current-version nil nil)
-  )
+  :bind
+  ("C-x p e" . pyenv-activate-current-project))
 
 
 (defun pyenv-activate-current-project ()
@@ -627,6 +585,7 @@ abort completely with `C-g'."
 
 
 
+
 (defun pyenv-init()
   "Initialize pyenv's current version to the global one."
   (let ((global-pyenv (replace-regexp-in-string "\n" "" (shell-command-to-string "pyenv global"))))
@@ -635,6 +594,7 @@ abort completely with `C-g'."
     (setq pyenv-current-version global-pyenv)))
 
 (add-hook 'after-init-hook 'pyenv-init)
+
 ;;;;;; Rust
                                         ; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
 (use-package project
@@ -711,8 +671,8 @@ abort completely with `C-g'."
         ess-smart-S-assign-key nil ; unbind ess-insert-align
         ))
 
-(setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save") 
-(setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
+;; (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save") 
+;; (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
 
 (use-package ess-r-mode
   :straight ess
@@ -810,12 +770,15 @@ abort completely with `C-g'."
         lsp-enable-indentation t
         lsp-enable-imenu t
         lsp-prefer-flymake nil
+        lsp-pylsp-plugins-flake8-enabled t
+        lsp-pylsp-plugins-autopep8-enabled t
         lsp-rust-analyzer-cargo-watch-command "clippy"
         lsp-eldoc-render-all t
         lsp-rust-analyzer-server-display-inlay-hints t)
 
   :config
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  :hook (lsp-mode . lsp-enable-which-key-integration))
 
 
 
@@ -926,6 +889,7 @@ abort completely with `C-g'."
   )
 
 ;;;;; Projectile
+(use-package helm-projectile)
 (use-package projectile
   :config
   (projectile-global-mode)
@@ -1068,7 +1032,8 @@ abort completely with `C-g'."
          'org-document-info-keyword))
   (mapc ;; This sets the fonts to a smaller size
    (lambda (face)
-     (set-face-attribute face nil :height 0.85))
+     (set-face-attribute face nil :height 0.85
+                         :foreground "orange"))
    (list 'org-document-info-keyword
          'org-block-begin-line
          'org-block-end-line
@@ -1078,6 +1043,12 @@ abort completely with `C-g'."
          'minibuffer-prompt
          'mode-line
          'mode-line-inactive
+         ))
+  (mapc ;; This sets the fonts to a smaller size
+   (lambda (face)
+     (set-face-attribute face nil :height 0.85
+                         :foreground "green"))
+   (list 'org-todo
          ))
   (setq color-theme (nth pick-color color-schemes))
   (set-face-attribute 'org-code nil
@@ -1239,7 +1210,7 @@ abort completely with `C-g'."
                              ("~/org/time.org" :level . 1)
                              )
         org-capture-templates
-        `(("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Inbox") "* TODO %i%?" :empty-lines 1))
+        `(("t" "Todo" entry (file "~/org/inbox.org") "* TODO %i%?" :empty-lines 1))
         )
 
   (org-agenda-align-tags)
@@ -1258,16 +1229,16 @@ abort completely with `C-g'."
                  :time-grid t  ; Items that appear on the time grid
                  :priority "A"
                  )
-          (:order-multi ( (:name "DOE"
-                                 :tag "DOE")
-                          (:name "CStats"
-                                 :tag "CStats")
-                          (:name "MStats"
-                                 :tag "MStats")
-                          (:name "Networking"
-                                 :tag "Networking")
-                          (:name "OS"
-                                 :tag "OS")))
+          ;; (:order-multi ( (:name "DOE"
+          ;;                        :tag "DOE")
+          ;;                 (:name "CStats"
+          ;;                        :tag "CStats")
+          ;;                 (:name "MStats"
+          ;;                        :tag "MStats")
+          ;;                 (:name "Networking"
+          ;;                        :tag "Networking")
+          ;;                 (:name "OS"
+          ;;                        :tag "OS")))
           (:name "Habits"
                  :habit t
                  :tag "Habits")
@@ -1364,7 +1335,6 @@ abort completely with `C-g'."
            "\n* Goals"             
            "\n* Moments"
            "\n* Accomplishments"
-           "\n* "
            )))
 
 (add-hook 'org-journal-after-header-create-hook
@@ -1717,7 +1687,7 @@ abort completely with `C-g'."
 
 (defun ungrind-theme()
   (setq pick-color 0)
-  (load-theme 'doom-horizon t)
+  ;; (load-theme 'doom-horizon t)
   )
 
 (defun ungrind()

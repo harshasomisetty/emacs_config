@@ -37,3 +37,5 @@ flycheck_init.el
 /org-gcal/
 /.lsp-session-v1
 /persist/
+/org-persist/
+/projects
