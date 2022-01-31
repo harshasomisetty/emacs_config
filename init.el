@@ -6,9 +6,9 @@
       (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-	(url-retrieve-synchronously
-	 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-	 'silent 'inhibit-cookies)
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -33,7 +33,7 @@
 (defun set-exec-path-from-shell-PATH ()
   "Set up Emacs' `exec-path' and PATH environment variable to match
   that used by the user's shell.
-  
+
   This is particularly useful under Mac OS X and macOS, where GUI
   apps are not started from a shell."
   (interactive)
@@ -50,7 +50,7 @@
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")) ; ignore files wtih ~
       user-init-file "~/.emacs.d/init.el"
-      default-directory "~/org/"  
+      default-directory "~/org/"
       auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t))
       )
 
@@ -64,7 +64,7 @@
 (defun join (sep lst)
   (mapconcat 'identity lst sep))
 
-(set-exec-path-from-shell-PATH)  
+(set-exec-path-from-shell-PATH)
 
 (set-register ?i (cons 'file user-init-file))
 
@@ -254,7 +254,7 @@
 (use-package dashboard
   :ensure t
   :config
-  (dashboard-setup-startup-hook)
+    (dashboard-setup-startup-hook)
   (setq dashboard-footer-messages quotes
         dashboard-items '((recents  . 5)
                           (projects . 5)
@@ -262,7 +262,7 @@
                           )))
 
 (defun files-startup-screen (file2 &rest files)
-  "choose 2 files to display on startup, file2 goes on left, file1 goes on right"  
+  "choose 2 files to display on startup, file2 goes on left, file1 goes on right"
 
   (dotimes (n (length files))
     (setq index (- (- (length files) n) 1))
@@ -280,17 +280,25 @@
 
 (setq screens_file "~/.emacs.d/config/screens_file.el")
 ;; (write-region "(setq screens_list \'\(\))" nil screens_file)
-(write-region "(setq screens_list '\(\"\"))" nil screens_file)
+;; (write-region "(setq screens_list '\(\"\"))" nil screens_file)
 (load-file screens_file)
 
 
 (defun emacs-startup-screen ()
   "startup screen config"
-  (when (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
-    (apply 'files-startup-screen screens_list))
+  (if (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
+      (progn (apply 'files-startup-screen screens_list) )
+    nil
+    )
+
+
 
   (full-screen)
-  (balance-windows))
+  (balance-windows)
+    (if (> (length screens_list) 0)
+      (kill-buffer "*dashboard*")))
+
+
 
 (add-hook 'emacs-startup-hook #'emacs-startup-screen)
 (defun save-screen-var ()
@@ -340,9 +348,9 @@
 (use-package no-spam
   :config
   (setq no-spam-default-repeat-delay 10)
-  (no-spam-add-repeat-delay (next-line 
-                             previous-line 
-                             forward-char 
+  (no-spam-add-repeat-delay (next-line
+                             previous-line
+                             forward-char
                              backward-char))
   (no-spam-mode))
 
@@ -373,12 +381,13 @@
   :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode))
 
 ;;;;; Deft
+
 (use-package deft
   :demand t
   :bind
   ("C-x C-g" . deft-find-file)
   :config
-  (setq deft-extensions '("org")
+  (setq deft-extensions '("org" "pdf" "txt")
         deft-directory "~/org"
         deft-recursive t
         deft-use-filename-as-title t)
@@ -405,7 +414,7 @@
   ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
   ("M-y" . helm-show-kill-ring)
-  ("C-x b" . helm-mini)        
+  ("C-x b" . helm-mini)
   (:map helm-command-map
         ("<tab>" . helm-execute-persistent-action)
         ("C-i" . helm-execite-persistent-action)
@@ -461,6 +470,8 @@
 
 (setq create-lockfiles nil)
 
+(add-hook 'before-save-hook 'whitespace-cleanup)
+
 
 ;;;;; Company
 (use-package company
@@ -478,7 +489,12 @@
 (setq ispell-program-name "hunspell"
       ispell-local-dictionary "en_US")
 
-(add-hook 'after-init-hook #'global-flycheck-mode)
+(use-package flycheck
+  :ensure t
+  :diminish flycheck-mode
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode))
+
 
 (setq save-abbrevs 'silently)
 (setq-default abbrev-mode t)
@@ -546,8 +562,8 @@ abort completely with `C-g'."
 (setq org-confirm-babel-evaluate nil)
 
 
-(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
-(add-hook 'org-mode-hook 'org-display-inline-images)   
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)
+(add-hook 'org-mode-hook 'org-display-inline-images)
 
 
 
@@ -564,6 +580,7 @@ abort completely with `C-g'."
         python-shell-completion-native-enable nil))
 
 (use-package pyenv-mode
+  :disabled
   :init
   (add-to-list 'exec-path "~/.pyenv/shims")
   (setenv "WORKON_HOME" "~/.pyenv/versions/")
@@ -671,7 +688,7 @@ abort completely with `C-g'."
         ess-smart-S-assign-key nil ; unbind ess-insert-align
         ))
 
-;; (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save") 
+;; (setq org-babel-R-command "/Library/Frameworks/R.framework/Resources/R --slave --no-save")
 ;; (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
 
 (use-package ess-r-mode
@@ -796,19 +813,19 @@ abort completely with `C-g'."
   :config
   (setq lsp-ui-peek-always-show t
         lsp-ui-doc-use-webkit nil
-         lsp-ui-doc-header nil
-         lsp-ui-doc-delay 0.2
-         lsp-ui-doc-include-signature t
-         lsp-ui-doc-alignment 'at-point
-         lsp-ui-doc-use-childframe nil
-         lsp-ui-doc-border (face-foreground 'default)
-         lsp-ui-peek-enable t
-         lsp-ui-peek-show-directory t
-         lsp-ui-sideline-update-mode 'line
-         lsp-ui-sideline-enable t
-         lsp-ui-sideline-show-code-actions t
-         lsp-ui-sideline-show-hover nil
-         lsp-ui-sideline-ignore-duplicate t))
+        lsp-ui-doc-header nil
+        lsp-ui-doc-delay 0.2
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-alignment 'at-point
+        lsp-ui-doc-use-childframe nil
+        lsp-ui-doc-border (face-foreground 'default)
+        lsp-ui-peek-enable t
+        lsp-ui-peek-show-directory t
+        lsp-ui-sideline-update-mode 'line
+        lsp-ui-sideline-enable t
+        lsp-ui-sideline-show-code-actions t
+        lsp-ui-sideline-show-hover nil
+        lsp-ui-sideline-ignore-duplicate t))
 
 
 ;;;;;; Tailwind
@@ -915,7 +932,7 @@ abort completely with `C-g'."
                                                 ".eunit"
                                                 ".git"
                                                 ".hg"
-                                                ".fslckout" 
+                                                ".fslckout"
                                                 "_FOSSIL_"
                                                 ".bzr"
                                                 "_darcs"
@@ -1146,7 +1163,7 @@ abort completely with `C-g'."
 
 ;; (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
 ;; (
-(setq org-latex-pdf-process (list "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))  
+(setq org-latex-pdf-process (list "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
 
 (add-to-list 'org-latex-packages-alist
@@ -1332,7 +1349,7 @@ abort completely with `C-g'."
 (defun insert-created-date (&rest ignore)
   (insert (concat
            "\n* Gratitude"
-           "\n* Goals"             
+           "\n* Goals"
            "\n* Moments"
            "\n* Accomplishments"
            )))
@@ -1425,7 +1442,7 @@ abort completely with `C-g'."
               ))
   :bind (("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
-         ("C-c n r" . org-roam-node-random)		    
+         ("C-c n r" . org-roam-node-random)
          (:map org-mode-map
                (("C-c n i" . org-roam-node-insert)
                 ("C-c n o" . org-id-get-create)
