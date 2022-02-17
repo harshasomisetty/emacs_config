@@ -30,19 +30,10 @@
 (require 'package)
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
-(defun set-exec-path-from-shell-PATH ()
-  "Set up Emacs' `exec-path' and PATH environment variable to match
-  that used by the user's shell.
-
-  This is particularly useful under Mac OS X and macOS, where GUI
-  apps are not started from a shell."
-  (interactive)
-  (let ((path-from-shell (replace-regexp-in-string
-                          "[ \t\n]*$" "" (shell-command-to-string
-                                          "$SHELL --login -c 'echo $PATH'"
-                                          ))))
-    (setenv "PATH" path-from-shell)
-    (setq exec-path (split-string path-from-shell path-separator))))
+(use-package exec-path-from-shell
+  :config
+  (when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize)))
 
 (use-package all-the-icons
   :config
@@ -63,8 +54,6 @@
 
 (defun join (sep lst)
   (mapconcat 'identity lst sep))
-
-(set-exec-path-from-shell-PATH)
 
 (set-register ?i (cons 'file user-init-file))
 
@@ -149,7 +138,7 @@
 ;;;; Display
 (menu-bar-mode -1)
 (tool-bar-mode -1)
-(toggle-scroll-bar -1)
+(scroll-bar-mode -1)
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -171,6 +160,21 @@
         window-divider-default-bottom-width 1
         window-divider-default-right-width 1)
   (window-divider-mode +1))
+
+(use-package doom-themes
+  :ensure t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
@@ -233,14 +237,14 @@
   (set-frame-position (selected-frame) 0 0)
   (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
 
-;; (global-set-key (kbd "C-c w e") 'left-two-thirds)
-;; (global-set-key (kbd "C-c w d") 'left-one-thirds)
-;; (global-set-key (kbd "C-c w t") 'right-two-thirds)
-;; (global-set-key (kbd "C-c w g") 'right-one-thirds)
-;; (global-set-key (kbd "C-c w <left>") 'left-half)
-;; (global-set-key (kbd "C-c w <right>") 'right-half)
-;; (global-set-key (kbd "C-c w f") 'center-third)
-;; (global-set-key (kbd "C-c w <return>") 'full-screen)
+(global-set-key (kbd "C-c w e") 'left-two-thirds)
+(global-set-key (kbd "C-c w d") 'left-one-thirds)
+(global-set-key (kbd "C-c w t") 'right-two-thirds)
+(global-set-key (kbd "C-c w g") 'right-one-thirds)
+(global-set-key (kbd "C-c w <left>") 'left-half)
+(global-set-key (kbd "C-c w <right>") 'right-half)
+(global-set-key (kbd "C-c w f") 'center-third)
+(global-set-key (kbd "C-c w <return>") 'full-screen)
 
 (use-package transpose-frame
   :bind ("C-x 4 4" . transpose-frame))
@@ -254,7 +258,7 @@
 (use-package dashboard
   :ensure t
   :config
-    (dashboard-setup-startup-hook)
+  (dashboard-setup-startup-hook)
   (setq dashboard-footer-messages quotes
         dashboard-items '((recents  . 5)
                           (projects . 5)
@@ -291,16 +295,14 @@
     nil
     )
 
-
-
-  (full-screen)
-  (balance-windows)
-    (if (> (length screens_list) 0)
+    (balance-windows)
+  (if (> (length screens_list) 0)
       (kill-buffer "*dashboard*")))
 
 
 
 (add-hook 'emacs-startup-hook #'emacs-startup-screen)
+(add-hook 'emacs-startup-hook #'full-screen)
 (defun save-screen-var ()
   (interactive)
   (with-temp-buffer
@@ -470,16 +472,31 @@
 
 (setq create-lockfiles nil)
 
-(add-hook 'before-save-hook 'whitespace-cleanup)
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+(setq indent-line-function 'insert-tab)
+
+
 
 
 ;;;;; Company
 (use-package company
-  :config
+  :init
   (global-company-mode)
+  :config
+    (setq company-tooltip-align-annotations t
+          company-idle-delay 0.2
+          ;; min prefix of 2 chars
+          company-minimum-prefix-length 2
+          company-require-match nil)
   :bind
-  ("C-c C-c" . company-complete)
-  )
+  ("C-c C-c" . company-complete))
+
+(use-package company-quickhelp          ; Show help in tooltip
+    :ensure t
+    :defer t
+    :init (with-eval-after-load 'company
+            (company-quickhelp-mode)))
 
 ;;;;; Spelling
 ;;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
@@ -545,7 +562,12 @@ abort completely with `C-g'."
 
                                         ;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 ;;;; Development
-
+(use-package inheritenv)
+(use-package language-id)
+(use-package emacs-format-all-the-code
+  :straight
+  (:host github :repo "lassik/emacs-format-all-the-code" :branch "master" :files ("*.el"))
+  :hook (prog-mode . format-all-mode))
 ;;;;; Babel
 
 
@@ -580,37 +602,39 @@ abort completely with `C-g'."
         python-shell-completion-native-enable nil))
 
 (use-package pyenv-mode
-  :disabled
   :init
-  (add-to-list 'exec-path "~/.pyenv/shims")
   (setenv "WORKON_HOME" "~/.pyenv/versions/")
   :config
-  (pyenv-mode)
-  :bind
-  ("C-x p e" . pyenv-activate-current-project))
+  (pyenv-mode))
 
+(defun dd/py-workon-project-venv ()
+  "Call pyenv-workon with the current projectile project name.
+This will return the full path of the associated virtual
+environment found in $WORKON_HOME, or nil if the environment does
+not exist."
+  (let ((pname (projectile-project-name)))
+    (pyvenv-workon pname)
+    (if (file-directory-p pyvenv-virtual-env)
+        pyvenv-virtual-env
+      (pyvenv-deactivate))))
 
-(defun pyenv-activate-current-project ()
-  "Automatically activates pyenv version if .python-version file exists."
+(defun dd/py-auto-lsp ()
+  "Turn on lsp mode in a Python project with some automated logic.
+Try to automatically determine which pyenv virtual environment to
+activate based on the project name, using
+`dd/py-workon-project-venv'. If successful, call `lsp'. If we
+cannot determine the virtualenv automatically, first call the
+interactive `pyvenv-workon' function before `lsp'"
   (interactive)
-  (let ((python-version-directory (locate-dominating-file (buffer-file-name) ".python-version")))
-    (if python-version-directory
-        (let* ((pyenv-version-path (f-expand ".python-version" python-version-directory))
-               (pyenv-current-version (s-trim (f-read-text pyenv-version-path 'utf-8))))
-          (pyenv-mode-set pyenv-current-version)
-          (message (concat "Setting virtualenv to " pyenv-current-version))))))
+  (let ((pvenv (dd/py-workon-project-venv)))
+    (if pvenv
+        (lsp)
+      (progn
+        (call-interactively #'pyvenv-workon)
+        (lsp)))))
 
+(bind-key (kbd "C-c C-a") #'dd/py-auto-lsp python-mode-map)
 
-
-
-(defun pyenv-init()
-  "Initialize pyenv's current version to the global one."
-  (let ((global-pyenv (replace-regexp-in-string "\n" "" (shell-command-to-string "pyenv global"))))
-    (message (concat "Setting pyenv version to " global-pyenv))
-    (pyenv-mode-set global-pyenv)
-    (setq pyenv-current-version global-pyenv)))
-
-(add-hook 'after-init-hook 'pyenv-init)
 
 ;;;;;; Rust
                                         ; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
@@ -676,10 +700,9 @@ abort completely with `C-g'."
                            "--bracket-spacing" "false"
                            )))
 
-;;;;;; Typescript
-
 ;;;;;; ESS and R
 (use-package ess-site
+  :disabled
   :straight ess
   :config
   (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
@@ -692,6 +715,7 @@ abort completely with `C-g'."
 ;; (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
 
 (use-package ess-r-mode
+  :disabled
   :straight ess
   :config
   ;; Hot key C-S-m for pipe operator in ESS
@@ -842,10 +866,6 @@ abort completely with `C-g'."
   :config
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
-(use-package dotenv-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
-
 (use-package yaml-mode
   :config
   (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
@@ -869,6 +889,12 @@ abort completely with `C-g'."
                 (run-at-time 0 nil 'testfn))))
 
 
+(use-package emacs-dotenv-mode
+  :disabled
+  :straight
+  (:host github :repo "preetpalS/emacs-dotenv-mode" :branch "master" :files ("*.el"))
+  :config
+  (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
 
 ;;;;; Tramp
 (setq remote-file-name-inhibit-cache nil)
@@ -921,7 +947,6 @@ abort completely with `C-g'."
 
 
   (setq projectile-project-search-path '("~/org/" "~/code/"))
-
   (helm-projectile-on)
   :bind-keymap
   ("C-c p" . projectile-command-map)
@@ -1156,6 +1181,7 @@ abort completely with `C-g'."
     (LaTeX-add-environments
      '("align*" LaTeX-env-label)
      '("align" LaTeX-env-label)
+     '("tikzpicture" LaTeX-env-label)
      '("equation*" LaTeX-env-label)))
   )
 
@@ -1166,8 +1192,8 @@ abort completely with `C-g'."
 (setq org-latex-pdf-process (list "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
 
-(add-to-list 'org-latex-packages-alist
-             '("" "tikz" t))
+(add-to-list 'org-latex-packages-alist '("" "tikz"  t))
+(add-to-list 'org-latex-packages-alist '("" "sgame"  t))
 
 (eval-after-load "preview"
   '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
@@ -1180,7 +1206,12 @@ abort completely with `C-g'."
   (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)
   (add-hook 'org-mode-hook 'turn-on-org-cdlatex)
                                         ;    (setq cdlatex-paired-parens "")
+  (setq cdlatex-command-alist
+        '(("tkz" "Insert axiom env"   "" cdlatex-environment ("tikzpicture") t nil)
+          ("thr" "Insert theorem env" "" cdlatex-environment ("theorem") t nil)
+          ("gam" "Insert game env" "" cdlatex-environment ("game") t nil)))
   )
+
 
 
 ;;;;; Images
@@ -1222,7 +1253,7 @@ abort completely with `C-g'."
                                    (tags . " %i %-12:c")
                                         ;                                     (search . " %i %-12:c")
                                    )
-        org-todo-keywords '((sequence "TODO(t)"  "NEXT(n)" "|" "DONE(d)" "FAILED(f)"))
+        org-todo-keywords '((sequence "TODO(t)"  "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "FAILED(f)"))
         org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
                              ("~/org/time.org" :level . 1)
                              )

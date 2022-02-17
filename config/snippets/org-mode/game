@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: game
+# key: <g
+# --
+
+\begin{figure}[!h]\hspace*{\fill}%
+\begin{game}{$1}{$2}
+& $0
+\end{game}
+\hspace*{\fill}
+%\end{figure}
+    
+
