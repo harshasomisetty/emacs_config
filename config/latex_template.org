@@ -1,6 +1,6 @@
 #+LATEX_CLASS: article
 #+LATEX_HEADER: \usepackage[margin=1in]{geometry}
-#+OPTIONS: toc:nil num:nil
+% #+OPTIONS: toc:nil num:nil
 #+STARTUP: latexpreview
 #+STARTUP: showall
 #+LATEX_HEADER: \usepackage[T1]{fontenc}
@@ -9,23 +9,27 @@
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usepackage{sgame}
 #+LATEX_HEADER: \usetikzlibrary{calc}
-#+LATEX_HEADER: \usepackage[dvipsnames]{xcolor}
+#+LATEX_HEADER: \usepackage{xcolor}
 #+LATEX_HEADER: \usepackage{amsmath, amsthm, amssymb}
 
 #+LATEX_HEADER: \usepackage{listings} % Code highlighting
-#+LaTeX_HEADER: \usepackage{indentfirst}
+#+LATEX_HEADER: \usepackage{indentfirst}
+
+#+LATEX_HEADER: \usepackage{setspace}
+#+LATEX_HEADER: \doublespacing
 
 % List spacing
 #+LATEX_HEADER: \usepackage{enumitem}
 #+LATEX_HEADER: \setlist{itemsep=-2pt} % or \setlist{noitemsep} to leave space around whole list
 
 % bibliography
-#+LATEX_HEADER: \usepackage{apacite}
 #+LATEX_HEADER: \usepackage[backend=biber, style=alphabetic, sorting=nyt]{biblatex}
-#+LATEX_HEADER: \addbibresource{~/org/refs.bib}
 
 
 % Colorizing links in a nicer way.
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=black,citecolor=blue}
+
+#+LATEX_HEADER: \DeclareMathOperator*{\argmax}{arg\,max}
+#+LATEX_HEADER: \DeclareMathOperator*{\argmin}{arg\,min}
 

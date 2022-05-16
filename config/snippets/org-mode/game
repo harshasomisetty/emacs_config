@@ -6,8 +6,6 @@
 \begin{figure}[!h]\hspace*{\fill}%
 \begin{game}{$1}{$2}
 & $0
-\end{game}
-\hspace*{\fill}
-%\end{figure}
-    
+\end{game}\hspace*{\fill}%
+\end{figure}
 

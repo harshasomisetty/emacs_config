@@ -1,0 +1,6 @@
+# key: r
+# name: result
+# --
+-> Result<()> {
+$0 Ok(())    
+}

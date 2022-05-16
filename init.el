@@ -33,7 +33,7 @@
 (use-package exec-path-from-shell
   :config
   (when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize)))
+    (exec-path-from-shell-initialize)))
 
 (use-package all-the-icons
   :config
@@ -229,13 +229,13 @@
 
 (defun right-half ()
   (interactive)
-  (set-frame-position (selected-frame) (/ max-frame-width 2) 0)
-  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 2)) max-frame-height t))
+  (set-frame-position (selected-frame) (- (/ max-frame-width 2) 0) 0)
+  (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 2)) 20) max-frame-height t))
 
 (defun full-screen ()
   (interactive)
   (set-frame-position (selected-frame) 0 0)
-  (set-frame-size (selected-frame) (* 1 (/ max-frame-width 1)) max-frame-height t))
+  (set-frame-size (selected-frame) (- (* 1 (/ max-frame-width 1)) 20) max-frame-height t))
 
 (global-set-key (kbd "C-c w e") 'left-two-thirds)
 (global-set-key (kbd "C-c w d") 'left-one-thirds)
@@ -255,15 +255,7 @@
 
 (load "~/.emacs.d/config/quotes.el")
 
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-footer-messages quotes
-        dashboard-items '((recents  . 5)
-                          (projects . 5)
-                          (agenda . 5)
-                          )))
+
 
 (defun files-startup-screen (file2 &rest files)
   "choose 2 files to display on startup, file2 goes on left, file1 goes on right"
@@ -287,15 +279,24 @@
 ;; (write-region "(setq screens_list '\(\"\"))" nil screens_file)
 (load-file screens_file)
 
+(use-package dashboard
+      :ensure t
+      :config
+      (dashboard-setup-startup-hook)
+      (setq dashboard-footer-messages quotes
+            dashboard-items '((recents  . 5)
+                              (projects . 5)
+                              (agenda . 5)
+                              )))
 
 (defun emacs-startup-screen ()
   "startup screen config"
   (if (and (eq (boundp 'screens_list) t) (> (length screens_list) 0))
       (progn (apply 'files-startup-screen screens_list) )
-    nil
+     nil
     )
 
-    (balance-windows)
+  (balance-windows)
   (if (> (length screens_list) 0)
       (kill-buffer "*dashboard*")))
 
@@ -330,7 +331,6 @@
 
 (use-package avy
   :bind (("C-;" . avy-goto-char)
-         ("C-'" . avy-goto-char-2)
          ("M-g M-g" . avy-goto-line)))
 
 (use-package ace-window
@@ -484,34 +484,33 @@
   :init
   (global-company-mode)
   :config
-    (setq company-tooltip-align-annotations t
-          company-idle-delay 0.2
-          ;; min prefix of 2 chars
-          company-minimum-prefix-length 2
-          company-require-match nil)
+  (setq company-tooltip-align-annotations t
+        company-idle-delay 0.2
+        ;; min prefix of 2 chars
+        company-minimum-prefix-length 2
+        company-require-match nil)
   :bind
   ("C-c C-c" . company-complete))
 
 (use-package company-quickhelp          ; Show help in tooltip
-    :ensure t
-    :defer t
-    :init (with-eval-after-load 'company
-            (company-quickhelp-mode)))
+  :ensure t
+  :defer t
+  :init (with-eval-after-load 'company
+          (company-quickhelp-mode)))
 
 ;;;;; Spelling
 ;;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
-(use-package ispell)
-
-
-(setq ispell-program-name "hunspell"
-      ispell-local-dictionary "en_US")
-
-(use-package flycheck
-  :ensure t
-  :diminish flycheck-mode
+(use-package ispell
   :config
-  (add-hook 'after-init-hook #'global-flycheck-mode))
+  (setq ispell-program-name "hunspell"
+        ispell-local-dictionary "en_US"))
 
+
+(dolist (hook '(text-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode 1))))
+
+(use-package helm-flyspell
+  :config )
 
 (setq save-abbrevs 'silently)
 (setq-default abbrev-mode t)
@@ -552,14 +551,11 @@ abort completely with `C-g'."
           (message "\"%s\" now expands to \"%s\" %sally"
                    bef aft (if p "loc" "glob")))
       (user-error "No typo at or before point"))))
-(define-key ctl-x-map "\C-i"
-  #'endless/ispell-word-then-abbrev)
 
+(global-set-key (kbd "C-'") #'endless/ispell-word-then-abbrev)
 
-
-
-
-
+(eval-after-load "flyspell"
+  '(define-key flyspell-mode-map (kbd "C-;") nil))
                                         ;[[https://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][ispell code from here]]
 ;;;; Development
 (use-package inheritenv)
@@ -581,6 +577,8 @@ abort completely with `C-g'."
    (R . t)
    (gnuplot . t)
    ))
+
+
 (setq org-confirm-babel-evaluate nil)
 
 
@@ -634,7 +632,6 @@ interactive `pyvenv-workon' function before `lsp'"
         (lsp)))))
 
 (bind-key (kbd "C-c C-a") #'dd/py-auto-lsp python-mode-map)
-
 
 ;;;;;; Rust
                                         ; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
@@ -702,7 +699,6 @@ interactive `pyvenv-workon' function before `lsp'"
 
 ;;;;;; ESS and R
 (use-package ess-site
-  :disabled
   :straight ess
   :config
   (add-hook 'ess-post-run-hook 'ess-execute-screen-options)
@@ -715,7 +711,6 @@ interactive `pyvenv-workon' function before `lsp'"
 ;; (setq inferior-R-program-name "/Library/Frameworks/R.framework/Resources/R")
 
 (use-package ess-r-mode
-  :disabled
   :straight ess
   :config
   ;; Hot key C-S-m for pipe operator in ESS
@@ -795,7 +790,6 @@ interactive `pyvenv-workon' function before `lsp'"
    web-mode-enable-auto-indentation t))
 
 ;;;;; LSP Mode
-
 (use-package helm-lsp
   :ensure t
   :after (lsp-mode)
@@ -822,7 +816,7 @@ interactive `pyvenv-workon' function before `lsp'"
   :hook (lsp-mode . lsp-enable-which-key-integration))
 
 
-
+(setq lsp-restart 'ignore)
 
 (defun dotfiles--lsp-deferred-if-supported ()
   "Run `lsp-deferred' if it's a supported mode."
@@ -1245,7 +1239,7 @@ interactive `pyvenv-workon' function before `lsp'"
         org-agenda-files '(
                            "~/org/inbox.org"
                            "~/org/gtd.org"
-                           "~/org/habits.org"
+                           "~/org/tickler.org"
                            )
         org-agenda-prefix-format '(
                                         ;                                     (agenda . " %-12b %?-15t% s")
@@ -1413,12 +1407,16 @@ interactive `pyvenv-workon' function before `lsp'"
              '("j" "Journal entry" entry (file+headline entry-path "Moments")
                "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
 
+;;;;; Ledger
+(use-package ledger-mode)
 ;;;; Publishing
+
+
 (use-package ox-hugo
   :ensure t            ;Auto-install the package from Melpa (optional)
   :after ox
   :config
-  (setq org-hugo-base-dir "~/code/roam-notes"
+  (setq org-hugo-base-dir "~/code/website/roam-notes"
         org-hugo-section "notes"))
 (defun replace-in-string (what with in)
   (replace-regexp-in-string (regexp-quote what) with in nil 'literal))
@@ -1432,6 +1430,8 @@ interactive `pyvenv-workon' function before `lsp'"
 (setq org-id-extra-files (find-lisp-find-files "~/org/roam/" "\.org$"))
 
 
+;;;; Ledger Finances
+(use-package ledger-mode)
 ;;; Literature
                                         ;current workflow is org roam with directories for main ideas, subject facts, books, pdfs, podcasts
                                         ;tweets and reddit posts etc will be directly files into ideas, subjects, main ideas, with a reference to the sorce
@@ -1439,7 +1439,7 @@ interactive `pyvenv-workon' function before `lsp'"
                                         ;so workflow itself is reading through papers, use capture template and org noter to take notes and write a fina summary
 ;;bibtex to cite
 ;;;; Roam
-(use-package org-roam
+ (use-package org-roam
   :init
   (setq org-roam-v2-ack t) ; stops warning message
   :demand t
@@ -1451,9 +1451,17 @@ interactive `pyvenv-workon' function before `lsp'"
                                  "\n\n* %?"
                                  :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
                                  :unnarrowed t)
-                                ("t" "Fact" plain
+                                ("f" "Fact" plain
                                  "\n\n* %?"
                                  :if-new (file+head "facts/%<%Y%m%d%H%M%S>-${slug}.org" "#+filetags: %^{tags}\n#+title: ${title}\n")
+                                 :unnarrowed t)
+                                ("b" "Book" plain
+                                 "\n\n* %?"
+                                 :if-new (file+head "books/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+                                 :unnarrowed t)
+                                ("P" "Podcast" plain
+                                 "\n\n* %?"
+                                 :if-new (file+head "podcasts/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
                                  :unnarrowed t)
                                 ))
   (org-roam-dailies-capture-templates
@@ -1771,7 +1779,7 @@ interactive `pyvenv-workon' function before `lsp'"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(org-agenda-files
-   '("/Users/harshasomisetty/org/inbox.org" "/Users/harshasomisetty/org/gtd.org" "/Users/harshasomisetty/org/habits.org")))
+   '("/Users/harshasomisetty/org/inbox.org" "/Users/harshasomisetty/org/gtd.org")))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
