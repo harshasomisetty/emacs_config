@@ -39,3 +39,4 @@ flycheck_init.el
 /persist/
 /org-persist/
 /projects
+/.log/

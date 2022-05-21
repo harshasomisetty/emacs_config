@@ -16,7 +16,11 @@
                                         ; make straight-use-package work with package.el stuff
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
-(setq straight-recipe-repositories '(org-elpa melpa gnu-elpa-mirror el-get emacsmirror-mirror ))
+(setq straight-recipe-repositories '(melpa gnu-elpa-mirror el-get emacsmirror-mirror ))
+
+(require 'package)
+(straight-use-package '(org :host github :repo "yantar92/org" :branch "feature/org-fold-universal-core"
+			    :files (:defaults "contrib/lisp/*.el")))
 
 (setq mac-option-modifier 'meta
       mac-pass-command-to-system nil
@@ -28,7 +32,7 @@
 
 
 (require 'package)
-(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+;; (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
 (use-package exec-path-from-shell
   :config
@@ -374,10 +378,6 @@
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
-(use-package dired-quick-sort
-  :config
-  (dired-quick-sort-setup))
-
 (use-package dired-hide-dotfiles
   :hook (dired-mode . dired-hide-dotfiles-mode)
   :config (define-key dired-mode-map "." #'dired-hide-dotfiles-mode))
@@ -676,15 +676,12 @@ interactive `pyvenv-workon' function before `lsp'"
   (js2-mode . js2-imenu-extras-mode))
 
 (use-package typescript-mode
-  :mode (("\\.ts\\'" . typescript-mode)
-         ("\\.tsx\\'" . typescript-mode))
+  :mode (("\\.ts\\'" . typescript-mode))
   :config
   (setq typescript-indent-level 2))
 
 (use-package rjsx-mode
   :init
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . rjsx-mode))
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . rjsx-mode))
   (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode)))
 
@@ -692,6 +689,7 @@ interactive `pyvenv-workon' function before `lsp'"
 (use-package prettier-js
   :init
   (add-hook 'js2-mode-hook 'prettier-js-mode)
+  (add-hook 'typescript-mode-hook 'prettier-js-mode)
   :config
   (setq prettier-js-args '(
                            "--bracket-spacing" "false"
@@ -976,13 +974,14 @@ interactive `pyvenv-workon' function before `lsp'"
 
 ;;; Org-mode
 ;;;; Init
-                                        ;[[http://gewhere.github.io/gnuplot-orgmode][source for org plotting]]
-(use-package org)
-(use-package org-contrib)
-(defun org-clocking-buffer (&rest _))
-(org-reload)
+
+
+
+;; (defun org-clocking-buffer (&rest _))
+;; (org-reload)
 (use-package gnuplot)
 (global-set-key "\M-\C-g" 'org-plot/gnuplot)
+
 
 
 
@@ -1192,6 +1191,7 @@ interactive `pyvenv-workon' function before `lsp'"
 (eval-after-load "preview"
   '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
 
+(setq org-preview-latex-default-process 'imagemagick)
 (setq org-latex-create-formula-image-program 'imagemagick)
 
 (use-package cdlatex
@@ -1773,16 +1773,3 @@ interactive `pyvenv-workon' function before `lsp'"
   :config
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-agenda-files
-   '("/Users/harshasomisetty/org/inbox.org" "/Users/harshasomisetty/org/gtd.org")))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
