@@ -1646,32 +1646,23 @@ interactive `pyvenv-workon' function before `lsp'"
 (defun my/save-buffer-no-args ()
   "Save buffer ignoring arguments"
   (save-buffer))
+
 (use-package pdf-tools
+  :ensure t
   :bind (:map pdf-view-mode-map
               ("C-s" . isearch-forward))
+  :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)
+         (pdf-view-mode . (lambda () (pdf-view-fit-height-to-window)))
+         (pdf-view-mode . (lambda () (cua-mode 0))))
   :config
-
-  (setq pdf-view-display-size 'fit-height
-        pdf-annot-activate-created-annotations t)
-
-  (add-hook 'pdf-view-mode-hook (lambda () (pdf-view-fit-height-to-window)))
-  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
-  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
-  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
-
-  (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
-  (with-eval-after-load "pdf-annot"
-    (define-key pdf-annot-edit-contents-minor-mode-map (kbd "<return>") 'pdf-annot-edit-contents-commit)
-    (define-key pdf-annot-edit-contents-minor-mode-map (kbd "<S-return>") 'newline)
-    ;; save after adding comment
-    (advice-add 'pdf-annot-edit-contents-commit :after 'my/save-buffer-no-args))
-  :hook ((pdf-view-mode . pdf-view-midnight-minor-mode)))
-
-
+  (custom-set-variables
+   '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"
+        pdf-view-display-size 'fit-height
+        pdf-annot-activate-created-annotations t))
 (pdf-tools-install)
-(define-key pdf-view-mode-map (kbd "<mouse-5>") 'pdf-view-next-page-mouse
 
-  )
+
 (defun pdf-view--rotate (&optional counterclockwise-p page-p)
   "Rotate PDF 90 degrees.  Requires pdftk to work.\n"
   ;; error out when pdftk is not installed
