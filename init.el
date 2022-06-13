@@ -352,6 +352,7 @@
 (setq sentence-end-double-space nil)
 
 (use-package no-spam
+  :disabled
   :config
   (setq no-spam-default-repeat-delay 10)
   (no-spam-add-repeat-delay (next-line
@@ -452,6 +453,13 @@
 (use-package autopair
   :config
   (autopair-global-mode))
+
+(use-package highlight-indent-guides
+  :config
+  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+  (setq highlight-indent-guides-method 'character
+        highlight-indent-guides-responsive 'top)
+  )
 
 
 (defun delete-line-no-kill ()
@@ -564,6 +572,10 @@ abort completely with `C-g'."
   :straight
   (:host github :repo "lassik/emacs-format-all-the-code" :branch "master" :files ("*.el"))
   :hook (prog-mode . format-all-mode))
+
+(use-package flycheck :ensure)
+
+
 ;;;;; Babel
 
 
@@ -635,9 +647,6 @@ interactive `pyvenv-workon' function before `lsp'"
 
 ;;;;;; Rust
                                         ; https://robert.kra.hn/posts/2021-02-07_rust-with-emacs/
-(use-package project
-  :config
-  (setq project-switch-commands t))
 (use-package rustic
   :ensure
   :bind (:map rustic-mode-map
@@ -660,10 +669,6 @@ interactive `pyvenv-workon' function before `lsp'"
   (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
 
 (defun rk/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
   (when buffer-file-name
     (setq-local buffer-save-without-query t)))
 ;;;;;; Javascript
@@ -803,10 +808,12 @@ interactive `pyvenv-workon' function before `lsp'"
         lsp-enable-indentation t
         lsp-enable-imenu t
         lsp-prefer-flymake nil
+        lsp-ui-sideline-enable nil
         lsp-pylsp-plugins-flake8-enabled t
         lsp-pylsp-plugins-autopep8-enabled t
         lsp-rust-analyzer-cargo-watch-command "clippy"
         lsp-eldoc-render-all t
+        lsp-idle-delay 1
         lsp-rust-analyzer-server-display-inlay-hints t)
 
   :config
@@ -828,21 +835,8 @@ interactive `pyvenv-workon' function before `lsp'"
   :commands lsp-ui-mode
   :config
   (setq lsp-ui-peek-always-show t
-        lsp-ui-doc-use-webkit nil
-        lsp-ui-doc-header nil
-        lsp-ui-doc-delay 0.2
-        lsp-ui-doc-include-signature t
-        lsp-ui-doc-alignment 'at-point
-        lsp-ui-doc-use-childframe nil
-        lsp-ui-doc-border (face-foreground 'default)
-        lsp-ui-peek-enable t
-        lsp-ui-peek-show-directory t
-        lsp-ui-sideline-update-mode 'line
-        lsp-ui-sideline-enable t
-        lsp-ui-sideline-show-code-actions t
-        lsp-ui-sideline-show-hover nil
-        lsp-ui-sideline-ignore-duplicate t))
-
+        lsp-ui-sideline-show-hover t
+        lsp-ui-doc-enable nil))
 
 ;;;;;; Tailwind
 (use-package lsp-tailwindcss
@@ -863,6 +857,7 @@ interactive `pyvenv-workon' function before `lsp'"
   (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
 
 (use-package json-mode)
+
 (use-package toml-mode :ensure)
 
 (defun testfn ()
@@ -898,6 +893,8 @@ interactive `pyvenv-workon' function before `lsp'"
      (list temporary-file-directory))
 
 (set-register ?s (cons 'file "/ssh:hs884@kill.cs.rutgers.edu:"))
+
+
 
 (add-hook
  'c-mode-hook

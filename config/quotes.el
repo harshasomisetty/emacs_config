@@ -1,6 +1,8 @@
 (defvar quotes
   '("You can do anything, but not everything.
                                                                    - David Allen"
+    "Men of genius themselves were great only by bringing all their power to bear on the point on which they had decided to show their full measure
+                                                      - Antonin-Dalmace Sertillanges"
     "Perfection is achieved, not when there is nothing more to add, but when there is
 nothing left to take away.
                                                       - Antoine de Saint-Exupéry"
