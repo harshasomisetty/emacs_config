@@ -972,24 +972,15 @@ interactive `pyvenv-workon' function before `lsp'"
 ;;; Org-mode
 ;;;; Init
 
-
-
-;; (defun org-clocking-buffer (&rest _))
-;; (org-reload)
 (use-package gnuplot)
 (global-set-key "\M-\C-g" 'org-plot/gnuplot)
-
-
-
-
-                                        ;[[http://gewhere.github.io/gnuplot-orgmode][source for org plotting]]
+;[[http://gewhere.github.io/gnuplot-orgmode][source for org plotting]]
 ;;;; Formatting
 ;;;;; Looks
-                                        ;g insp from [[https://hugocisneros.com/org-config/][here]]
+; insp from [[https://hugocisneros.com/org-config/][here]]
 ;;;;;; Gen
 (setf org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
 (setq-default indent-tabs-mode nil)
-
 
 (use-package org-bullets
   :hook ((org-mode) . org-bullets-mode))
@@ -1013,11 +1004,6 @@ interactive `pyvenv-workon' function before `lsp'"
   (setq valign-fancy-bar t)
   :hook ((org-mode) . valign-mode))
 
-(use-package org-visual-outline
-  :disabled t
-  :config
-  (org-dynamic-bullets-mode)
-  (org-visual-indent-mode))
 
 ;;;;;; Colors
 (defun col-strip (col-str)
@@ -1045,7 +1031,7 @@ interactive `pyvenv-workon' function before `lsp'"
 (defun my/style-org ()
   ;; I have removed indentation to make the file look cleaner
   (my/buffer-face-mode-variable)
-  (setq line-spacing 0.05)
+  (setq line-spacing 0.01)
 
   (variable-pitch-mode +1)
   (mapc
@@ -1200,10 +1186,7 @@ interactive `pyvenv-workon' function before `lsp'"
   (setq cdlatex-command-alist
         '(("tkz" "Insert axiom env"   "" cdlatex-environment ("tikzpicture") t nil)
           ("thr" "Insert theorem env" "" cdlatex-environment ("theorem") t nil)
-          ("gam" "Insert game env" "" cdlatex-environment ("game") t nil)))
-  )
-
-
+          ("gam" "Insert game env" "" cdlatex-environment ("game") t nil))))
 
 ;;;;; Images
 
@@ -1215,9 +1198,7 @@ interactive `pyvenv-workon' function before `lsp'"
   :config
 
   (setq-default org-download-image-dir "~/Pictures/emacs-pics")
-  (setq org-download-screenshot-method "screencapture -i %s")
-  )
-
+  (setq org-download-screenshot-method "screencapture -i %s"))
 
 ;;;; Life
 ;;;;; Agenda
@@ -1249,12 +1230,12 @@ interactive `pyvenv-workon' function before `lsp'"
                              ("~/org/time.org" :level . 1)
                              )
         org-capture-templates
-        `(("t" "Todo" entry (file "~/org/inbox.org") "* TODO %i%?" :empty-lines 1))
-        )
+        `(("t" "Todo" entry (file "~/org/inbox.org") "* TODO %i%?" :empty-lines 1)))
 
-  (org-agenda-align-tags)
-  )
+  (org-agenda-align-tags))
+
 (set-register ?g (cons 'file  "~/org/gtd.org"))
+
 (use-package dash)
 (use-package ht)
 (use-package s)
@@ -1268,16 +1249,6 @@ interactive `pyvenv-workon' function before `lsp'"
                  :time-grid t  ; Items that appear on the time grid
                  :priority "A"
                  )
-          ;; (:order-multi ( (:name "DOE"
-          ;;                        :tag "DOE")
-          ;;                 (:name "CStats"
-          ;;                        :tag "CStats")
-          ;;                 (:name "MStats"
-          ;;                        :tag "MStats")
-          ;;                 (:name "Networking"
-          ;;                        :tag "Networking")
-          ;;                 (:name "OS"
-          ;;                        :tag "OS")))
           (:name "Habits"
                  :habit t
                  :tag "Habits")
@@ -1291,7 +1262,6 @@ interactive `pyvenv-workon' function before `lsp'"
   (bind-key "C-c a" #'org-agenda global-map)
   (bind-key "C-c c" #'org-capture ))
 (unbind-key "C-'" org-mode-map)
-
 
 
 ;;;;; Habits
@@ -1371,7 +1341,6 @@ interactive `pyvenv-workon' function before `lsp'"
 (defun insert-created-date (&rest ignore)
   (insert (concat
            "\n* Gratitude"
-           "\n* Goals"
            "\n* Moments"
            "\n* Accomplishments"
            )))
@@ -1404,10 +1373,7 @@ interactive `pyvenv-workon' function before `lsp'"
              '("j" "Journal entry" entry (file+headline entry-path "Moments")
                "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))
 
-;;;;; Ledger
-(use-package ledger-mode)
 ;;;; Publishing
-
 
 (use-package ox-hugo
   :ensure t            ;Auto-install the package from Melpa (optional)
@@ -1724,7 +1690,7 @@ interactive `pyvenv-workon' function before `lsp'"
   (with-temp-buffer
     (insert (concat "(setq grind-on t)"))
     (write-region (point-min) (point-max) grind-file ))
-  (grind_theme)
+  (grind-theme)
   (my/style-org))
 
 (global-set-key (kbd "C-c g") #'grind)
@@ -1745,7 +1711,7 @@ interactive `pyvenv-workon' function before `lsp'"
     (insert (concat "(setq grind-on nil)"))
     (write-region (point-min) (point-max) grind-file ))
 
-  (ungrind_theme)
+  (ungrind-theme)
   (my/style-org))
 (global-set-key (kbd "C-c u") #'ungrind)
 
